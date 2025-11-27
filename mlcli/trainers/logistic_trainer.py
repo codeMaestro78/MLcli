@@ -66,8 +66,8 @@ class LogisticRegressionTrainer(BaseTrainer):
         Args:
             X_train: Training features
             y_train: Training labels
-            X_val: Validation features (optional)
-            y_val: Validation labels (optional)
+            X_test: Validation features (optional)
+            y_test: Validation labels (optional)
 
         Returns:
             Training history with metrics
