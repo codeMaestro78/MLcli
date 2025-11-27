@@ -57,8 +57,8 @@ class LogisticRegressionTrainer(BaseTrainer):
 
         logger.info(f"Initialized LogisticRegressionTrainer with params: {self.model_params}")
 
-    def train(self,X_train:np.ndarray,y_train:np.ndarray,X_test:Optional[np.ndarray]=None,
-              y_test:Optional[np.ndarray]=None)-> Dict[str,Any]:
+    def train(self,X_train:np.ndarray,y_train:np.ndarray,X_val:Optional[np.ndarray]=None,
+              y_val:Optional[np.ndarray]=None)-> Dict[str,Any]:
 
         """
         Train logistic regression model.
@@ -66,8 +66,8 @@ class LogisticRegressionTrainer(BaseTrainer):
         Args:
             X_train: Training features
             y_train: Training labels
-            X_test: Validation features (optional)
-            y_test: Validation labels (optional)
+            X_val: Validation features (optional)
+            y_val: Validation labels (optional)
 
         Returns:
             Training history with metrics
@@ -97,8 +97,8 @@ class LogisticRegressionTrainer(BaseTrainer):
         }
 
         # Validation metircs if provided
-        if X_test is not None and y_test is not None:
-            test_metics=self.evaluate(X_test,y_test)
+        if X_val is not None and y_val is not None:
+            test_metics=self.evaluate(X_val,y_val)
             self.training_history["test_metrics"]=test_metics
 
         self.is_trained=True
