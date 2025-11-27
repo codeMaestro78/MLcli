@@ -41,8 +41,8 @@ class BaseTrainer(ABC):
         self,
         X_train: np.ndarray,
         y_train: np.ndarray,
-        X_val: Optional[np.ndarray] = None,
-        y_val: Optional[np.ndarray] = None
+        X_test: Optional[np.ndarray] = None,
+        y_test: Optional[np.ndarray] = None
     ) -> Dict[str, Any]:
         """
         Train the model on provided data.
@@ -50,8 +50,8 @@ class BaseTrainer(ABC):
         Args:
             X_train: Training features
             y_train: Training labels
-            X_val: Optional validation features
-            y_val: Optional validation labels
+            X_test: Optional validation features
+            y_test: Optional validation labels
 
         Returns:
             Dictionary containing training history/metrics
