@@ -33,7 +33,11 @@ class ConfigLoader:
             config_path: Path to configuration file (optional)
         """
         self.config_path=Path(config_path) if config_path else None
-        self.config=Dict[str,Any]={}
+        self.config: Dict[str,Any] = {}
+
+        # Auto-load if path provided
+        if self.config_path:
+            self.load(self.config_path)
 
     def load(self,config_path:Union[str,Path])->Dict[str,Any]:
         """
@@ -60,7 +64,7 @@ class ConfigLoader:
         suffix=config_path.suffix.lower()
 
         try:
-            with open(config_path,"r",encoding="utf-8") as f:
+            with open(config_path,"r",encoding="utf-8-sig") as f:
                 if suffix == ".json":
                     self.config=json.load(f)
                 elif suffix in ['.yaml','.yml']:
@@ -164,7 +168,7 @@ class ConfigLoader:
 
         for k in keys:
             if isinstance(value,dict):
-                value = value.get(key)
+                value = value.get(k)
                 if value is None:
                     return default
             else:
@@ -199,7 +203,16 @@ class ConfigLoader:
         Returns:
             Model type string
         """
-        return self.get("model.params ",{})
+        return self.config.get("model", {}).get("type", "unknown")
+
+    def get_model_params(self)->Dict[str,Any]:
+        """
+        Get model parameters from configuration.
+
+        Returns:
+            Model parameters dictionary
+        """
+        return self.config.get("model", {}).get("params", {})
 
     def get_dataset_config(self)->Dict[str,Any]:
         """

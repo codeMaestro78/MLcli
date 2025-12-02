@@ -70,23 +70,26 @@ class XGBTrainer(BaseTrainer):
             Training history
         """
 
-        logger.info(f"Training XGBoost on {X_train.shape[0]} sampels")
+        logger.info(f"Training XGBoost on {X_train.shape[0]} samples")
 
-        #Prepare evaluation set for early stopping
-        eval_set=[]
+        # Prepare evaluation set for early stopping
+        eval_set = []
         if X_val is not None and y_val is not None:
-            eval_set =[(X_val,y_val)]
+            eval_set = [(X_val, y_val)]
+
+        # Add early stopping to model params if validation set exists
+        fit_params = self.model_params.copy()
+        if eval_set:
+            fit_params['early_stopping_rounds'] = self.early_stopping_rounds
+            fit_params['eval_metric'] = 'logloss'
 
         # Train model
-        self.model= xgb.XGBClassifier(**self.model_params)
+        self.model = xgb.XGBClassifier(**fit_params)
 
         if eval_set:
-            self.model.fit(X_train,y_train,eval_set=eval_set,
-                           early_stopping_rounds=self.early_stopping_rounds,
-                           verbose = False)
-
+            self.model.fit(X_train, y_train, eval_set=eval_set, verbose=False)
         else:
-            self.model.fit(X_train,y_train,vebose=False)
+            self.model.fit(X_train, y_train, verbose=False)
 
         # Compute training metrics
         y_train_pred= self.model.predict(X_train)

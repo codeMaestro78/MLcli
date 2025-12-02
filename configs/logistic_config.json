@@ -1,0 +1,31 @@
+{
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target",
+    "features": null
+  },
+  "model": {
+    "type": "logistic_regression",
+    "params": {
+      "penalty": "l2",
+      "C": 1.0,
+      "solver": "lbfgs",
+      "max_iter": 1000,
+      "random_state": 42
+    }
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "shuffle": true
+  },
+  "evaluation": {
+    "metrics": ["accuracy", "precision", "recall", "f1", "auc"]
+  },
+  "output": {
+    "model_dir": "mlcli/models",
+    "save_format": ["pickle", "onnx"],
+    "log_dir": "runs"
+  }
+}

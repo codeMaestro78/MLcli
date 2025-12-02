@@ -1,0 +1,36 @@
+{
+  "dataset": {
+    "path": "data/hotel_bookings_processed.csv",
+    "type": "csv",
+    "target_column": "is_canceled",
+    "features": null
+  },
+  "model": {
+    "type": "xgboost",
+    "params": {
+      "n_estimators": 100,
+      "max_depth": 6,
+      "learning_rate": 0.1,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "random_state": 42,
+      "use_label_encoder": false,
+      "eval_metric": "logloss"
+    }
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "shuffle": true,
+    "early_stopping_rounds": 10
+  },
+  "evaluation": {
+    "metrics": ["accuracy", "precision", "recall", "f1", "auc"]
+  },
+  "output": {
+    "model_dir": "mlcli/models",
+    "model_name": "hotel_xgb",
+    "save_format": ["pickle"],
+    "log_dir": "runs"
+  }
+}

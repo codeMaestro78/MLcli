@@ -1,0 +1,38 @@
+{
+  "dataset": {
+    "path": "data/images",
+    "type": "image",
+    "image_size": [224, 224],
+    "color_mode": "rgb"
+  },
+  "model": {
+    "type": "tf_cnn",
+    "params": {
+      "conv_layers": [32, 64, 128],
+      "kernel_size": 3,
+      "pool_size": 2,
+      "dense_layers": [128],
+      "dropout": 0.3,
+      "batch_normalization": true,
+      "input_shape": [224, 224, 3],
+      "optimizer": "adam",
+      "learning_rate": 0.001,
+      "epochs": 30,
+      "batch_size": 32,
+      "data_augmentation": false
+    }
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "shuffle": true
+  },
+  "evaluation": {
+    "metrics": ["accuracy", "precision", "recall", "f1"]
+  },
+  "output": {
+    "model_dir": "mlcli/models",
+    "save_format": ["h5", "savedmodel"],
+    "log_dir": "runs"
+  }
+}

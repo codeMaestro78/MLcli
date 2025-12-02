@@ -1,0 +1,32 @@
+{
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target",
+    "features": null
+  },
+  "model": {
+    "type": "svm",
+    "params": {
+      "kernel": "rbf",
+      "C": 1.0,
+      "gamma": "scale",
+      "probability": true,
+      "random_state": 42
+    },
+    "scale_features": true
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "shuffle": true
+  },
+  "evaluation": {
+    "metrics": ["accuracy", "precision", "recall", "f1", "auc"]
+  },
+  "output": {
+    "model_dir": "mlcli/models",
+    "save_format": ["pickle", "onnx"],
+    "log_dir": "runs"
+  }
+}

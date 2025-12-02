@@ -5,12 +5,10 @@ Provides decorator-based auto-registration for all trainer classes,
 enabling dynamic model discovery and instantiation from configuration.
 """
 
-from typing import Dict,Type,Optional,List,Any
+from typing import Dict, Type, Optional, List, Any
 import logging
 
-from sympy import true
-
-logger=logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ModelRegistry:

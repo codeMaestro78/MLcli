@@ -5,22 +5,16 @@ Handles data loading (CSV, images), model saving/loading,
 and file path management.
 """
 
-
 import pickle
-from random import shuffle
-from tkinter import image_names
 import joblib
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from typing import Tuple,Optional,Union,Any,Dict,List
+from typing import Tuple, Optional, Union, Any, Dict, List
 import logging
 import json
 
-from sqlalchemy import column
-from streamlit import image
-
-logger= logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 def load_data(data_path:Union[str,Path],data_type:str ="csv",target_column:Optional[str]=None,features:Optional[List[str]]=None,**kwargs)->Tuple[np.ndarray,Optional[np.ndarray]]:
     """
@@ -81,7 +75,7 @@ def _load_csv(csv_path:Path,target_column:Optional[str]=None,
     if features:
         X=df[features].values
     elif target_column:
-        X=df.drop(column=[target_column]).values
+        X=df.drop(columns=[target_column]).values
     else:
         X=df.values
 
@@ -95,7 +89,6 @@ def _load_csv(csv_path:Path,target_column:Optional[str]=None,
         logger.info(f"Features shape: {X.shape} (no target column specified)")
 
     return X,y
-
 
 def _load_images(image_dir:Path,image_size :Tuple[int ,int ]=(224,224),color_mode:str="rgb",**kwargs)->Tuple[np.ndarray,np.ndarray]:
     """

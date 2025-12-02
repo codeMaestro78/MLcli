@@ -1,0 +1,27 @@
+﻿{
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "model": {
+    "type": "tf_dnn",
+    "params": {
+      "layers": [64, 32, 16],
+      "activation": "relu",
+      "dropout": 0.2,
+      "optimizer": "adam",
+      "learning_rate": 0.001,
+      "epochs": 30,
+      "batch_size": 32
+    }
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "output": {
+    "model_dir": "mlcli/models",
+    "save_format": ["h5", "savedmodel"]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "dataset": {
+    "path": "data/sequences.npy",
+    "type": "numpy",
+    "features_file": "X.npy",
+    "target_file": "y.npy"
+  },
+  "model": {
+    "type": "tf_rnn",
+    "params": {
+      "rnn_type": "lstm",
+      "rnn_units": [128, 64],
+      "bidirectional": false,
+      "dropout": 0.2,
+      "recurrent_dropout": 0.2,
+      "dense_layers": [64],
+      "max_sequence_length": 100,
+      "embedding_dim": null,
+      "vocab_size": null,
+      "optimizer": "adam",
+      "learning_rate": 0.001,
+      "epochs": 25,
+      "batch_size": 32
+    }
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "shuffle": true
+  },
+  "evaluation": {
+    "metrics": ["accuracy", "precision", "recall", "f1"]
+  },
+  "output": {
+    "model_dir": "mlcli/models",
+    "save_format": ["h5", "savedmodel"],
+    "log_dir": "runs"
+  }
+}

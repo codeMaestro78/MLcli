@@ -1,0 +1,33 @@
+{
+  "dataset": {
+    "path": "data/hotel_bookings_processed.csv",
+    "type": "csv",
+    "target_column": "is_canceled",
+    "features": null
+  },
+  "model": {
+    "type": "svm",
+    "params": {
+      "kernel": "rbf",
+      "C": 1.0,
+      "gamma": "scale",
+      "probability": true,
+      "random_state": 42
+    }
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "shuffle": true,
+    "max_samples": 10000
+  },
+  "evaluation": {
+    "metrics": ["accuracy", "precision", "recall", "f1", "auc"]
+  },
+  "output": {
+    "model_dir": "mlcli/models",
+    "model_name": "hotel_svm",
+    "save_format": ["pickle", "onnx"],
+    "log_dir": "runs"
+  }
+}
