@@ -12,5 +12,6 @@ onnxruntime>=1.16
 skl2onnx>=1.15
 onnx>=1.15
 pyyaml>=6.0
-
+optuna>=3.4.0
+scipy>=1.11.0
 plotext>=5.0

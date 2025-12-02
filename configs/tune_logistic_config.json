@@ -1,0 +1,27 @@
+{
+  "model": {
+    "type": "logistic_regression",
+    "params": {}
+  },
+  "dataset": {
+    "path": "data/hotel_bookings_processed.csv",
+    "type": "csv",
+    "target_column": "is_canceled"
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "tuning": {
+    "param_space": {
+      "C": {"type": "loguniform", "low": 0.001, "high": 100},
+      "penalty": ["l1", "l2"],
+      "solver": ["liblinear", "saga"],
+      "max_iter": [500, 1000, 2000]
+    }
+  },
+  "output": {
+    "model_dir": "artifacts",
+    "save_formats": ["pickle", "joblib"]
+  }
+}

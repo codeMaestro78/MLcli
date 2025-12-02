@@ -42,6 +42,11 @@
   - CNN models
   - RNN/LSTM/GRU models
 
+- **🆕 Hyperparameter Tuning:**
+  - Grid Search
+  - Random Search
+  - Bayesian Optimization (Optuna)
+
 - **Unified configuration system** (JSON/YAML)
 - **Automatic Model Registry** (plug-and-play trainers)
 - **Model saving:**
@@ -73,6 +78,12 @@ mlcli/
 │   │   ├── tf_dnn_trainer.py
 │   │   ├── tf_cnn_trainer.py
 │   │   └── tf_rnn_trainer.py
+│   ├── tuner/                       # 🆕 Hyperparameter Tuning
+│   │   ├── __init__.py
+│   │   ├── base_tuner.py
+│   │   ├── grid_tuner.py
+│   │   ├── random_tuner.py
+│   │   └── optuna_tuner.py
 │   ├── utils/
 │   │   ├── __init__.py
 │   │   ├── io.py
@@ -254,7 +265,66 @@ mlcli train --config configs/tf_dnn_config.json --epochs 50 --batch-size 64
 
 ---
 
-### 3. Evaluate Models
+### 3. 🆕 Hyperparameter Tuning
+
+Tune model hyperparameters using Grid Search, Random Search, or Bayesian Optimization.
+
+#### List Available Tuning Methods
+
+```bash
+mlcli list-tuners
+```
+
+**Output:**
+```
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Method   ┃ Name                             ┃ Best For                                     ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ grid     │ Grid Search                      │ Small parameter spaces with discrete values  │
+│ random   │ Random Search                    │ Large parameter spaces, continuous params    │
+│ bayesian │ Bayesian Optimization (Optuna)   │ Expensive evaluations, complex param spaces  │
+└──────────┴──────────────────────────────────┴──────────────────────────────────────────────┘
+```
+
+#### Tune with Grid Search
+
+```bash
+mlcli tune --config configs/tune_rf_config.json --method grid --cv 5
+```
+
+#### Tune with Random Search
+
+```bash
+mlcli tune --config configs/tune_rf_config.json --method random --n-trials 100 --cv 5
+```
+
+#### Tune with Bayesian Optimization (Optuna)
+
+```bash
+mlcli tune --config configs/tune_xgb_config.json --method bayesian --n-trials 200 --scoring accuracy
+```
+
+#### Tune and Train Best Model
+
+```bash
+mlcli tune --config configs/tune_rf_config.json --method random --n-trials 50 --train-best
+```
+
+#### Tune Options
+
+| Option | Description |
+|--------|-------------|
+| `--config`, `-c` | Path to tuning configuration file |
+| `--method`, `-m` | Tuning method: `grid`, `random`, or `bayesian` |
+| `--n-trials`, `-n` | Number of trials (for random/bayesian) |
+| `--cv` | Number of cross-validation folds |
+| `--scoring`, `-s` | Metric to optimize: `accuracy`, `f1`, `roc_auc`, `precision`, `recall` |
+| `--output`, `-o` | Path to save tuning results (JSON) |
+| `--train-best` | Train a model with best params after tuning |
+
+---
+
+### 4. Evaluate Models
 
 Evaluate a saved model on test data:
 
@@ -282,7 +352,7 @@ mlcli eval --model-path artifacts/model.h5 --data-path data/test.csv --model-typ
 
 ---
 
-### 4. Experiment Tracking Commands
+### 5. Experiment Tracking Commands
 
 #### List All Experiment Runs
 
@@ -525,6 +595,93 @@ Configuration files define the model, dataset, training parameters, and output s
 
 ---
 
+## 🔧 Hyperparameter Tuning Configuration
+
+Tuning configurations include a `tuning.param_space` section that defines the search space.
+
+### Grid Search Configuration
+
+For grid search, use lists of discrete values:
+
+```json
+{
+  "model": {
+    "type": "random_forest",
+    "params": {}
+  },
+  "dataset": {
+    "path": "data/train.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "tuning": {
+    "param_space": {
+      "n_estimators": [50, 100, 200, 300],
+      "max_depth": [5, 10, 15, 20, null],
+      "min_samples_split": [2, 5, 10],
+      "min_samples_leaf": [1, 2, 4],
+      "max_features": ["sqrt", "log2"]
+    }
+  },
+  "output": {
+    "model_dir": "artifacts",
+    "save_formats": ["pickle", "joblib"]
+  }
+}
+```
+
+### Random/Bayesian Search Configuration
+
+For random and Bayesian search, use distribution specifications:
+
+```json
+{
+  "model": {
+    "type": "xgboost",
+    "params": {}
+  },
+  "dataset": {
+    "path": "data/train.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "tuning": {
+    "param_space": {
+      "n_estimators": {"type": "int", "low": 50, "high": 500},
+      "max_depth": {"type": "int", "low": 3, "high": 15},
+      "learning_rate": {"type": "loguniform", "low": 0.01, "high": 0.3},
+      "subsample": {"type": "uniform", "low": 0.6, "high": 1.0},
+      "colsample_bytree": {"type": "uniform", "low": 0.6, "high": 1.0},
+      "min_child_weight": {"type": "int", "low": 1, "high": 10}
+    }
+  },
+  "output": {
+    "model_dir": "artifacts",
+    "save_formats": ["pickle", "joblib"]
+  }
+}
+```
+
+### Parameter Distribution Types
+
+| Type | Description | Example |
+|------|-------------|---------|
+| `list/tuple` | Discrete choices | `[50, 100, 200]` |
+| `int` | Integer range | `{"type": "int", "low": 1, "high": 100}` |
+| `uniform` | Uniform float | `{"type": "uniform", "low": 0.0, "high": 1.0}` |
+| `loguniform` | Log-uniform | `{"type": "loguniform", "low": 0.001, "high": 1.0}` |
+| `categorical` | Choice | `{"type": "categorical", "choices": ["a", "b"]}` |
+
+---
+
 ## 🏨 Real-World Example: Hotel Booking Cancellation Prediction
 
 ### Step 1: Prepare Your Data
@@ -727,6 +884,13 @@ X_scaled = scaler.fit_transform(X)
 pip install skl2onnx
 ```
 
+#### 6. Optuna Not Found
+
+**Solution:** Install optuna for Bayesian optimization:
+```bash
+pip install optuna
+```
+
 ---
 
 ## 📚 Quick Reference
@@ -736,7 +900,11 @@ pip install skl2onnx
 | Install mlcli | `pip install -e .` |
 | Show help | `mlcli --help` |
 | List models | `mlcli list-models` |
+| List tuners | `mlcli list-tuners` |
 | Train model | `mlcli train --config <config.json>` |
+| **Tune hyperparameters** | `mlcli tune --config <config.json> --method random` |
+| Tune with Bayesian | `mlcli tune -c <config> -m bayesian -n 100` |
+| Tune and train best | `mlcli tune -c <config> -m random --train-best` |
 | Evaluate model | `mlcli eval --model-path <path> --data-path <path> --model-type <type>` |
 | List runs | `mlcli list-runs` |
 | Show run details | `mlcli show-run <run-id>` |

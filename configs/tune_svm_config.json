@@ -1,0 +1,27 @@
+{
+  "model": {
+    "type": "svm",
+    "params": {}
+  },
+  "dataset": {
+    "path": "data/hotel_bookings_processed.csv",
+    "type": "csv",
+    "target_column": "is_canceled"
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "tuning": {
+    "param_space": {
+      "C": {"type": "loguniform", "low": 0.01, "high": 100},
+      "kernel": ["rbf", "linear", "poly"],
+      "gamma": {"type": "categorical", "choices": ["scale", "auto"]},
+      "degree": [2, 3, 4]
+    }
+  },
+  "output": {
+    "model_dir": "artifacts",
+    "save_formats": ["pickle", "joblib"]
+  }
+}

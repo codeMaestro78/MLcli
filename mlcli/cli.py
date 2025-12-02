@@ -2,14 +2,14 @@
 MLCLI Command Line Interface
 
 Main CLI application with commands for training, evaluation,
-model management, and interactive UI.
+model management, hyperparameter tuning, and interactive UI.
 """
 
 import typer
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 from rich import print as rprint
 from pathlib import Path
 from typing import Optional, List
@@ -19,7 +19,7 @@ import sys
 # Initialize Typer app
 app = typer.Typer(
     name="mlcli",
-    help="Production ML/DL CLI for training, evaluation, and experiment tracking",
+    help="Production ML/DL CLI for training, evaluation, hyperparameter tuning, and experiment tracking",
     add_completion=False
 )
 
@@ -262,6 +262,241 @@ def train(
         raise typer.Exit(1)
 
 
+@app.command("tune")
+def tune(
+    config: Path = typer.Option(
+        ...,
+        "--config", "-c",
+        help="Path to tuning configuration file (JSON or YAML)",
+        exists=True
+    ),
+    method: str = typer.Option(
+        "random",
+        "--method", "-m",
+        help="Tuning method: grid, random, or bayesian"
+    ),
+    n_trials: int = typer.Option(
+        50,
+        "--n-trials", "-n",
+        help="Number of trials/iterations for random/bayesian search"
+    ),
+    cv: int = typer.Option(
+        5,
+        "--cv",
+        help="Number of cross-validation folds"
+    ),
+    scoring: str = typer.Option(
+        "accuracy",
+        "--scoring", "-s",
+        help="Metric to optimize (accuracy, f1, roc_auc, precision, recall)"
+    ),
+    output: Optional[Path] = typer.Option(
+        None,
+        "--output", "-o",
+        help="Path to save tuning results (JSON)"
+    ),
+    train_best: bool = typer.Option(
+        False,
+        "--train-best",
+        help="Train a model with the best parameters after tuning"
+    ),
+    verbose: bool = typer.Option(
+        True,
+        "--verbose/--quiet", "-v/-q",
+        help="Verbose output"
+    )
+):
+    """
+    Tune hyperparameters using Grid Search, Random Search, or Bayesian Optimization.
+
+    Example:
+        mlcli tune --config configs/tune_rf_config.json --method random --n-trials 100
+        mlcli tune -c configs/tune_logistic.json -m grid --cv 5
+        mlcli tune -c configs/tune_xgb.json -m bayesian -n 200 --train-best
+    """
+    from mlcli.config.loader import ConfigLoader
+    from mlcli.utils.io import load_data
+    from mlcli.utils.logger import setup_logger
+    from mlcli.tuner import get_tuner
+    import numpy as np
+
+    log_level = "INFO" if verbose else "WARNING"
+    setup_logger("mlcli", level=log_level)
+
+    console.print(Panel.fit(
+        "[bold magenta]MLCLI Hyperparameter Tuning[/bold magenta]",
+        border_style="magenta"
+    ))
+
+    try:
+        # Load configuration
+        console.print(f"\n[cyan]Loading tuning configuration from:[/cyan] {config}")
+        config_loader = ConfigLoader(config)
+
+        # Get model type
+        model_type = config_loader.get_model_type()
+        registry = get_registry()
+
+        if model_type not in registry:
+            console.print(f"[red]Error:[/red] Unknown model type '{model_type}'")
+            console.print(f"Available models: {', '.join(registry.list_models())}")
+            raise typer.Exit(1)
+
+        metadata = registry.get_metadata(model_type)
+        framework = metadata["framework"]
+
+        console.print(f"[green]Model type:[/green] {model_type}")
+        console.print(f"[green]Framework:[/green] {framework}")
+        console.print(f"[green]Tuning method:[/green] {method}")
+        console.print(f"[green]Trials:[/green] {n_trials}")
+        console.print(f"[green]CV Folds:[/green] {cv}")
+        console.print(f"[green]Scoring:[/green] {scoring}")
+
+        # Load dataset
+        dataset_config = config_loader.get_dataset_config()
+        console.print(f"\n[cyan]Loading dataset from:[/cyan] {dataset_config['path']}")
+
+        X, y = load_data(
+            data_path=dataset_config["path"],
+            data_type=dataset_config.get("type", "csv"),
+            target_column=dataset_config.get("target_column"),
+            features=dataset_config.get("features")
+        )
+
+        console.print(f"[green]Dataset shape:[/green] X={X.shape}, y={y.shape}")
+
+        # Get parameter space from config
+        param_space = config_loader.config.get("tuning", {}).get("param_space", {})
+        
+        if not param_space:
+            console.print("[red]Error:[/red] No param_space defined in tuning configuration")
+            console.print("[yellow]Add a 'tuning.param_space' section to your config file[/yellow]")
+            raise typer.Exit(1)
+
+        console.print(f"\n[cyan]Parameter Space:[/cyan]")
+        for param, values in param_space.items():
+            console.print(f"  {param}: {values}")
+
+        # Get trainer class
+        trainer_class = registry.get(model_type)
+        base_config = config_loader.config.get("model", {})
+
+        # Create tuner
+        console.print(f"\n[bold cyan]Starting {method.upper()} hyperparameter tuning...[/bold cyan]\n")
+
+        tuner = get_tuner(
+            method=method,
+            param_space=param_space,
+            n_trials=n_trials,
+            scoring=scoring,
+            cv=cv,
+            verbose=2 if verbose else 0,
+            random_state=config_loader.get_training_config().get("random_state", 42)
+        )
+
+        # Run tuning
+        results = tuner.tune(
+            trainer_class=trainer_class,
+            X=X,
+            y=y,
+            trainer_config=base_config
+        )
+
+        # Display results
+        console.print("\n")
+        
+        # Best parameters table
+        best_params_table = Table(title="Best Hyperparameters", show_header=True, header_style="bold green")
+        best_params_table.add_column("Parameter", style="cyan")
+        best_params_table.add_column("Value", style="green")
+
+        for param, value in results["best_params"].items():
+            if isinstance(value, float):
+                best_params_table.add_row(param, f"{value:.6f}")
+            else:
+                best_params_table.add_row(param, str(value))
+
+        console.print(best_params_table)
+
+        # Summary panel
+        console.print(Panel.fit(
+            f"[bold green]Tuning Complete![/bold green]\n\n"
+            f"Best Score ({scoring}): {results['best_score']:.4f}\n"
+            f"Total Trials: {len(tuner.tuning_history_)}\n"
+            f"Duration: {results['duration']:.1f}s",
+            title="Summary",
+            border_style="green"
+        ))
+
+        # Top 5 results
+        top_results = tuner.get_top_n_params(5)
+        if top_results:
+            top_table = Table(title="Top 5 Parameter Combinations", show_header=True)
+            top_table.add_column("Rank", style="yellow")
+            top_table.add_column("Score", style="green")
+            top_table.add_column("Parameters", style="cyan")
+
+            for i, result in enumerate(top_results, 1):
+                params_str = ", ".join(f"{k}={v}" for k, v in result["params"].items())
+                top_table.add_row(
+                    str(i),
+                    f"{result['score']:.4f}",
+                    params_str[:60] + "..." if len(params_str) > 60 else params_str
+                )
+
+            console.print(top_table)
+
+        # Save results
+        if output:
+            tuner.save_results(output)
+            console.print(f"\n[green]Results saved to:[/green] {output}")
+        else:
+            # Default save location
+            default_output = Path("runs") / f"tuning_{model_type}_{method}.json"
+            tuner.save_results(default_output)
+            console.print(f"\n[green]Results saved to:[/green] {default_output}")
+
+        # Train with best params if requested
+        if train_best:
+            console.print("\n[bold cyan]Training model with best parameters...[/bold cyan]")
+            
+            # Update config with best params
+            best_config = {**base_config, "params": results["best_params"]}
+            
+            # Create and train
+            from sklearn.model_selection import train_test_split
+            
+            training_config = config_loader.get_training_config()
+            test_size = training_config.get("test_size", 0.2)
+            random_state = training_config.get("random_state", 42)
+
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=test_size, random_state=random_state
+            )
+
+            trainer = trainer_class(config=best_config)
+            trainer.train(X_train, y_train, X_test, y_test)
+            
+            test_metrics = trainer.evaluate(X_test, y_test)
+            
+            console.print(f"\n[green]Final Model Test Accuracy:[/green] {test_metrics.get('accuracy', 0):.4f}")
+
+            # Save model
+            output_config = config_loader.get_output_config()
+            model_dir = Path(output_config.get("model_dir", "artifacts"))
+            save_formats = output_config.get("save_formats", ["pickle"])
+            
+            saved_paths = trainer.save(model_dir, save_formats)
+            for fmt, path in saved_paths.items():
+                console.print(f"[green]Saved {fmt}:[/green] {path}")
+
+    except Exception as e:
+        console.print(f"\n[red]Error during tuning:[/red] {str(e)}")
+        if verbose:
+            console.print_exception()
+        raise typer.Exit(1)
+
+
 @app.command("eval")
 def evaluate(
     model_path: Path = typer.Option(
@@ -424,6 +659,41 @@ def list_models(
 
     console.print(table)
     console.print(f"\n[dim]Total: {len(models)} models[/dim]")
+
+
+@app.command("list-tuners")
+def list_tuners():
+    """
+    List all available hyperparameter tuning methods.
+
+    Example:
+        mlcli list-tuners
+    """
+    from mlcli.tuner import TunerFactory
+
+    console.print(Panel.fit(
+        "[bold magenta]Available Tuning Methods[/bold magenta]",
+        border_style="magenta"
+    ))
+
+    table = Table(show_header=True, header_style="bold cyan")
+    table.add_column("Method", style="green")
+    table.add_column("Name", style="yellow")
+    table.add_column("Best For", style="magenta")
+    table.add_column("Description")
+
+    for method in TunerFactory.list_methods():
+        info = TunerFactory.get_method_info(method)
+        table.add_row(
+            method,
+            info.get("name", method),
+            info.get("best_for", ""),
+            info.get("description", "")
+        )
+
+    console.print(table)
+
+    console.print("\n[dim]Usage: mlcli tune --config <config.json> --method <method>[/dim]")
 
 
 @app.command("list-runs")
