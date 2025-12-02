@@ -367,7 +367,7 @@ def tune(
 
         # Get parameter space from config
         param_space = config_loader.config.get("tuning", {}).get("param_space", {})
-        
+
         if not param_space:
             console.print("[red]Error:[/red] No param_space defined in tuning configuration")
             console.print("[yellow]Add a 'tuning.param_space' section to your config file[/yellow]")
@@ -404,7 +404,7 @@ def tune(
 
         # Display results
         console.print("\n")
-        
+
         # Best parameters table
         best_params_table = Table(title="Best Hyperparameters", show_header=True, header_style="bold green")
         best_params_table.add_column("Parameter", style="cyan")
@@ -459,13 +459,13 @@ def tune(
         # Train with best params if requested
         if train_best:
             console.print("\n[bold cyan]Training model with best parameters...[/bold cyan]")
-            
+
             # Update config with best params
             best_config = {**base_config, "params": results["best_params"]}
-            
+
             # Create and train
             from sklearn.model_selection import train_test_split
-            
+
             training_config = config_loader.get_training_config()
             test_size = training_config.get("test_size", 0.2)
             random_state = training_config.get("random_state", 42)
@@ -476,16 +476,16 @@ def tune(
 
             trainer = trainer_class(config=best_config)
             trainer.train(X_train, y_train, X_test, y_test)
-            
+
             test_metrics = trainer.evaluate(X_test, y_test)
-            
+
             console.print(f"\n[green]Final Model Test Accuracy:[/green] {test_metrics.get('accuracy', 0):.4f}")
 
             # Save model
             output_config = config_loader.get_output_config()
             model_dir = Path(output_config.get("model_dir", "artifacts"))
             save_formats = output_config.get("save_formats", ["pickle"])
-            
+
             saved_paths = trainer.save(model_dir, save_formats)
             for fmt, path in saved_paths.items():
                 console.print(f"[green]Saved {fmt}:[/green] {path}")

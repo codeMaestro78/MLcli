@@ -13,7 +13,7 @@ from mlcli.tuner.tuner_factory import TunerFactory, get_tuner
 
 __all__ = [
     "BaseTuner",
-    "GridSearchTuner", 
+    "GridSearchTuner",
     "RandomSearchTuner",
     "OptunaTuner",
     "TunerFactory",

@@ -1,7 +1,7 @@
 """
 Optuna-based Bayesian Optimization Tuner
 
-Uses Optuna for efficient hyperparameter search with Tree-structured 
+Uses Optuna for efficient hyperparameter search with Tree-structured
 Parzen Estimator (TPE) algorithm.
 """
 
@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 class OptunaTuner(BaseTuner):
     """
     Optuna-based Bayesian Optimization tuner.
-    
-    Uses Tree-structured Parzen Estimator (TPE) for intelligent 
+
+    Uses Tree-structured Parzen Estimator (TPE) for intelligent
     hyperparameter search. Most efficient for large search spaces.
     """
 
@@ -39,7 +39,7 @@ class OptunaTuner(BaseTuner):
     ):
         """
         Initialize Optuna tuner.
-        
+
         Args:
             param_space: Dictionary mapping parameter names to search specs
                         Example: {
@@ -57,27 +57,27 @@ class OptunaTuner(BaseTuner):
             pruning: Whether to use early stopping for unpromising trials
         """
         super().__init__(param_space, scoring, cv, n_jobs, verbose, random_state)
-        
+
         self.n_trials = n_trials
         self.timeout = timeout
         self.pruning = pruning
         self.study_ = None
-        
+
         # Check if optuna is available
         try:
             import optuna
             self.optuna = optuna
-            
+
             # Set optuna verbosity
             if verbose < 2:
                 optuna.logging.set_verbosity(optuna.logging.WARNING)
-            
+
         except ImportError:
             raise ImportError(
                 "Optuna is required for Bayesian optimization. "
                 "Install it with: pip install optuna"
             )
-        
+
         logger.info(f"Optuna tuner initialized with {n_trials} trials")
 
     def tune(
@@ -89,30 +89,30 @@ class OptunaTuner(BaseTuner):
     ) -> Dict[str, Any]:
         """
         Perform Bayesian optimization hyperparameter tuning.
-        
+
         Args:
             trainer_class: The trainer class to tune
             X: Feature matrix
             y: Target vector
             trainer_config: Base configuration for trainer
-            
+
         Returns:
             Dictionary containing best parameters and results
         """
         self.start_time_ = datetime.now()
         trainer_config = trainer_config or {}
-        
+
         if self.verbose >= 1:
             logger.info(f"Starting Optuna Bayesian Optimization with {self.n_trials} trials")
             logger.info(f"Scoring: {self.scoring}, CV: {self.cv}-fold")
-        
+
         # Cross-validation splitter
         cv_splitter = StratifiedKFold(
             n_splits=self.cv,
             shuffle=True,
             random_state=self.random_state
         )
-        
+
         # Store references for objective function
         self._trainer_class = trainer_class
         self._trainer_config = trainer_config
@@ -120,16 +120,16 @@ class OptunaTuner(BaseTuner):
         self._y = y
         self._cv_splitter = cv_splitter
         self._trial_count = 0
-        
+
         # Create Optuna study
         sampler = self.optuna.samplers.TPESampler(seed=self.random_state)
-        
+
         self.study_ = self.optuna.create_study(
             direction="maximize",
             sampler=sampler,
             study_name="mlcli_hyperparameter_tuning"
         )
-        
+
         # Run optimization
         self.study_.optimize(
             self._objective,
@@ -138,13 +138,13 @@ class OptunaTuner(BaseTuner):
             n_jobs=self.n_jobs,
             show_progress_bar=(self.verbose >= 1)
         )
-        
+
         self.end_time_ = datetime.now()
-        
+
         # Store results
         self.best_params_ = self.study_.best_params
         self.best_score_ = self.study_.best_value
-        
+
         self.cv_results_ = {
             "all_results": [
                 {
@@ -156,12 +156,12 @@ class OptunaTuner(BaseTuner):
                 for trial in self.study_.trials
             ],
             "n_trials": len(self.study_.trials),
-            "n_completed": len([t for t in self.study_.trials 
+            "n_completed": len([t for t in self.study_.trials
                                if t.state == self.optuna.trial.TrialState.COMPLETE]),
-            "n_pruned": len([t for t in self.study_.trials 
+            "n_pruned": len([t for t in self.study_.trials
                            if t.state == self.optuna.trial.TrialState.PRUNED])
         }
-        
+
         if self.verbose >= 1:
             duration = self.get_tuning_duration()
             logger.info(f"\nOptuna Optimization Complete!")
@@ -170,7 +170,7 @@ class OptunaTuner(BaseTuner):
             logger.info(f"Total Duration: {duration:.1f}s")
             logger.info(f"Trials: {self.cv_results_['n_completed']} completed, "
                        f"{self.cv_results_['n_pruned']} pruned")
-        
+
         return {
             "best_params": self.best_params_,
             "best_score": self.best_score_,
@@ -181,29 +181,29 @@ class OptunaTuner(BaseTuner):
     def _objective(self, trial) -> float:
         """
         Optuna objective function.
-        
+
         Args:
             trial: Optuna trial object
-            
+
         Returns:
             Score to maximize
         """
         self._trial_count += 1
         trial_start = datetime.now()
-        
+
         # Sample parameters
         params = self._suggest_params(trial)
-        
+
         if self.verbose >= 2:
             logger.info(f"Trial {self._trial_count}: {params}")
-        
+
         try:
             # Create trainer config
             config = {**self._trainer_config, "params": params}
-            
+
             # Cross-validation with optional pruning
             scores = []
-            
+
             for fold_idx, (train_idx, val_idx) in enumerate(
                 self._cv_splitter.split(self._X, self._y)
             ):
@@ -211,35 +211,35 @@ class OptunaTuner(BaseTuner):
                 X_val = self._X[val_idx]
                 y_train = self._y[train_idx]
                 y_val = self._y[val_idx]
-                
+
                 # Train
                 trainer = self._trainer_class(config=config)
-                
+
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
                     trainer.train(X_train, y_train, X_val, y_val)
-                
+
                 # Evaluate
                 metrics = trainer.evaluate(X_val, y_val)
                 score = self._get_score_from_metrics(metrics)
                 scores.append(score)
-                
+
                 # Pruning: report intermediate value
                 if self.pruning:
                     intermediate_score = np.mean(scores)
                     trial.report(intermediate_score, fold_idx)
-                    
+
                     if trial.should_prune():
                         raise self.optuna.TrialPruned()
-            
+
             mean_score = np.mean(scores)
-            
+
             # Log trial
             trial_duration = (datetime.now() - trial_start).total_seconds()
             self._log_trial(self._trial_count, params, mean_score, trial_duration)
-            
+
             return mean_score
-            
+
         except self.optuna.TrialPruned:
             raise
         except Exception as e:
@@ -249,20 +249,20 @@ class OptunaTuner(BaseTuner):
     def _suggest_params(self, trial) -> Dict[str, Any]:
         """
         Suggest parameters using Optuna trial.
-        
+
         Args:
             trial: Optuna trial object
-            
+
         Returns:
             Dictionary of suggested parameters
         """
         params = {}
-        
+
         for param_name, param_config in self.param_space.items():
             params[param_name] = self._suggest_single_param(
                 trial, param_name, param_config
             )
-        
+
         return params
 
     def _suggest_single_param(
@@ -273,57 +273,57 @@ class OptunaTuner(BaseTuner):
     ) -> Any:
         """
         Suggest a single parameter value.
-        
+
         Args:
             trial: Optuna trial object
             param_name: Parameter name
             param_config: Parameter configuration
-            
+
         Returns:
             Suggested value
         """
         # List/tuple: categorical choice
         if isinstance(param_config, (list, tuple)):
             return trial.suggest_categorical(param_name, param_config)
-        
+
         # Dictionary: distribution specification
         if isinstance(param_config, dict):
             dist_type = param_config.get("type", "float")
-            
+
             if dist_type in ["categorical", "choice"]:
                 choices = param_config.get("choices", param_config.get("values", []))
                 return trial.suggest_categorical(param_name, choices)
-            
+
             elif dist_type == "int":
                 low = param_config.get("low", 1)
                 high = param_config.get("high", 100)
                 step = param_config.get("step", 1)
                 return trial.suggest_int(param_name, low, high, step=step)
-            
+
             elif dist_type == "int_uniform":
                 low = param_config.get("low", 1)
                 high = param_config.get("high", 100)
                 return trial.suggest_int(param_name, low, high)
-            
+
             elif dist_type == "float":
                 low = param_config.get("low", 0.0)
                 high = param_config.get("high", 1.0)
                 step = param_config.get("step")
                 return trial.suggest_float(param_name, low, high, step=step)
-            
+
             elif dist_type == "uniform":
                 low = param_config.get("low", 0.0)
                 high = param_config.get("high", 1.0)
                 return trial.suggest_float(param_name, low, high)
-            
+
             elif dist_type == "loguniform":
                 low = param_config.get("low", 1e-5)
                 high = param_config.get("high", 1.0)
                 return trial.suggest_float(param_name, low, high, log=True)
-            
+
             else:
                 raise ValueError(f"Unknown distribution type: {dist_type}")
-        
+
         # Single value: return as constant
         return param_config
 
@@ -338,9 +338,9 @@ class OptunaTuner(BaseTuner):
             "precision": "precision",
             "recall": "recall"
         }
-        
+
         metric_key = scoring_map.get(self.scoring, self.scoring)
-        
+
         if metric_key in metrics:
             return metrics[metric_key]
         elif "accuracy" in metrics:
@@ -372,13 +372,13 @@ class OptunaTuner(BaseTuner):
     def get_importance(self) -> Dict[str, float]:
         """
         Get hyperparameter importance scores.
-        
+
         Returns:
             Dictionary mapping parameter names to importance scores
         """
         if self.study_ is None:
             raise RuntimeError("No tuning performed yet. Call tune() first.")
-        
+
         try:
             importance = self.optuna.importance.get_param_importances(self.study_)
             return dict(importance)
@@ -389,13 +389,13 @@ class OptunaTuner(BaseTuner):
     def plot_optimization_history(self, save_path: Optional[str] = None):
         """
         Plot optimization history.
-        
+
         Args:
             save_path: Optional path to save the plot
         """
         if self.study_ is None:
             raise RuntimeError("No tuning performed yet. Call tune() first.")
-        
+
         try:
             fig = self.optuna.visualization.plot_optimization_history(self.study_)
             if save_path:
@@ -408,13 +408,13 @@ class OptunaTuner(BaseTuner):
     def plot_param_importances(self, save_path: Optional[str] = None):
         """
         Plot parameter importances.
-        
+
         Args:
             save_path: Optional path to save the plot
         """
         if self.study_ is None:
             raise RuntimeError("No tuning performed yet. Call tune() first.")
-        
+
         try:
             fig = self.optuna.visualization.plot_param_importances(self.study_)
             if save_path:

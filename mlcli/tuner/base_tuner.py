@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class BaseTuner(ABC):
     """
     Abstract base class for hyperparameter tuners.
-    
+
     All tuning strategies must implement: tune(), get_best_params(), get_results()
     """
 
@@ -33,7 +33,7 @@ class BaseTuner(ABC):
     ):
         """
         Initialize base tuner.
-        
+
         Args:
             param_space: Dictionary defining the hyperparameter search space
             scoring: Metric to optimize ('accuracy', 'f1', 'roc_auc', 'precision', 'recall')
@@ -48,17 +48,17 @@ class BaseTuner(ABC):
         self.n_jobs = n_jobs
         self.verbose = verbose
         self.random_state = random_state
-        
+
         # Results storage
         self.best_params_: Optional[Dict[str, Any]] = None
         self.best_score_: Optional[float] = None
         self.cv_results_: Optional[Dict[str, Any]] = None
         self.tuning_history_: List[Dict[str, Any]] = []
-        
+
         # Timing
         self.start_time_: Optional[datetime] = None
         self.end_time_: Optional[datetime] = None
-        
+
         logger.debug(f"Initialized {self.__class__.__name__} with {len(param_space)} parameters")
 
     @abstractmethod
@@ -71,13 +71,13 @@ class BaseTuner(ABC):
     ) -> Dict[str, Any]:
         """
         Perform hyperparameter tuning.
-        
+
         Args:
             trainer_class: The trainer class to tune
             X: Feature matrix
             y: Target vector
             trainer_config: Base configuration for trainer
-            
+
         Returns:
             Dictionary containing best parameters and results
         """
@@ -87,7 +87,7 @@ class BaseTuner(ABC):
     def get_best_params(self) -> Dict[str, Any]:
         """
         Get the best hyperparameters found.
-        
+
         Returns:
             Dictionary of best parameters
         """
@@ -97,7 +97,7 @@ class BaseTuner(ABC):
     def get_results(self) -> Dict[str, Any]:
         """
         Get detailed tuning results.
-        
+
         Returns:
             Dictionary with all trial results
         """
@@ -106,7 +106,7 @@ class BaseTuner(ABC):
     def get_best_score(self) -> float:
         """
         Get the best score achieved.
-        
+
         Returns:
             Best cross-validation score
         """
@@ -117,7 +117,7 @@ class BaseTuner(ABC):
     def get_tuning_duration(self) -> float:
         """
         Get total tuning duration in seconds.
-        
+
         Returns:
             Duration in seconds
         """
@@ -128,13 +128,13 @@ class BaseTuner(ABC):
     def save_results(self, filepath: Path) -> None:
         """
         Save tuning results to JSON file.
-        
+
         Args:
             filepath: Path to save results
         """
         filepath = Path(filepath)
         filepath.parent.mkdir(parents=True, exist_ok=True)
-        
+
         results = {
             "tuner_type": self.__class__.__name__,
             "param_space": self._serialize_param_space(),
@@ -146,35 +146,35 @@ class BaseTuner(ABC):
             "duration_seconds": self.get_tuning_duration(),
             "timestamp": datetime.now().isoformat()
         }
-        
+
         with open(filepath, 'w') as f:
             json.dump(results, f, indent=2, default=str)
-        
+
         logger.info(f"Saved tuning results to {filepath}")
 
     def load_results(self, filepath: Path) -> Dict[str, Any]:
         """
         Load tuning results from JSON file.
-        
+
         Args:
             filepath: Path to results file
-            
+
         Returns:
             Loaded results dictionary
         """
         with open(filepath, 'r') as f:
             results = json.load(f)
-        
+
         self.best_params_ = results.get("best_params")
         self.best_score_ = results.get("best_score")
         self.tuning_history_ = results.get("tuning_history", [])
-        
+
         return results
 
     def _serialize_param_space(self) -> Dict[str, Any]:
         """
         Convert param space to JSON-serializable format.
-        
+
         Returns:
             Serializable param space
         """
@@ -195,7 +195,7 @@ class BaseTuner(ABC):
     ) -> None:
         """
         Log a trial result.
-        
+
         Args:
             trial_num: Trial number
             params: Parameters used
@@ -210,29 +210,29 @@ class BaseTuner(ABC):
             "timestamp": datetime.now().isoformat()
         }
         self.tuning_history_.append(trial_result)
-        
+
         if self.verbose >= 2:
             logger.info(f"Trial {trial_num}: score={score:.4f}, params={params}")
 
     def get_top_n_params(self, n: int = 5) -> List[Dict[str, Any]]:
         """
         Get top N parameter combinations by score.
-        
+
         Args:
             n: Number of top results to return
-            
+
         Returns:
             List of top parameter combinations with scores
         """
         if not self.tuning_history_:
             return []
-        
+
         sorted_history = sorted(
             self.tuning_history_,
             key=lambda x: x["score"],
             reverse=True
         )
-        
+
         return sorted_history[:n]
 
     def __repr__(self) -> str:
