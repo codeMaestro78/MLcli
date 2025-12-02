@@ -46,7 +46,9 @@ htmlcov/
 mlcli/models/*.pkl
 mlcli/models/*.onnx
 mlcli/models/*.h5
+mlcli/models/*.keras
 mlcli/models/saved_model/
+models/
 runs/
 *.log
 
