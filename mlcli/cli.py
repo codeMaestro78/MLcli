@@ -2,7 +2,7 @@
 MLCLI Command Line Interface
 
 Main CLI application with commands for training, evaluation,
-model management, hyperparameter tuning, and interactive UI.
+model management, hyperparameter tuning, model explainability, and interactive UI.
 """
 
 import typer
@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Optional, List
 import json
 import sys
+import numpy as np
 
 # Initialize Typer app
 app = typer.Typer(
@@ -861,6 +862,467 @@ def export_runs(
 
     tracker.export_to_csv(str(output))
     console.print(f"[green]Exported {len(tracker)} runs to {output}[/green]")
+
+
+@app.command("explain")
+def explain(
+    model_path: Path = typer.Option(
+        ...,
+        "--model", "-m",
+        help="Path to saved model file",
+        exists=True
+    ),
+    data_path: Path = typer.Option(
+        ...,
+        "--data", "-d",
+        help="Path to data for explanation",
+        exists=True
+    ),
+    model_type: str = typer.Option(
+        ...,
+        "--type", "-t",
+        help="Model type (e.g., logistic_regression, random_forest, xgboost)"
+    ),
+    method: str = typer.Option(
+        "shap",
+        "--method", "-e",
+        help="Explanation method: shap or lime"
+    ),
+    model_format: str = typer.Option(
+        "pickle",
+        "--format", "-f",
+        help="Model format (pickle, joblib)"
+    ),
+    target_column: Optional[str] = typer.Option(
+        None,
+        "--target",
+        help="Target column name in data"
+    ),
+    num_samples: int = typer.Option(
+        100,
+        "--num-samples", "-n",
+        help="Number of samples to explain"
+    ),
+    output: Optional[Path] = typer.Option(
+        None,
+        "--output", "-o",
+        help="Output path for explanation results (JSON)"
+    ),
+    plot: bool = typer.Option(
+        True,
+        "--plot/--no-plot",
+        help="Generate explanation plot"
+    ),
+    plot_output: Optional[Path] = typer.Option(
+        None,
+        "--plot-output", "-p",
+        help="Output path for plot (PNG)"
+    ),
+    verbose: bool = typer.Option(
+        True,
+        "--verbose/--quiet", "-v/-q",
+        help="Verbose output"
+    )
+):
+    """
+    Explain model predictions using SHAP or LIME.
+
+    Example:
+        mlcli explain --model models/rf_model.pkl --data data/train.csv --type random_forest
+        mlcli explain -m models/xgb_model.pkl -d data/test.csv -t xgboost --method lime
+        mlcli explain -m models/logistic_model.pkl -d data/train.csv -t logistic_regression -e shap --plot-output shap_plot.png
+    """
+    from mlcli.config.loader import ConfigLoader
+    from mlcli.utils.io import load_data
+    from mlcli.utils.logger import setup_logger
+    from mlcli.explainer import ExplainerFactory
+
+    log_level = "INFO" if verbose else "WARNING"
+    setup_logger("mlcli", level=log_level)
+
+    console.print(Panel.fit(
+        "[bold cyan]MLCLI Model Explainability[/bold cyan]",
+        border_style="cyan"
+    ))
+
+    try:
+        # Validate model type
+        registry = get_registry()
+
+        if model_type not in registry:
+            console.print(f"[red]Error:[/red] Unknown model type '{model_type}'")
+            console.print(f"Available models: {', '.join(registry.list_models())}")
+            raise typer.Exit(1)
+
+        metadata = registry.get_metadata(model_type)
+        framework = metadata["framework"]
+
+        # Check for TensorFlow models - not fully supported yet
+        if framework == "tensorflow":
+            console.print("[yellow]Warning:[/yellow] SHAP/LIME support for TensorFlow models is limited.")
+            console.print("[yellow]Results may vary. Consider using Tree-based models for best explanations.[/yellow]")
+
+        console.print(f"[green]Model type:[/green] {model_type}")
+        console.print(f"[green]Framework:[/green] {framework}")
+        console.print(f"[green]Explanation method:[/green] {method.upper()}")
+
+        # Load data
+        console.print(f"\n[cyan]Loading data from:[/cyan] {data_path}")
+
+        X, y = load_data(
+            data_path=data_path,
+            data_type="csv",
+            target_column=target_column
+        )
+
+        # Store feature names if available
+        import pandas as pd
+        df = pd.read_csv(data_path)
+        if target_column and target_column in df.columns:
+            feature_names = [col for col in df.columns if col != target_column]
+        else:
+            feature_names = df.columns.tolist()
+
+        console.print(f"[green]Data shape:[/green] X={X.shape}")
+        console.print(f"[green]Features:[/green] {len(feature_names)}")
+
+        # Load model
+        console.print(f"\n[cyan]Loading model from:[/cyan] {model_path}")
+        trainer = registry.get_trainer(model_type, config={})
+        trainer.load(model_path, model_format)
+
+        # Get the underlying model
+        model = trainer.model
+
+        console.print(f"[green]Model loaded successfully[/green]")
+
+        # Get class names if classification
+        class_names = None
+        if y is not None:
+            unique_classes = np.unique(y)
+            class_names = [str(c) for c in unique_classes]
+
+        # Create explainer
+        console.print(f"\n[bold cyan]Creating {method.upper()} explainer...[/bold cyan]")
+
+        explainer = ExplainerFactory.create(
+            method=method,
+            model=model,
+            feature_names=feature_names,
+            class_names=class_names
+        )
+
+        # Generate explanations
+        console.print(f"\n[cyan]Generating explanations for {min(num_samples, len(X))} samples...[/cyan]")
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+            transient=True
+        ) as progress:
+            progress.add_task(f"Computing {method.upper()} values...", total=None)
+
+            explanation = explainer.explain(
+                X=X[:num_samples],
+                X_background=X,  # Use all data as background
+                max_samples=num_samples
+            )
+
+        # Display results
+        console.print("\n")
+
+        # Feature importance table
+        importance_table = Table(
+            title=f"Feature Importance ({method.upper()})",
+            show_header=True,
+            header_style="bold cyan"
+        )
+        importance_table.add_column("Rank", style="yellow", width=6)
+        importance_table.add_column("Feature", style="green")
+        importance_table.add_column("Importance", style="cyan", justify="right")
+
+        importance = explanation.get("feature_importance", {})
+        for i, (feature, value) in enumerate(list(importance.items())[:15], 1):
+            # Handle both scalar and array values
+            if isinstance(value, (list, np.ndarray)):
+                value = np.mean(value)
+            importance_table.add_row(
+                str(i),
+                feature[:40],
+                f"{value:.6f}"
+            )
+
+        console.print(importance_table)
+
+        # Summary panel
+        console.print(Panel.fit(
+            f"[bold green]Explanation Complete![/bold green]\n\n"
+            f"Method: {method.upper()}\n"
+            f"Samples Analyzed: {explanation.get('n_samples', num_samples)}\n"
+            f"Features: {explanation.get('n_features', len(feature_names))}\n"
+            f"Top Feature: {list(importance.keys())[0] if importance else 'N/A'}",
+            title="Summary",
+            border_style="green"
+        ))
+
+        # Save explanation results
+        if output:
+            explainer.save_explanation(output, format="json")
+            console.print(f"\n[green]Explanation saved to:[/green] {output}")
+        else:
+            default_output = Path("runs") / f"explanation_{model_type}_{method}.json"
+            explainer.save_explanation(default_output, format="json")
+            console.print(f"\n[green]Explanation saved to:[/green] {default_output}")
+
+        # Generate plot
+        if plot:
+            if plot_output:
+                plot_path = plot_output
+            else:
+                plot_path = Path("runs") / f"explanation_{model_type}_{method}_plot.png"
+
+            console.print(f"\n[cyan]Generating plot...[/cyan]")
+
+            try:
+                explainer.plot(
+                    plot_type="bar",
+                    output_path=plot_path,
+                    max_display=15,
+                    X=X[:num_samples]
+                )
+                console.print(f"[green]Plot saved to:[/green] {plot_path}")
+            except Exception as e:
+                console.print(f"[yellow]Warning:[/yellow] Could not generate plot: {e}")
+
+        # Print summary text
+        console.print(f"\n{explainer.get_summary_text()}")
+
+    except Exception as e:
+        console.print(f"\n[red]Error during explanation:[/red] {str(e)}")
+        if verbose:
+            console.print_exception()
+        raise typer.Exit(1)
+
+
+@app.command("explain-instance")
+def explain_instance(
+    model_path: Path = typer.Option(
+        ...,
+        "--model", "-m",
+        help="Path to saved model file",
+        exists=True
+    ),
+    data_path: Path = typer.Option(
+        ...,
+        "--data", "-d",
+        help="Path to data file",
+        exists=True
+    ),
+    model_type: str = typer.Option(
+        ...,
+        "--type", "-t",
+        help="Model type (e.g., logistic_regression, random_forest)"
+    ),
+    instance_idx: int = typer.Option(
+        0,
+        "--instance", "-i",
+        help="Index of instance to explain"
+    ),
+    method: str = typer.Option(
+        "shap",
+        "--method", "-e",
+        help="Explanation method: shap or lime"
+    ),
+    model_format: str = typer.Option(
+        "pickle",
+        "--format", "-f",
+        help="Model format (pickle, joblib)"
+    ),
+    target_column: Optional[str] = typer.Option(
+        None,
+        "--target",
+        help="Target column name in data"
+    ),
+    output: Optional[Path] = typer.Option(
+        None,
+        "--output", "-o",
+        help="Output path for explanation (JSON)"
+    ),
+    verbose: bool = typer.Option(
+        True,
+        "--verbose/--quiet", "-v/-q",
+        help="Verbose output"
+    )
+):
+    """
+    Explain a single prediction using SHAP or LIME.
+
+    Example:
+        mlcli explain-instance --model models/rf_model.pkl --data data/test.csv --type random_forest --instance 0
+        mlcli explain-instance -m models/xgb_model.pkl -d data/test.csv -t xgboost -i 5 -e lime
+    """
+    from mlcli.utils.io import load_data
+    from mlcli.utils.logger import setup_logger
+    from mlcli.explainer import ExplainerFactory
+
+    log_level = "INFO" if verbose else "WARNING"
+    setup_logger("mlcli", level=log_level)
+
+    console.print(Panel.fit(
+        "[bold cyan]MLCLI Instance Explanation[/bold cyan]",
+        border_style="cyan"
+    ))
+
+    try:
+        # Validate model type
+        registry = get_registry()
+
+        if model_type not in registry:
+            console.print(f"[red]Error:[/red] Unknown model type '{model_type}'")
+            raise typer.Exit(1)
+
+        console.print(f"[green]Model type:[/green] {model_type}")
+        console.print(f"[green]Method:[/green] {method.upper()}")
+        console.print(f"[green]Instance:[/green] {instance_idx}")
+
+        # Load data
+        console.print(f"\n[cyan]Loading data from:[/cyan] {data_path}")
+
+        X, y = load_data(
+            data_path=data_path,
+            data_type="csv",
+            target_column=target_column
+        )
+
+        import pandas as pd
+        df = pd.read_csv(data_path)
+        if target_column and target_column in df.columns:
+            feature_names = [col for col in df.columns if col != target_column]
+        else:
+            feature_names = df.columns.tolist()
+
+        if instance_idx >= len(X):
+            console.print(f"[red]Error:[/red] Instance {instance_idx} out of range (max: {len(X)-1})")
+            raise typer.Exit(1)
+
+        # Load model
+        console.print(f"\n[cyan]Loading model...[/cyan]")
+        trainer = registry.get_trainer(model_type, config={})
+        trainer.load(model_path, model_format)
+        model = trainer.model
+
+        # Create explainer
+        explainer = ExplainerFactory.create(
+            method=method,
+            model=model,
+            feature_names=feature_names
+        )
+
+        # Get instance explanation
+        instance = X[instance_idx]
+
+        console.print(f"\n[cyan]Explaining instance {instance_idx}...[/cyan]")
+
+        explanation = explainer.explain_instance(
+            instance=instance,
+            X_background=X
+        )
+
+        # Display instance values
+        console.print("\n[bold]Instance Feature Values:[/bold]")
+        instance_table = Table(show_header=True, header_style="bold cyan")
+        instance_table.add_column("Feature", style="green")
+        instance_table.add_column("Value", style="yellow", justify="right")
+
+        for feat, val in zip(feature_names[:10], instance[:10]):
+            instance_table.add_row(feat, f"{val:.4f}" if isinstance(val, float) else str(val))
+
+        if len(feature_names) > 10:
+            instance_table.add_row("...", "...")
+
+        console.print(instance_table)
+
+        # Display contributions
+        console.print("\n[bold]Feature Contributions:[/bold]")
+        contrib_table = Table(show_header=True, header_style="bold cyan")
+        contrib_table.add_column("Feature", style="green")
+        contrib_table.add_column("Contribution", style="cyan", justify="right")
+        contrib_table.add_column("Direction", style="magenta")
+
+        contributions = explanation.get("feature_contributions", {})
+        for feat, contrib in list(contributions.items())[:10]:
+            direction = "[green]↑ Positive[/green]" if contrib > 0 else "[red]↓ Negative[/red]"
+            contrib_table.add_row(
+                feat[:40],
+                f"{contrib:.6f}",
+                direction
+            )
+
+        console.print(contrib_table)
+
+        # Prediction info
+        if y is not None:
+            actual = y[instance_idx]
+            predicted = trainer.predict(instance.reshape(1, -1))[0]
+
+            console.print(Panel.fit(
+                f"[bold]Prediction Info[/bold]\n\n"
+                f"Actual: {actual}\n"
+                f"Predicted: {predicted}",
+                border_style="blue"
+            ))
+
+        # Save explanation
+        if output:
+            import json
+            with open(output, 'w') as f:
+                json.dump(explanation, f, indent=2, default=str)
+            console.print(f"\n[green]Explanation saved to:[/green] {output}")
+
+        console.print("\n[bold green]Instance explanation complete![/bold green]")
+
+    except Exception as e:
+        console.print(f"\n[red]Error:[/red] {str(e)}")
+        if verbose:
+            console.print_exception()
+        raise typer.Exit(1)
+
+
+@app.command("list-explainers")
+def list_explainers():
+    """
+    List all available explanation methods.
+
+    Example:
+        mlcli list-explainers
+    """
+    from mlcli.explainer import ExplainerFactory
+
+    console.print(Panel.fit(
+        "[bold cyan]Available Explanation Methods[/bold cyan]",
+        border_style="cyan"
+    ))
+
+    table = Table(show_header=True, header_style="bold cyan")
+    table.add_column("Method", style="green")
+    table.add_column("Full Name", style="yellow")
+    table.add_column("Best For", style="magenta")
+    table.add_column("Description")
+
+    for method in ExplainerFactory.list_methods():
+        info = ExplainerFactory.get_method_info(method)
+        table.add_row(
+            method,
+            info.get("full_name", method),
+            info.get("best_for", ""),
+            info.get("description", "")
+        )
+
+    console.print(table)
+
+    console.print("\n[dim]Usage: mlcli explain --model <model.pkl> --data <data.csv> --type <model_type> --method <method>[/dim]")
+    console.print("[dim]       mlcli explain-instance --model <model.pkl> --data <data.csv> --type <model_type> --instance <idx>[/dim]")
 
 
 @app.command("ui")

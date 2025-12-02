@@ -47,6 +47,12 @@
   - Random Search
   - Bayesian Optimization (Optuna)
 
+- **🆕 Model Explainability:**
+  - SHAP (SHapley Additive exPlanations)
+  - LIME (Local Interpretable Model-agnostic Explanations)
+  - Feature importance visualization
+  - Instance-level explanations
+
 - **Unified configuration system** (JSON/YAML)
 - **Automatic Model Registry** (plug-and-play trainers)
 - **Model saving:**
@@ -78,12 +84,18 @@ mlcli/
 │   │   ├── tf_dnn_trainer.py
 │   │   ├── tf_cnn_trainer.py
 │   │   └── tf_rnn_trainer.py
-│   ├── tuner/                       # 🆕 Hyperparameter Tuning
+│   ├── tuner/                       # Hyperparameter Tuning
 │   │   ├── __init__.py
 │   │   ├── base_tuner.py
 │   │   ├── grid_tuner.py
 │   │   ├── random_tuner.py
 │   │   └── optuna_tuner.py
+│   ├── explainer/                   # 🆕 Model Explainability
+│   │   ├── __init__.py
+│   │   ├── base_explainer.py
+│   │   ├── shap_explainer.py
+│   │   ├── lime_explainer.py
+│   │   └── explainer_factory.py
 │   ├── utils/
 │   │   ├── __init__.py
 │   │   ├── io.py
@@ -324,7 +336,82 @@ mlcli tune --config configs/tune_rf_config.json --method random --n-trials 50 --
 
 ---
 
-### 4. Evaluate Models
+### 4. 🆕 Model Explainability (SHAP/LIME)
+
+Understand why your models make predictions using SHAP and LIME.
+
+#### List Available Explainers
+
+```bash
+mlcli list-explainers
+```
+
+**Output:**
+```
+┏━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Method ┃ Full Name                                    ┃ Best For                                  ┃
+┡━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ shap   │ SHapley Additive exPlanations               │ Tree-based models, global explanations    │
+│ lime   │ Local Interpretable Model-agnostic Explanations │ Any model, local explanations         │
+└────────┴─────────────────────────────────────────────┴───────────────────────────────────────────┘
+```
+
+#### Explain Model with SHAP
+
+```bash
+mlcli explain --model models/rf_model.pkl --data data/train.csv --type random_forest --method shap
+```
+
+#### Explain Model with LIME
+
+```bash
+mlcli explain --model models/xgb_model.pkl --data data/train.csv --type xgboost --method lime
+```
+
+#### Explain with Plot Output
+
+```bash
+mlcli explain -m models/rf_model.pkl -d data/train.csv -t random_forest -e shap --plot-output feature_importance.png
+```
+
+#### Explain Single Instance
+
+Understand why a specific prediction was made:
+
+```bash
+mlcli explain-instance --model models/rf_model.pkl --data data/test.csv --type random_forest --instance 0
+```
+
+```bash
+mlcli explain-instance -m models/xgb_model.pkl -d data/test.csv -t xgboost -i 5 -e lime
+```
+
+#### Explainability Options
+
+| Option | Description |
+|--------|-------------|
+| `--model`, `-m` | Path to saved model file |
+| `--data`, `-d` | Path to data file |
+| `--type`, `-t` | Model type (random_forest, xgboost, logistic_regression) |
+| `--method`, `-e` | Explanation method: `shap` or `lime` |
+| `--num-samples`, `-n` | Number of samples to explain (default: 100) |
+| `--output`, `-o` | Path to save explanation results (JSON) |
+| `--plot/--no-plot` | Generate explanation plot |
+| `--plot-output`, `-p` | Path to save plot (PNG) |
+
+#### Understanding SHAP vs LIME
+
+| Feature | SHAP | LIME |
+|---------|------|------|
+| **Type** | Global + Local | Local |
+| **Theory** | Game Theory (Shapley Values) | Local Surrogate Models |
+| **Best For** | Tree models (RF, XGBoost) | Any black-box model |
+| **Speed** | Fast for trees | Slower (samples required) |
+| **Consistency** | Mathematically consistent | Varies by sampling |
+
+---
+
+### 5. Evaluate Models
 
 Evaluate a saved model on test data:
 
@@ -352,7 +439,7 @@ mlcli eval --model-path artifacts/model.h5 --data-path data/test.csv --model-typ
 
 ---
 
-### 5. Experiment Tracking Commands
+### 6. Experiment Tracking Commands
 
 #### List All Experiment Runs
 
@@ -391,7 +478,7 @@ mlcli export-runs --output experiments.csv
 
 ---
 
-### 5. Interactive Terminal UI
+### 7. Interactive Terminal UI
 
 Launch the interactive interface:
 
@@ -891,6 +978,17 @@ pip install skl2onnx
 pip install optuna
 ```
 
+#### 7. SHAP/LIME Not Found
+
+**Solution:** Install SHAP and LIME for model explainability:
+```bash
+pip install shap lime matplotlib
+```
+
+#### 8. SHAP TreeExplainer Error
+
+**Solution:** For non-tree models, SHAP will automatically fall back to KernelExplainer. This is expected behavior.
+
 ---
 
 ## 📚 Quick Reference
@@ -901,10 +999,14 @@ pip install optuna
 | Show help | `mlcli --help` |
 | List models | `mlcli list-models` |
 | List tuners | `mlcli list-tuners` |
+| List explainers | `mlcli list-explainers` |
 | Train model | `mlcli train --config <config.json>` |
 | **Tune hyperparameters** | `mlcli tune --config <config.json> --method random` |
 | Tune with Bayesian | `mlcli tune -c <config> -m bayesian -n 100` |
 | Tune and train best | `mlcli tune -c <config> -m random --train-best` |
+| **Explain model (SHAP)** | `mlcli explain -m <model.pkl> -d <data.csv> -t <type> -e shap` |
+| **Explain model (LIME)** | `mlcli explain -m <model.pkl> -d <data.csv> -t <type> -e lime` |
+| **Explain instance** | `mlcli explain-instance -m <model.pkl> -d <data.csv> -t <type> -i <idx>` |
 | Evaluate model | `mlcli eval --model-path <path> --data-path <path> --model-type <type>` |
 | List runs | `mlcli list-runs` |
 | Show run details | `mlcli show-run <run-id>` |
