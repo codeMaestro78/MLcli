@@ -14,11 +14,11 @@ from pathlib import Path
 class BaseExplainer(ABC):
     """
     Abstract base class for model explainers.
-    
+
     Provides a common interface for different explanation methods
     like SHAP and LIME.
     """
-    
+
     def __init__(
         self,
         model: Any,
@@ -27,7 +27,7 @@ class BaseExplainer(ABC):
     ):
         """
         Initialize explainer.
-        
+
         Args:
             model: Trained model or predict function
             feature_names: Names of features
@@ -37,7 +37,7 @@ class BaseExplainer(ABC):
         self.feature_names = feature_names
         self.class_names = class_names
         self.explanations = None
-    
+
     @abstractmethod
     def explain(
         self,
@@ -46,16 +46,16 @@ class BaseExplainer(ABC):
     ) -> Dict[str, Any]:
         """
         Generate explanations for predictions.
-        
+
         Args:
             X: Input data to explain
             **kwargs: Additional arguments
-            
+
         Returns:
             Dictionary containing explanation results
         """
         pass
-    
+
     @abstractmethod
     def explain_instance(
         self,
@@ -64,26 +64,26 @@ class BaseExplainer(ABC):
     ) -> Dict[str, Any]:
         """
         Generate explanation for a single instance.
-        
+
         Args:
             instance: Single data point to explain
             **kwargs: Additional arguments
-            
+
         Returns:
             Dictionary containing explanation results
         """
         pass
-    
+
     @abstractmethod
     def get_feature_importance(self) -> Dict[str, float]:
         """
         Get global feature importance scores.
-        
+
         Returns:
             Dictionary mapping feature names to importance scores
         """
         pass
-    
+
     @abstractmethod
     def plot(
         self,
@@ -93,24 +93,24 @@ class BaseExplainer(ABC):
     ) -> None:
         """
         Generate explanation plots.
-        
+
         Args:
             plot_type: Type of plot to generate
             output_path: Path to save the plot
             **kwargs: Additional plot arguments
         """
         pass
-    
+
     def _validate_input(
         self,
         X: Union[np.ndarray, pd.DataFrame]
     ) -> np.ndarray:
         """
         Validate and convert input data.
-        
+
         Args:
             X: Input data
-            
+
         Returns:
             Numpy array of input data
         """
@@ -119,11 +119,11 @@ class BaseExplainer(ABC):
                 self.feature_names = X.columns.tolist()
             return X.values
         return np.asarray(X)
-    
+
     def _get_predict_function(self) -> callable:
         """
         Get prediction function from model.
-        
+
         Returns:
             Callable prediction function
         """
@@ -140,18 +140,18 @@ class BaseExplainer(ABC):
             raise ValueError(
                 "Model must have predict/predict_proba method or be callable"
             )
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """
         Convert explanation results to dictionary.
-        
+
         Returns:
             Dictionary representation of explanations
         """
         if self.explanations is None:
             return {}
         return self.explanations
-    
+
     def save_explanation(
         self,
         output_path: Path,
@@ -159,16 +159,16 @@ class BaseExplainer(ABC):
     ) -> None:
         """
         Save explanation results to file.
-        
+
         Args:
             output_path: Path to save results
             format: Output format (json or csv)
         """
         import json
-        
+
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         if format == "json":
             # Convert numpy arrays to lists for JSON serialization
             export_data = self._serialize_for_json(self.explanations)
@@ -180,14 +180,14 @@ class BaseExplainer(ABC):
             df.to_csv(output_path, index=False)
         else:
             raise ValueError(f"Unsupported format: {format}")
-    
+
     def _serialize_for_json(self, data: Any) -> Any:
         """
         Recursively convert numpy types to JSON-serializable types.
-        
+
         Args:
             data: Data to serialize
-            
+
         Returns:
             JSON-serializable data
         """

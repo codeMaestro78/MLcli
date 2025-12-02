@@ -2,7 +2,8 @@
 MLCLI Command Line Interface
 
 Main CLI application with commands for training, evaluation,
-model management, hyperparameter tuning, model explainability, and interactive UI.
+model management, hyperparameter tuning, model explainability,
+data preprocessing, and interactive UI.
 """
 
 import typer
@@ -16,6 +17,7 @@ from typing import Optional, List
 import json
 import sys
 import numpy as np
+import pandas as pd
 
 # Initialize Typer app
 app = typer.Typer(
@@ -1323,6 +1325,435 @@ def list_explainers():
 
     console.print("\n[dim]Usage: mlcli explain --model <model.pkl> --data <data.csv> --type <model_type> --method <method>[/dim]")
     console.print("[dim]       mlcli explain-instance --model <model.pkl> --data <data.csv> --type <model_type> --instance <idx>[/dim]")
+
+
+@app.command("preprocess")
+def preprocess(
+    data_path: Path = typer.Option(
+        ...,
+        "--data", "-d",
+        help="Path to input data file (CSV)",
+        exists=True
+    ),
+    output: Path = typer.Option(
+        ...,
+        "--output", "-o",
+        help="Path to save preprocessed data (CSV)"
+    ),
+    method: str = typer.Option(
+        "standard_scaler",
+        "--method", "-m",
+        help="Preprocessing method (standard_scaler, minmax_scaler, robust_scaler, normalizer, select_k_best, rfe, variance_threshold)"
+    ),
+    target_column: Optional[str] = typer.Option(
+        None,
+        "--target", "-t",
+        help="Target column name (required for feature selection)"
+    ),
+    columns: Optional[str] = typer.Option(
+        None,
+        "--columns", "-c",
+        help="Comma-separated list of columns to preprocess (default: all numeric)"
+    ),
+    k: int = typer.Option(
+        10,
+        "--k",
+        help="Number of features for SelectKBest or RFE"
+    ),
+    threshold: float = typer.Option(
+        0.0,
+        "--threshold",
+        help="Variance threshold for VarianceThreshold"
+    ),
+    norm: str = typer.Option(
+        "l2",
+        "--norm",
+        help="Norm type for Normalizer (l1, l2, max)"
+    ),
+    feature_range_min: float = typer.Option(
+        0.0,
+        "--range-min",
+        help="Min value for MinMaxScaler range"
+    ),
+    feature_range_max: float = typer.Option(
+        1.0,
+        "--range-max",
+        help="Max value for MinMaxScaler range"
+    ),
+    save_preprocessor: Optional[Path] = typer.Option(
+        None,
+        "--save-preprocessor", "-s",
+        help="Path to save fitted preprocessor (pickle)"
+    ),
+    verbose: bool = typer.Option(
+        True,
+        "--verbose/--quiet", "-v/-q",
+        help="Verbose output"
+    )
+):
+    """
+    Preprocess data using various scaling, normalization, or feature selection methods.
+
+    Example:
+        mlcli preprocess --data data/train.csv --output data/train_scaled.csv --method standard_scaler
+        mlcli preprocess -d data/train.csv -o data/train_norm.csv -m minmax_scaler --range-min 0 --range-max 1
+        mlcli preprocess -d data/train.csv -o data/train_selected.csv -m select_k_best --target label --k 10
+        mlcli preprocess -d data/train.csv -o data/train_rfe.csv -m rfe --target label --k 15
+    """
+    from mlcli.utils.logger import setup_logger
+    from mlcli.preprocessor import PreprocessorFactory
+
+    log_level = "INFO" if verbose else "WARNING"
+    setup_logger("mlcli", level=log_level)
+
+    console.print(Panel.fit(
+        "[bold green]MLCLI Data Preprocessing[/bold green]",
+        border_style="green"
+    ))
+
+    try:
+        # Load data
+        console.print(f"\n[cyan]Loading data from:[/cyan] {data_path}")
+        df = pd.read_csv(data_path)
+        console.print(f"[green]Data shape:[/green] {df.shape}")
+        console.print(f"[green]Columns:[/green] {list(df.columns)}")
+
+        # Determine columns to preprocess
+        if columns:
+            preprocess_cols = [c.strip() for c in columns.split(",")]
+        else:
+            # Default to all numeric columns except target
+            numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+            if target_column and target_column in numeric_cols:
+                numeric_cols.remove(target_column)
+            preprocess_cols = numeric_cols
+
+        console.print(f"[green]Preprocessing columns:[/green] {preprocess_cols}")
+
+        # Extract data
+        X = df[preprocess_cols].values
+        y = df[target_column].values if target_column else None
+
+        # Feature names
+        feature_names = preprocess_cols
+
+        # Create preprocessor with appropriate params
+        console.print(f"\n[cyan]Creating preprocessor:[/cyan] {method}")
+
+        kwargs = {}
+        if method == "normalizer" or method.endswith("_normalizer"):
+            kwargs["norm"] = norm
+        elif method == "minmax_scaler":
+            kwargs["feature_range"] = (feature_range_min, feature_range_max)
+        elif method == "select_k_best":
+            kwargs["k"] = k
+        elif method == "rfe":
+            kwargs["n_features_to_select"] = k
+        elif method == "variance_threshold":
+            kwargs["threshold"] = threshold
+
+        preprocessor = PreprocessorFactory.create(method, **kwargs)
+        preprocessor.set_feature_names(feature_names)
+
+        # Check if target is required
+        if method in ["select_k_best", "rfe"] and y is None:
+            console.print(f"[red]Error:[/red] {method} requires --target column")
+            raise typer.Exit(1)
+
+        # Fit and transform
+        console.print(f"\n[bold cyan]Fitting and transforming data...[/bold cyan]")
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+            transient=True
+        ) as progress:
+            progress.add_task(f"Applying {method}...", total=None)
+            X_transformed = preprocessor.fit_transform(X, y)
+
+        console.print(f"[green]Transformed shape:[/green] {X_transformed.shape}")
+
+        # Get output feature names
+        output_feature_names = preprocessor.get_feature_names_out() or feature_names
+        if len(output_feature_names) != X_transformed.shape[1]:
+            output_feature_names = [f"feature_{i}" for i in range(X_transformed.shape[1])]
+
+        # Create output dataframe
+        df_transformed = pd.DataFrame(X_transformed, columns=output_feature_names)
+
+        # Add target column back if present
+        if target_column and target_column in df.columns:
+            df_transformed[target_column] = df[target_column].values
+
+        # Add non-preprocessed columns back
+        for col in df.columns:
+            if col not in preprocess_cols and col != target_column and col not in df_transformed.columns:
+                df_transformed[col] = df[col].values
+
+        # Save preprocessed data
+        output.parent.mkdir(parents=True, exist_ok=True)
+        df_transformed.to_csv(output, index=False)
+        console.print(f"\n[green]Preprocessed data saved to:[/green] {output}")
+
+        # Display preprocessing info
+        info_table = Table(title="Preprocessing Summary", show_header=True, header_style="bold green")
+        info_table.add_column("Property", style="cyan")
+        info_table.add_column("Value", style="green")
+
+        info_table.add_row("Method", method)
+        info_table.add_row("Input Shape", f"{X.shape}")
+        info_table.add_row("Output Shape", f"{X_transformed.shape}")
+        info_table.add_row("Features In", str(len(feature_names)))
+        info_table.add_row("Features Out", str(len(output_feature_names)))
+
+        # Add method-specific info
+        params = preprocessor.get_params()
+        if "mean" in params:
+            info_table.add_row("Mean (first 3)", str(params["mean"][:3]))
+        if "scale" in params:
+            info_table.add_row("Scale (first 3)", str(params["scale"][:3]))
+        if "selected_features" in params:
+            info_table.add_row("Selected Features", str(len(params["selected_features"])))
+
+        console.print(info_table)
+
+        # Save preprocessor if requested
+        if save_preprocessor:
+            preprocessor.save(save_preprocessor)
+            console.print(f"[green]Preprocessor saved to:[/green] {save_preprocessor}")
+
+        # Summary panel
+        console.print(Panel.fit(
+            f"[bold green]Preprocessing Complete![/bold green]\n\n"
+            f"Method: {method}\n"
+            f"Input: {X.shape} → Output: {X_transformed.shape}\n"
+            f"Output: {output}",
+            title="Summary",
+            border_style="green"
+        ))
+
+    except Exception as e:
+        console.print(f"\n[red]Error during preprocessing:[/red] {str(e)}")
+        if verbose:
+            console.print_exception()
+        raise typer.Exit(1)
+
+
+@app.command("preprocess-pipeline")
+def preprocess_pipeline(
+    data_path: Path = typer.Option(
+        ...,
+        "--data", "-d",
+        help="Path to input data file (CSV)",
+        exists=True
+    ),
+    output: Path = typer.Option(
+        ...,
+        "--output", "-o",
+        help="Path to save preprocessed data (CSV)"
+    ),
+    config: Optional[Path] = typer.Option(
+        None,
+        "--config", "-c",
+        help="Path to pipeline config file (JSON/YAML)"
+    ),
+    steps: Optional[str] = typer.Option(
+        None,
+        "--steps", "-s",
+        help="Comma-separated preprocessing steps (e.g., 'standard_scaler,select_k_best')"
+    ),
+    target_column: Optional[str] = typer.Option(
+        None,
+        "--target", "-t",
+        help="Target column name"
+    ),
+    save_pipeline: Optional[Path] = typer.Option(
+        None,
+        "--save-pipeline", "-p",
+        help="Path to save fitted pipeline (pickle)"
+    ),
+    verbose: bool = typer.Option(
+        True,
+        "--verbose/--quiet", "-v/-q",
+        help="Verbose output"
+    )
+):
+    """
+    Apply a preprocessing pipeline with multiple steps.
+
+    Example:
+        mlcli preprocess-pipeline --data data/train.csv --output data/processed.csv --steps "standard_scaler,select_k_best" --target label
+        mlcli preprocess-pipeline -d data/train.csv -o data/processed.csv -c pipeline_config.json
+    """
+    from mlcli.utils.logger import setup_logger
+    from mlcli.preprocessor import PreprocessingPipeline
+
+    log_level = "INFO" if verbose else "WARNING"
+    setup_logger("mlcli", level=log_level)
+
+    console.print(Panel.fit(
+        "[bold green]MLCLI Preprocessing Pipeline[/bold green]",
+        border_style="green"
+    ))
+
+    try:
+        # Load data
+        console.print(f"\n[cyan]Loading data from:[/cyan] {data_path}")
+        df = pd.read_csv(data_path)
+        console.print(f"[green]Data shape:[/green] {df.shape}")
+
+        # Get numeric columns
+        numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+        if target_column and target_column in numeric_cols:
+            numeric_cols.remove(target_column)
+
+        X = df[numeric_cols].values
+        y = df[target_column].values if target_column else None
+
+        # Create pipeline
+        pipeline = PreprocessingPipeline()
+
+        if config:
+            # Load from config file
+            from mlcli.config.loader import ConfigLoader
+            config_loader = ConfigLoader(config)
+            pipeline_config = config_loader.config.get("preprocessing", {})
+            pipeline = PreprocessingPipeline.from_config(pipeline_config)
+            console.print(f"[green]Loaded pipeline from config:[/green] {config}")
+        elif steps:
+            # Create from steps string
+            step_list = [s.strip() for s in steps.split(",")]
+            for step in step_list:
+                pipeline.add_preprocessor(step)
+            console.print(f"[green]Created pipeline with steps:[/green] {step_list}")
+        else:
+            console.print("[red]Error:[/red] Either --config or --steps is required")
+            raise typer.Exit(1)
+
+        console.print(f"[green]Pipeline steps:[/green] {len(pipeline)}")
+
+        # Fit and transform
+        console.print(f"\n[bold cyan]Running preprocessing pipeline...[/bold cyan]")
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+            transient=True
+        ) as progress:
+            progress.add_task("Processing...", total=None)
+            X_transformed = pipeline.fit_transform(X, y, feature_names=numeric_cols)
+
+        console.print(f"[green]Transformed shape:[/green] {X_transformed.shape}")
+
+        # Get output feature names
+        output_feature_names = pipeline.get_feature_names_out() or [f"feature_{i}" for i in range(X_transformed.shape[1])]
+
+        # Create output dataframe
+        df_transformed = pd.DataFrame(X_transformed, columns=output_feature_names)
+
+        # Add target column back
+        if target_column and target_column in df.columns:
+            df_transformed[target_column] = df[target_column].values
+
+        # Save preprocessed data
+        output.parent.mkdir(parents=True, exist_ok=True)
+        df_transformed.to_csv(output, index=False)
+        console.print(f"\n[green]Preprocessed data saved to:[/green] {output}")
+
+        # Display pipeline info
+        info_table = Table(title="Pipeline Summary", show_header=True, header_style="bold green")
+        info_table.add_column("Step", style="cyan")
+        info_table.add_column("Type", style="green")
+        info_table.add_column("Status", style="yellow")
+
+        for name, preprocessor in pipeline.steps:
+            info_table.add_row(
+                name,
+                preprocessor.__class__.__name__,
+                "[green]✓ Fitted[/green]" if preprocessor.is_fitted else "[red]✗ Not Fitted[/red]"
+            )
+
+        console.print(info_table)
+
+        # Save pipeline if requested
+        if save_pipeline:
+            pipeline.save(save_pipeline)
+            console.print(f"[green]Pipeline saved to:[/green] {save_pipeline}")
+
+        console.print(Panel.fit(
+            f"[bold green]Pipeline Complete![/bold green]\n\n"
+            f"Steps: {len(pipeline)}\n"
+            f"Input: {X.shape} → Output: {X_transformed.shape}\n"
+            f"Output: {output}",
+            title="Summary",
+            border_style="green"
+        ))
+
+    except Exception as e:
+        console.print(f"\n[red]Error during pipeline execution:[/red] {str(e)}")
+        if verbose:
+            console.print_exception()
+        raise typer.Exit(1)
+
+
+@app.command("list-preprocessors")
+def list_preprocessors(
+    category: Optional[str] = typer.Option(
+        None,
+        "--category", "-c",
+        help="Filter by category (Scaling, Normalization, Encoding, Feature Selection)"
+    )
+):
+    """
+    List all available preprocessing methods.
+
+    Example:
+        mlcli list-preprocessors
+        mlcli list-preprocessors --category Scaling
+    """
+    from mlcli.preprocessor import PreprocessorFactory
+
+    console.print(Panel.fit(
+        "[bold green]Available Preprocessing Methods[/bold green]",
+        border_style="green"
+    ))
+
+    # Get preprocessors by category
+    categories = PreprocessorFactory.list_by_category()
+
+    if category:
+        # Filter to specific category
+        if category not in categories:
+            console.print(f"[red]Unknown category:[/red] {category}")
+            console.print(f"[yellow]Available categories:[/yellow] {list(categories.keys())}")
+            raise typer.Exit(1)
+        categories = {category: categories[category]}
+
+    for cat_name, methods in categories.items():
+        table = Table(
+            title=f"{cat_name}",
+            show_header=True,
+            header_style="bold green"
+        )
+        table.add_column("Method", style="cyan")
+        table.add_column("Name", style="yellow")
+        table.add_column("Description")
+
+        for method in methods:
+            info = PreprocessorFactory.get_method_info(method)
+            table.add_row(
+                method,
+                info.get("name", method),
+                info.get("description", "")
+            )
+
+        console.print(table)
+        console.print()
+
+    console.print("[dim]Usage: mlcli preprocess --data <data.csv> --output <output.csv> --method <method>[/dim]")
+    console.print("[dim]       mlcli preprocess-pipeline --data <data.csv> --output <output.csv> --steps <step1,step2>[/dim]")
 
 
 @app.command("ui")

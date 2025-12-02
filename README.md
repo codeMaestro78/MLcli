@@ -53,6 +53,13 @@
   - Feature importance visualization
   - Instance-level explanations
 
+- **🆕 Data Preprocessing Pipeline:**
+  - **Scaling:** StandardScaler, MinMaxScaler, RobustScaler
+  - **Normalization:** L1, L2, Max norm
+  - **Encoding:** LabelEncoder, OneHotEncoder, OrdinalEncoder
+  - **Feature Selection:** SelectKBest, RFE, VarianceThreshold
+  - **Pipeline Support:** Chain multiple preprocessors
+
 - **Unified configuration system** (JSON/YAML)
 - **Automatic Model Registry** (plug-and-play trainers)
 - **Model saving:**
@@ -96,6 +103,15 @@ mlcli/
 │   │   ├── shap_explainer.py
 │   │   ├── lime_explainer.py
 │   │   └── explainer_factory.py
+│   ├── preprocessor/                # 🆕 Data Preprocessing Pipeline
+│   │   ├── __init__.py
+│   │   ├── base_preprocessor.py
+│   │   ├── scalers.py
+│   │   ├── normalizers.py
+│   │   ├── encoders.py
+│   │   ├── feature_selectors.py
+│   │   ├── preprocessor_factory.py
+│   │   └── pipeline.py
 │   ├── utils/
 │   │   ├── __init__.py
 │   │   ├── io.py
@@ -411,7 +427,131 @@ mlcli explain-instance -m models/xgb_model.pkl -d data/test.csv -t xgboost -i 5 
 
 ---
 
-### 5. Evaluate Models
+### 5. 🆕 Data Preprocessing
+
+Preprocess your data using various scaling, normalization, encoding, and feature selection methods.
+
+#### List Available Preprocessors
+
+```bash
+mlcli list-preprocessors
+```
+
+**Output:**
+```
+┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Method               ┃ Name                ┃ Description                                                     ┃
+┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Scaling              │                     │                                                                 │
+│ standard_scaler      │ StandardScaler      │ Standardize features by removing mean and scaling to unit var   │
+│ minmax_scaler        │ MinMaxScaler        │ Scale features to a given range (default 0-1)                   │
+│ robust_scaler        │ RobustScaler        │ Scale features using statistics robust to outliers (median/IQR) │
+├──────────────────────┼─────────────────────┼─────────────────────────────────────────────────────────────────┤
+│ Normalization        │                     │                                                                 │
+│ normalizer           │ Normalizer          │ Normalize samples individually to unit norm                     │
+│ l1_normalizer        │ L1 Normalizer       │ Normalize samples to L1 norm (sum of absolute values = 1)       │
+│ l2_normalizer        │ L2 Normalizer       │ Normalize samples to L2 norm (Euclidean norm = 1)               │
+├──────────────────────┼─────────────────────┼─────────────────────────────────────────────────────────────────┤
+│ Encoding             │                     │                                                                 │
+│ label_encoder        │ LabelEncoder        │ Encode target labels with values between 0 and n_classes-1      │
+│ onehot_encoder       │ OneHotEncoder       │ Encode categorical features as one-hot numeric arrays           │
+│ ordinal_encoder      │ OrdinalEncoder      │ Encode categorical features as ordinal integers                 │
+├──────────────────────┼─────────────────────┼─────────────────────────────────────────────────────────────────┤
+│ Feature Selection    │                     │                                                                 │
+│ select_k_best        │ SelectKBest         │ Select features according to the k highest scores               │
+│ rfe                  │ RFE                 │ Recursive Feature Elimination based on model importance         │
+│ variance_threshold   │ VarianceThreshold   │ Remove features with variance below threshold                   │
+└──────────────────────┴─────────────────────┴─────────────────────────────────────────────────────────────────┘
+```
+
+#### Preprocess with StandardScaler
+
+```bash
+mlcli preprocess --data data/train.csv --output data/train_scaled.csv --method standard_scaler
+```
+
+#### Preprocess with MinMaxScaler
+
+```bash
+mlcli preprocess -d data/train.csv -o data/train_minmax.csv -m minmax_scaler --range-min 0 --range-max 1
+```
+
+#### Preprocess with RobustScaler (outlier-resistant)
+
+```bash
+mlcli preprocess -d data/train.csv -o data/train_robust.csv -m robust_scaler
+```
+
+#### Normalize Data (L2 norm)
+
+```bash
+mlcli preprocess -d data/train.csv -o data/train_norm.csv -m normalizer --norm l2
+```
+
+#### Feature Selection with SelectKBest
+
+Select top K features based on statistical tests:
+
+```bash
+mlcli preprocess -d data/train.csv -o data/train_selected.csv -m select_k_best --target label --k 10
+```
+
+#### Feature Selection with RFE
+
+Recursive Feature Elimination using model importance:
+
+```bash
+mlcli preprocess -d data/train.csv -o data/train_rfe.csv -m rfe --target label --k 15
+```
+
+#### Remove Low-Variance Features
+
+```bash
+mlcli preprocess -d data/train.csv -o data/train_var.csv -m variance_threshold --threshold 0.1
+```
+
+#### Save Fitted Preprocessor
+
+```bash
+mlcli preprocess -d data/train.csv -o data/train_scaled.csv -m standard_scaler --save-preprocessor models/scaler.pkl
+```
+
+#### Apply Preprocessing Pipeline (Multiple Steps)
+
+```bash
+mlcli preprocess-pipeline --data data/train.csv --output data/processed.csv --steps "standard_scaler,select_k_best" --target label
+```
+
+#### Preprocessing Options
+
+| Option | Description |
+|--------|-------------|
+| `--data`, `-d` | Path to input CSV data |
+| `--output`, `-o` | Path to save preprocessed data |
+| `--method`, `-m` | Preprocessing method |
+| `--target`, `-t` | Target column (for feature selection) |
+| `--columns`, `-c` | Specific columns to preprocess |
+| `--k` | Number of features (SelectKBest/RFE) |
+| `--threshold` | Variance threshold |
+| `--norm` | Norm type (l1, l2, max) |
+| `--range-min`, `--range-max` | MinMaxScaler range |
+| `--save-preprocessor`, `-s` | Save fitted preprocessor |
+
+#### Preprocessing Methods Comparison
+
+| Method | Best For | Key Feature |
+|--------|----------|-------------|
+| **StandardScaler** | Most ML algorithms | Zero mean, unit variance |
+| **MinMaxScaler** | Neural networks, bounded outputs | Fixed range (0-1) |
+| **RobustScaler** | Data with outliers | Uses median/IQR |
+| **Normalizer** | Text data, similarity measures | Unit norm per sample |
+| **SelectKBest** | Quick feature filtering | Statistical scoring |
+| **RFE** | Model-based selection | Iterative importance |
+| **VarianceThreshold** | Removing constant features | Unsupervised |
+
+---
+
+### 6. Evaluate Models
 
 Evaluate a saved model on test data:
 
@@ -439,7 +579,7 @@ mlcli eval --model-path artifacts/model.h5 --data-path data/test.csv --model-typ
 
 ---
 
-### 6. Experiment Tracking Commands
+### 7. Experiment Tracking Commands
 
 #### List All Experiment Runs
 
@@ -478,7 +618,7 @@ mlcli export-runs --output experiments.csv
 
 ---
 
-### 7. Interactive Terminal UI
+### 8. Interactive Terminal UI
 
 Launch the interactive interface:
 
@@ -1000,6 +1140,7 @@ pip install shap lime matplotlib
 | List models | `mlcli list-models` |
 | List tuners | `mlcli list-tuners` |
 | List explainers | `mlcli list-explainers` |
+| **List preprocessors** | `mlcli list-preprocessors` |
 | Train model | `mlcli train --config <config.json>` |
 | **Tune hyperparameters** | `mlcli tune --config <config.json> --method random` |
 | Tune with Bayesian | `mlcli tune -c <config> -m bayesian -n 100` |
@@ -1007,6 +1148,9 @@ pip install shap lime matplotlib
 | **Explain model (SHAP)** | `mlcli explain -m <model.pkl> -d <data.csv> -t <type> -e shap` |
 | **Explain model (LIME)** | `mlcli explain -m <model.pkl> -d <data.csv> -t <type> -e lime` |
 | **Explain instance** | `mlcli explain-instance -m <model.pkl> -d <data.csv> -t <type> -i <idx>` |
+| **Preprocess data** | `mlcli preprocess -d <data.csv> -o <output.csv> -m standard_scaler` |
+| **Feature selection** | `mlcli preprocess -d <data.csv> -o <output.csv> -m select_k_best -t label --k 10` |
+| **Preprocessing pipeline** | `mlcli preprocess-pipeline -d <data.csv> -o <output.csv> -s "standard_scaler,select_k_best"` |
 | Evaluate model | `mlcli eval --model-path <path> --data-path <path> --model-type <type>` |
 | List runs | `mlcli list-runs` |
 | Show run details | `mlcli show-run <run-id>` |
