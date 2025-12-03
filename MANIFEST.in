@@ -1,0 +1,40 @@
+# Include documentation
+include README.md
+include LICENSE
+include CHANGELOG.md
+
+# Include configuration files
+include pyproject.toml
+include requirements.txt
+
+# Include package data
+recursive-include mlcli *.py
+recursive-include mlcli *.json
+recursive-include mlcli *.yaml
+recursive-include mlcli *.yml
+
+# Include configs directory
+recursive-include configs *.json
+recursive-include configs *.yaml
+recursive-include configs *.yml
+
+# Exclude unnecessary files
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude *.egg-info
+global-exclude .git*
+
+# Exclude development/test files
+prune tests
+prune docs
+prune scripts
+prune data
+prune models
+prune runs
+prune artifacts
+prune logs
+prune website
+prune .venv
+prune .github

@@ -3,14 +3,26 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mlcli"
+name = "mlcli-toolkit"
 version = "0.1.0"
-description = "mlcli that trains, evaluates, saves, and tracks Machine Learning and Deep Learning models using a unified configuration-driven pipeline, and also provides an interactive UI layer on top of the CLI for common workflows (e.g., selecting configs, choosing model types, launching training/evaluation, and browsing experiment runs)"
+description = "A production-ready CLI toolkit for training, evaluating, and tracking Machine Learning and Deep Learning models with experiment tracking, hyperparameter tuning, model explainability, and an interactive TUI"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.8"
 license = { text = "MIT" }
 authors = [
     { name = "Devarshi Lalani", email = "devarshilalani.devflow@gmail.com" },
+]
+keywords = [
+    "machine-learning",
+    "deep-learning",
+    "cli",
+    "mlops",
+    "experiment-tracking",
+    "hyperparameter-tuning",
+    "model-training",
+    "scikit-learn",
+    "tensorflow",
+    "xgboost",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -33,14 +45,11 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 
     # Topics
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Scientific/Engineering :: Mathematics",
-    "Topic :: Scientific/Engineering :: Machine Learning",
-    "Topic :: Software Development :: Libraries",
-    "Topic :: Software Development :: Libraries :: Python Modules",
 
     # CLI
     "Environment :: Console",
@@ -80,9 +89,10 @@ dev = [
 mlcli = "mlcli.cli:app"
 
 [project.urls]
-Homepag = "https://github.com/codeMaestro78"
-Documentation = "https://github.com/codeMaestro78/readme"
-Repository = "https://github.com/codeMaestro78/mlcli"
+Homepage = "https://github.com/codeMaestro78/MLcli"
+Documentation = "https://github.com/codeMaestro78/MLcli#readme"
+Repository = "https://github.com/codeMaestro78/MLcli"
+Issues = "https://github.com/codeMaestro78/MLcli/issues"
 
 
 [tool.setuptools.packages.find]

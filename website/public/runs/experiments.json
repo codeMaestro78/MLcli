@@ -1,0 +1,174 @@
+{
+  "runs": [
+    {
+      "run_id": "run_abc123_rf_hotel",
+      "timestamp": "2025-12-01T14:30:00Z",
+      "model_type": "random_forest",
+      "framework": "scikit-learn",
+      "dataset": "data/hotel_bookings_processed.csv",
+      "target_column": "is_canceled",
+      "hyperparameters": {
+        "n_estimators": 100,
+        "max_depth": 10,
+        "min_samples_split": 2,
+        "min_samples_leaf": 1,
+        "class_weight": "balanced",
+        "random_state": 42
+      },
+      "metrics": {
+        "accuracy": 0.8523,
+        "precision": 0.8412,
+        "recall": 0.8234,
+        "f1": 0.8322,
+        "auc": 0.9012
+      },
+      "artifacts": {
+        "model_path": "models/random_forest_model.pkl",
+        "config_path": "configs/hotel_rf_config.json",
+        "logs_path": "runs/rf_training.log",
+        "plots": ["confusion_matrix.png", "feature_importance.png"]
+      },
+      "epoch_history": null,
+      "notes": "Random Forest baseline model for hotel booking cancellation prediction",
+      "tags": ["baseline", "production"]
+    },
+    {
+      "run_id": "run_def456_xgb_hotel",
+      "timestamp": "2025-12-01T15:45:00Z",
+      "model_type": "xgboost",
+      "framework": "XGBoost",
+      "dataset": "data/hotel_bookings_processed.csv",
+      "target_column": "is_canceled",
+      "hyperparameters": {
+        "n_estimators": 150,
+        "max_depth": 6,
+        "learning_rate": 0.1,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "objective": "binary:logistic",
+        "random_state": 42
+      },
+      "metrics": {
+        "accuracy": 0.8756,
+        "precision": 0.8623,
+        "recall": 0.8512,
+        "f1": 0.8567,
+        "auc": 0.9234
+      },
+      "artifacts": {
+        "model_path": "models/xgboost_model.pkl",
+        "config_path": "configs/hotel_xgb_config.json",
+        "logs_path": "runs/xgb_training.log",
+        "plots": ["confusion_matrix.png", "shap_summary.png"]
+      },
+      "epoch_history": null,
+      "notes": "XGBoost model with optimized hyperparameters",
+      "tags": ["experiment", "tuned"]
+    },
+    {
+      "run_id": "run_ghi789_dnn_hotel",
+      "timestamp": "2025-12-01T17:20:00Z",
+      "model_type": "tf_dnn",
+      "framework": "TensorFlow",
+      "dataset": "data/hotel_bookings_processed.csv",
+      "target_column": "is_canceled",
+      "hyperparameters": {
+        "hidden_layers": [128, 64, 32],
+        "dropout_rate": 0.3,
+        "learning_rate": 0.001,
+        "epochs": 50,
+        "batch_size": 32,
+        "optimizer": "adam"
+      },
+      "metrics": {
+        "accuracy": 0.8412,
+        "precision": 0.8234,
+        "recall": 0.8123,
+        "f1": 0.8178,
+        "auc": 0.8945,
+        "loss": 0.3521
+      },
+      "artifacts": {
+        "model_path": "models/dnn_model.keras",
+        "config_path": "configs/hotel_dnn_config.json",
+        "logs_path": "runs/dnn_training.log",
+        "plots": ["training_history.png", "confusion_matrix.png"]
+      },
+      "epoch_history": [
+        {"epoch": 1, "loss": 0.6823, "accuracy": 0.5623, "val_loss": 0.6512, "val_accuracy": 0.5834},
+        {"epoch": 10, "loss": 0.4521, "accuracy": 0.7823, "val_loss": 0.4234, "val_accuracy": 0.7945},
+        {"epoch": 20, "loss": 0.3823, "accuracy": 0.8234, "val_loss": 0.3712, "val_accuracy": 0.8312},
+        {"epoch": 30, "loss": 0.3521, "accuracy": 0.8412, "val_loss": 0.3589, "val_accuracy": 0.8389},
+        {"epoch": 40, "loss": 0.3412, "accuracy": 0.8489, "val_loss": 0.3534, "val_accuracy": 0.8401},
+        {"epoch": 50, "loss": 0.3356, "accuracy": 0.8523, "val_loss": 0.3521, "val_accuracy": 0.8412}
+      ],
+      "notes": "Deep Neural Network with 3 hidden layers",
+      "tags": ["deep-learning", "experiment"]
+    },
+    {
+      "run_id": "run_jkl012_svm_hotel",
+      "timestamp": "2025-12-02T09:15:00Z",
+      "model_type": "svm",
+      "framework": "scikit-learn",
+      "dataset": "data/hotel_bookings_processed.csv",
+      "target_column": "is_canceled",
+      "hyperparameters": {
+        "C": 1.0,
+        "kernel": "rbf",
+        "gamma": "scale",
+        "class_weight": "balanced",
+        "probability": true,
+        "random_state": 42
+      },
+      "metrics": {
+        "accuracy": 0.7923,
+        "precision": 0.7812,
+        "recall": 0.7634,
+        "f1": 0.7722,
+        "auc": 0.8567
+      },
+      "artifacts": {
+        "model_path": "models/svm_model.pkl",
+        "config_path": "configs/hotel_svm_config.json"
+      },
+      "epoch_history": null,
+      "notes": "SVM with RBF kernel - slower but robust",
+      "tags": ["experiment"]
+    },
+    {
+      "run_id": "run_mno345_logistic_hotel",
+      "timestamp": "2025-12-02T10:30:00Z",
+      "model_type": "logistic",
+      "framework": "scikit-learn",
+      "dataset": "data/hotel_bookings_processed.csv",
+      "target_column": "is_canceled",
+      "hyperparameters": {
+        "C": 1.0,
+        "penalty": "l2",
+        "solver": "lbfgs",
+        "max_iter": 1000,
+        "class_weight": "balanced",
+        "random_state": 42
+      },
+      "metrics": {
+        "accuracy": 0.7645,
+        "precision": 0.7523,
+        "recall": 0.7412,
+        "f1": 0.7467,
+        "auc": 0.8234
+      },
+      "artifacts": {
+        "model_path": "models/logistic_model.pkl",
+        "config_path": "configs/hotel_logistic_config.json"
+      },
+      "epoch_history": null,
+      "notes": "Logistic Regression baseline - fast and interpretable",
+      "tags": ["baseline", "interpretable"]
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "generated_at": "2025-12-02T12:00:00Z",
+    "project": "mlcli"
+  }
+}

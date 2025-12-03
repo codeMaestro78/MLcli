@@ -1,0 +1,147 @@
+# Experiment Tracking
+
+mlcli includes built-in experiment tracking to help you manage and compare your ML experiments.
+
+## Overview
+
+Every time you run a training command, mlcli automatically tracks:
+
+- **Hyperparameters** - All model configuration and training parameters
+- **Metrics** - Accuracy, precision, recall, F1 score, AUC, and more
+- **Artifacts** - Trained models, plots, and evaluation results
+- **Metadata** - Timestamps, durations, and environment info
+
+## Quick Start
+
+Experiment tracking is enabled by default. Just run your training command:
+
+```bash
+mlcli train data.csv --model random_forest --output models/
+```
+
+View your experiments:
+
+```bash
+mlcli experiments list
+```
+
+## Tracking Directory
+
+By default, experiments are saved to `./mlcli_experiments/`. You can change this:
+
+```bash
+mlcli train data.csv --model xgboost --experiments-dir ./my_experiments
+```
+
+Or set it in your configuration:
+
+```yaml
+# config.yaml
+experiment_tracking:
+  enabled: true
+  directory: ./experiments
+  auto_log: true
+```
+
+## Viewing Experiments
+
+### List All Experiments
+
+```bash
+mlcli experiments list
+```
+
+Output:
+```
+┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━┓
+┃ Run ID          ┃ Model         ┃ Accuracy  ┃ Date     ┃
+┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━┩
+│ run_abc123      │ random_forest │ 94.5%     │ Dec 3    │
+│ run_def456      │ xgboost       │ 95.2%     │ Dec 3    │
+│ run_ghi789      │ lightgbm      │ 94.8%     │ Dec 2    │
+└─────────────────┴───────────────┴───────────┴──────────┘
+```
+
+### View Experiment Details
+
+```bash
+mlcli experiments show run_abc123
+```
+
+### Compare Experiments
+
+```bash
+mlcli experiments compare run_abc123 run_def456
+```
+
+## Experiment Structure
+
+Each experiment creates a directory with:
+
+```
+mlcli_experiments/
+└── run_abc123/
+    ├── config.yaml       # Hyperparameters and settings
+    ├── metrics.json      # Training and evaluation metrics
+    ├── model.pkl         # Trained model artifact
+    ├── plots/
+    │   ├── confusion_matrix.png
+    │   ├── roc_curve.png
+    │   └── feature_importance.png
+    └── logs/
+        └── training.log
+```
+
+## Programmatic Access
+
+Access experiments from Python:
+
+```python
+from mlcli.tracking import ExperimentTracker
+
+tracker = ExperimentTracker("./mlcli_experiments")
+
+# List all runs
+runs = tracker.list_runs()
+
+# Get specific run
+run = tracker.get_run("run_abc123")
+print(run.metrics)
+print(run.hyperparameters)
+
+# Load model from run
+model = tracker.load_model("run_abc123")
+```
+
+## MLflow Integration
+
+mlcli can export experiments to MLflow for advanced tracking:
+
+```bash
+mlcli experiments export --format mlflow --uri http://localhost:5000
+```
+
+Or configure MLflow as your tracking backend:
+
+```yaml
+# config.yaml
+experiment_tracking:
+  backend: mlflow
+  mlflow:
+    tracking_uri: http://localhost:5000
+    experiment_name: my-ml-project
+```
+
+## Best Practices
+
+1. **Use meaningful names** - Tag your experiments with descriptive names
+2. **Track everything** - Let mlcli auto-log all parameters and metrics
+3. **Compare regularly** - Use the compare command to understand what works
+4. **Clean up** - Remove old experiments to save disk space
+5. **Export important runs** - Back up successful experiments
+
+## Next Steps
+
+- Learn about [Hyperparameter Tuning](/docs/tuner) to optimize your models
+- Explore [Model Explainability](/docs/explainer) to understand predictions
+- Check the [Runs Dashboard](/runs) to visualize your experiments
