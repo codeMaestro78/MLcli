@@ -11,7 +11,8 @@
 
 # 🤖 MLCLI - Machine Learning Command Line Interface
 
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![PyPI](https://img.shields.io/badge/PyPI-mlcli--toolkit-blue?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/mlcli-toolkit/)
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange?style=for-the-badge&logo=tensorflow&logoColor=white)](https://tensorflow.org)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-Latest-green?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
 [![XGBoost](https://img.shields.io/badge/XGBoost-Latest-red?style=for-the-badge&logo=xgboost&logoColor=white)](https://xgboost.ai)
@@ -19,7 +20,7 @@
 
 **A powerful, modular CLI tool for training, evaluating, and tracking ML/DL models**
 
-[Features](#-features) • [Installation](#️-complete-setup-guide-from-scratch) • [Usage](#-all-cli-commands) • [Configuration](#-configuration-files) • [Contributing](#-contributing)
+[📖 Documentation](https://mlcli-toolkit.vercel.app) • [📦 PyPI](https://pypi.org/project/mlcli-toolkit/) • [Features](#-features) • [Installation](#️-complete-setup-guide-from-scratch) • [Usage](#-all-cli-commands) • [Configuration](#-configuration-files) • [Contributing](#-contributing)
 
 </div>
 
