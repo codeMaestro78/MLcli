@@ -3,6 +3,7 @@ Model Registry System
 
 Provides decorator-based auto-registration for all trainer classes,
 enabling dynamic model discovery and instantiation from configuration.
+Supports lazy loading to avoid importing heavy dependencies like TensorFlow.
 """
 
 from typing import Dict, Type, Optional, List, Any
@@ -16,15 +17,18 @@ class ModelRegistry:
     Central registry for all model trainers.
 
     Maps model type strings (e.g., 'logistic_regression') to their corresponding
-    trainer class implementations. Supports automatic registration via decorator.
+    trainer class implementations. Supports automatic registration via decorator
+    and lazy loading for heavy dependencies.
     """
 
     def __init__(self) -> None:
         """Initialize empty registry."""
-        self._registry :Dict[str,Type]={}
-        self._metadata : Dict[str,Dict[str,Any]]={}
+        self._registry: Dict[str, Type] = {}
+        self._lazy_registry: Dict[str, Dict[str, str]] = {}  # For lazy loading
+        self._metadata: Dict[str, Dict[str, Any]] = {}
 
-    def register(self,name:str,trainer_class:Type,description:str="",framework:str="unknown",model_type:str="unknown")->None:
+    def register(self, name: str, trainer_class: Type, description: str = "",
+                 framework: str = "unknown", model_type: str = "unknown") -> None:
         """
         Register a trainer class with metadata.
 
@@ -42,17 +46,64 @@ class ModelRegistry:
         if name in self._registry:
             logger.warning(f"Model '{name}' is already registered. Overwriting")
 
-        self._registry[name]= trainer_class
-        self._metadata[name]= {
-            "description":description,
-            "framework":framework,
-            "model_type":model_type,
-            "class_name":trainer_class.__name__
+        self._registry[name] = trainer_class
+        self._metadata[name] = {
+            "description": description,
+            "framework": framework,
+            "model_type": model_type,
+            "class_name": trainer_class.__name__
         }
 
-        logger.debug(f"Registered model:{name}->{trainer_class.__name__}")
+        logger.debug(f"Registered model: {name} -> {trainer_class.__name__}")
 
-    def get(self,name:str)->Optional[Type]:
+    def register_lazy(self, name: str, module_path: str, class_name: str,
+                      description: str = "", framework: str = "unknown",
+                      model_type: str = "unknown") -> None:
+        """
+        Register a trainer for lazy loading (doesn't import the module yet).
+
+        Args:
+            name: Unique identifier for the model
+            module_path: Full module path (e.g., 'mlcli.trainers.tf_dnn_trainer')
+            class_name: Class name to import from module
+            description: Human-readable description
+            framework: ML framework name
+            model_type: Type of model
+        """
+        self._lazy_registry[name] = {
+            "module_path": module_path,
+            "class_name": class_name,
+        }
+        self._metadata[name] = {
+            "description": description,
+            "framework": framework,
+            "model_type": model_type,
+            "class_name": class_name,
+            "lazy": True,
+        }
+        logger.debug(f"Registered lazy model: {name} -> {module_path}.{class_name}")
+
+    def _resolve_lazy(self, name: str) -> Optional[Type]:
+        """Resolve a lazy-registered model by importing it."""
+        if name not in self._lazy_registry:
+            return None
+        
+        import importlib
+        lazy_info = self._lazy_registry[name]
+        module = importlib.import_module(lazy_info["module_path"])
+        trainer_class = getattr(module, lazy_info["class_name"])
+        
+        # Move from lazy to regular registry
+        self._registry[name] = trainer_class
+        del self._lazy_registry[name]
+        
+        # Update metadata
+        if name in self._metadata:
+            self._metadata[name]["lazy"] = False
+        
+        return trainer_class
+
+    def get(self, name: str) -> Optional[Type]:
         """
         Retrieve a trainer class by name.
 
@@ -62,9 +113,17 @@ class ModelRegistry:
         Returns:
             Trainer class or None if not found
         """
-        return self._registry.get(name)
+        # Check regular registry first
+        if name in self._registry:
+            return self._registry.get(name)
+        
+        # Try lazy loading
+        if name in self._lazy_registry:
+            return self._resolve_lazy(name)
+        
+        return None
 
-    def get_trainer(self,name:str,**kwargs)->Any:
+    def get_trainer(self, name: str, **kwargs) -> Any:
         """
         Instantiate a trainer by name.
 
@@ -78,21 +137,23 @@ class ModelRegistry:
         Raises:
             KeyError: If model name not found in registry
         """
-        trainer_class=self.get(name)
+        trainer_class = self.get(name)
         if trainer_class is None:
-            available=", ".join(self.list_models())
-            raise KeyError(f"Model '{name}' not found in registry." f"Available models: {available}")
+            available = ", ".join(self.list_models())
+            raise KeyError(f"Model '{name}' not found in registry. "
+                          f"Available models: {available}")
 
         return trainer_class(**kwargs)
 
-    def list_models(self)->List[str]:
+    def list_models(self) -> List[str]:
         """
-        Get list of all registered model names.
+        Get list of all registered model names (including lazy).
 
         Returns:
             List of model identifiers
         """
-        return sorted(self._registry.keys())
+        all_models = set(self._registry.keys()) | set(self._lazy_registry.keys())
+        return sorted(all_models)
 
 
     def get_metadata(self,name:str)->Optional[Dict[str,Any]]:
@@ -127,9 +188,9 @@ class ModelRegistry:
         """
         return [name for name,meta in self._metadata.items() if meta.get("framework")==framework]
 
-    def is_registered(self,name:str)->bool:
+    def is_registered(self, name: str) -> bool:
         """
-        Check if a model is registered.
+        Check if a model is registered (including lazy).
 
         Args:
             name: Model identifier
@@ -137,7 +198,7 @@ class ModelRegistry:
         Returns:
             True if registered, False otherwise
         """
-        return name in self._registry
+        return name in self._registry or name in self._lazy_registry
 
     def unregister(self,name:str)->bool:
         """
