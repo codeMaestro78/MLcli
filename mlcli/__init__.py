@@ -6,7 +6,7 @@ Machine Learning and Deep Learning models with both CLI and interactive TUI inte
 """
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Devarshi Lalani"
 __licence__ = "MIT"
 
