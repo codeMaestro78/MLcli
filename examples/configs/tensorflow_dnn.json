@@ -1,0 +1,36 @@
+{
+  "dataset": {
+    "path": "data/your_data.csv",
+    "type": "csv",
+    "target_column": "target",
+    "features": null
+  },
+  "model": {
+    "type": "tf_dnn",
+    "params": {
+      "hidden_layers": [128, 64, 32],
+      "activation": "relu",
+      "output_activation": "sigmoid",
+      "dropout_rate": 0.3,
+      "learning_rate": 0.001,
+      "optimizer": "adam"
+    }
+  },
+  "training": {
+    "epochs": 100,
+    "batch_size": 32,
+    "validation_split": 0.2,
+    "early_stopping": true,
+    "patience": 10,
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "evaluation": {
+    "metrics": ["accuracy", "precision", "recall", "f1", "auc"]
+  },
+  "output": {
+    "model_dir": "models",
+    "save_format": ["keras", "h5"],
+    "log_dir": "runs"
+  }
+}

@@ -63,6 +63,9 @@ class TunerFactory:
             # Map n_trials to n_iter for random search
             if "n_trials" in kwargs and "n_iter" not in kwargs:
                 kwargs["n_iter"] = kwargs.pop("n_trials")
+        elif method_lower in ["grid", "grid_search"]:
+            # Grid search doesn't use n_trials - it tests all combinations
+            kwargs.pop("n_trials", None)
 
         logger.info(f"Creating {tuner_class.__name__} tuner")
 

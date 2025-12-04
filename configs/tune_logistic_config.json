@@ -4,7 +4,7 @@
     "params": {}
   },
   "dataset": {
-    "path": "data/hotel_bookings_processed.csv",
+    "path": "mlcli/data/hotel_bookings_processed.csv",
     "type": "csv",
     "target_column": "is_canceled"
   },
@@ -14,7 +14,7 @@
   },
   "tuning": {
     "param_space": {
-      "C": {"type": "loguniform", "low": 0.001, "high": 100},
+      "C": [0.001, 0.01, 0.1, 1.0, 10.0, 100.0],
       "penalty": ["l1", "l2"],
       "solver": ["liblinear", "saga"],
       "max_iter": [500, 1000, 2000]

@@ -61,7 +61,7 @@ coverage.xml
 # ==================================
 # ML Artifacts & Models
 # ==================================
-models/
+mlcli/models/
 artifacts/
 *.pkl
 *.joblib
@@ -72,13 +72,10 @@ artifacts/
 saved_model/
 
 # ==================================
-# Experiment Tracking (keep experiments.json as example)
+# Experiment Tracking
 # ==================================
-runs/*.csv
-runs/*.png
-runs/tuning_*.json
-runs/explanation_*.json
-runs/explanation_*.png
+runs/
+mlcli/data/
 
 # ==================================
 # Logs
