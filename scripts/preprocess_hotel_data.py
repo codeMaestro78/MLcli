@@ -10,9 +10,13 @@ from pathlib import Path
 def preprocess_hotel_data():
     """Preprocess hotel bookings data for ML models."""
 
+    # Get the script's directory and project root
+    script_dir = Path(__file__).parent.absolute()
+    project_root = script_dir.parent
+
     # Load data
-    input_path = Path("data/hotel_bookings_updated_2024.csv")
-    output_path = Path("data/hotel_bookings_processed.csv")
+    input_path = project_root / "mlcli" / "data" / "hotel_bookings_updated_2024.csv"
+    output_path = project_root / "mlcli" / "data" / "hotel_bookings_processed.csv"
 
     print(f"Loading data from {input_path}...")
     df = pd.read_csv(input_path)

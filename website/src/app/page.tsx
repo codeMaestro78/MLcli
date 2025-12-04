@@ -69,8 +69,8 @@ const features = [
   },
 ];
 
-const quickstartCode = `# Install mlcli
-pip install mlcli
+const quickstartCode = `# Install mlcli-toolkit
+pip install mlcli-toolkit
 
 # Train a Random Forest model
 mlcli train -d data.csv -m random_forest --target label
@@ -165,7 +165,7 @@ export default async function HomePage() {
         <div className="container">
           <div className="mx-auto max-w-2xl">
             <CodeBlock
-              code="pip install mlcli"
+              code="pip install mlcli-toolkit"
               language="bash"
               filename="Installation"
             />

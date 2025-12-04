@@ -183,7 +183,7 @@ function getFallbackReleases(): GitHubRelease[] {
 
 ### Installation
 \`\`\`bash
-pip install mlcli
+pip install mlcli-toolkit
 \`\`\`
 
 ### Quick Start

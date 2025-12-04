@@ -19,10 +19,10 @@ export default function QuickstartPage() {
 
       <h2 id="installation">Installation</h2>
       <p>Install mlcli using pip:</p>
-      <CodeBlock code="pip install mlcli" language="bash" />
+      <CodeBlock code="pip install mlcli-toolkit" language="bash" />
 
       <p>Or using pipx for an isolated installation:</p>
-      <CodeBlock code="pipx install mlcli" language="bash" />
+      <CodeBlock code="pipx install mlcli-toolkit" language="bash" />
 
       <p>Verify the installation:</p>
       <CodeBlock

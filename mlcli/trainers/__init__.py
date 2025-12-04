@@ -79,7 +79,7 @@ def __getattr__(name: str):
 def register_all_models():
     """Register all models in the registry without importing heavy modules."""
     from mlcli import registry
-    
+
     for model_name, meta in _MODEL_METADATA.items():
         if not registry.is_registered(model_name):
             # Register with lazy loader
@@ -97,7 +97,7 @@ def get_trainer_class(model_type: str):
     """Get trainer class by model type, importing only when needed."""
     if model_type not in _MODEL_METADATA:
         raise ValueError(f"Unknown model type: {model_type}")
-    
+
     import importlib
     meta = _MODEL_METADATA[model_type]
     module = importlib.import_module(meta["module"])

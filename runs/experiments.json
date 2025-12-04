@@ -1,0 +1,697 @@
+[
+  {
+    "run_id": "09d4d165",
+    "run_name": "random_forest_09d4d165",
+    "timestamp": "2025-12-03T21:58:06.462461",
+    "model_type": "random_forest",
+    "framework": "sklearn",
+    "status": "completed",
+    "config": {
+      "dataset": {
+        "path": "mlcli/data/hotel_bookings_processed.csv",
+        "type": "csv",
+        "target_column": "is_canceled",
+        "features": null
+      },
+      "model": {
+        "type": "random_forest",
+        "params": {
+          "n_estimators": 100,
+          "max_depth": 15,
+          "min_samples_split": 5,
+          "min_samples_leaf": 2,
+          "random_state": 42,
+          "n_jobs": -1
+        }
+      },
+      "training": {
+        "test_size": 0.2,
+        "random_state": 42,
+        "shuffle": true
+      },
+      "evaluation": {
+        "metrics": [
+          "accuracy",
+          "precision",
+          "recall",
+          "f1",
+          "auc"
+        ]
+      },
+      "output": {
+        "model_dir": "mlcli/models",
+        "model_name": "hotel_rf",
+        "save_format": [
+          "pickle",
+          "onnx"
+        ],
+        "log_dir": "runs"
+      }
+    },
+    "hyperparameters": {
+      "n_estimators": 100,
+      "max_depth": 15,
+      "min_samples_split": 5,
+      "min_samples_leaf": 2,
+      "random_state": 42,
+      "n_jobs": -1
+    },
+    "dataset": {
+      "path": "mlcli/data/hotel_bookings_processed.csv",
+      "type": "csv",
+      "target_column": "is_canceled",
+      "features": null
+    },
+    "metrics": {
+      "train_accuracy": 0.8453911550381104,
+      "train_precision": 0.8505566725066822,
+      "train_recall": 0.8453911550381104,
+      "train_f1": 0.8396873478084433,
+      "train_auc": 0.9337442380899146,
+      "test_accuracy": 0.8318117095234107,
+      "test_precision": 0.8379610628908541,
+      "test_recall": 0.8318117095234107,
+      "test_f1": 0.8251369256195111,
+      "test_auc": 0.9089561613516454
+    },
+    "model_paths": {
+      "pickle": "mlcli\\models\\rf_model.pkl",
+      "onnx": "mlcli\\models\\rf_model.onnx"
+    },
+    "training_history": {
+      "train_metrics": {
+        "accuracy": 0.8453911550381104,
+        "precision": 0.8505566725066822,
+        "recall": 0.8453911550381104,
+        "f1": 0.8396873478084433,
+        "auc": 0.9337442380899146
+      },
+      "feature_importance": [
+        0.021709981352896143,
+        0.1273342038215307,
+        0.0,
+        0.01288529087040261,
+        0.011531518178425192,
+        0.00982492714573029,
+        0.01759192769978433,
+        0.009123469407094575,
+        0.004411538676178969,
+        0.0003725460501141288,
+        0.008600201370198849,
+        0.08199495344897587,
+        0.019585317931467897,
+        0.0031142106895262435,
+        0.08342462434486589,
+        0.006896027367172054,
+        0.01344794500665546,
+        0.027714839728506108,
+        0.0345368590636097,
+        0.2778883106885162,
+        0.0028757417402678603,
+        0.043635288306457846,
+        0.04493438663875703,
+        0.0408291446152174,
+        0.09573674585764858
+      ],
+      "n_features": 25,
+      "n_classes": 2,
+      "oob_score": null,
+      "val_metrics": {
+        "accuracy": 0.8318117095234107,
+        "precision": 0.8379610628908541,
+        "recall": 0.8318117095234107,
+        "f1": 0.8251369256195111,
+        "auc": 0.9089561613516454
+      }
+    },
+    "duration_seconds": 4.41,
+    "error": null
+  },
+  {
+    "run_id": "a1b89657",
+    "run_name": "logistic_regression_a1b89657",
+    "timestamp": "2025-12-03T21:58:39.943762",
+    "model_type": "logistic_regression",
+    "framework": "sklearn",
+    "status": "completed",
+    "config": {
+      "dataset": {
+        "path": "mlcli/data/hotel_bookings_processed.csv",
+        "type": "csv",
+        "target_column": "is_canceled",
+        "features": null
+      },
+      "model": {
+        "type": "logistic_regression",
+        "params": {
+          "penalty": "l2",
+          "C": 1.0,
+          "solver": "lbfgs",
+          "max_iter": 1000,
+          "random_state": 42,
+          "n_jobs": -1
+        }
+      },
+      "training": {
+        "test_size": 0.2,
+        "random_state": 42,
+        "shuffle": true
+      },
+      "evaluation": {
+        "metrics": [
+          "accuracy",
+          "precision",
+          "recall",
+          "f1",
+          "auc"
+        ]
+      },
+      "output": {
+        "model_dir": "mlcli/models",
+        "model_name": "hotel_logistic",
+        "save_format": [
+          "pickle",
+          "onnx"
+        ],
+        "log_dir": "runs"
+      }
+    },
+    "hyperparameters": {
+      "penalty": "l2",
+      "C": 1.0,
+      "solver": "lbfgs",
+      "max_iter": 1000,
+      "random_state": 42,
+      "n_jobs": -1
+    },
+    "dataset": {
+      "path": "mlcli/data/hotel_bookings_processed.csv",
+      "type": "csv",
+      "target_column": "is_canceled",
+      "features": null
+    },
+    "metrics": {
+      "train_accuracy": 0.7993445849736159,
+      "train_precision": 0.808717180525627,
+      "train_recall": 0.7993445849736159,
+      "train_f1": 0.7871255153040978,
+      "train_auc": 0.8475832469477755,
+      "test_accuracy": 0.7989781388726024,
+      "test_precision": 0.8102572740516634,
+      "test_recall": 0.7989781388726024,
+      "test_f1": 0.7868028420217227,
+      "test_auc": 0.8520425194523588
+    },
+    "model_paths": {
+      "pickle": "mlcli\\models\\logistic_model.pkl",
+      "onnx": "mlcli\\models\\logistic_model.onnx"
+    },
+    "training_history": {
+      "train_metrics": {
+        "accuracy": 0.7993445849736159,
+        "precision": 0.808717180525627,
+        "recall": 0.7993445849736159,
+        "f1": 0.7871255153040978,
+        "auc": 0.8475832469477755
+      },
+      "n_iterations": "49",
+      "n_features": 25,
+      "n_classes": 2,
+      "test_metrics": {
+        "accuracy": 0.7989781388726024,
+        "precision": 0.8102572740516634,
+        "recall": 0.7989781388726024,
+        "f1": 0.7868028420217227,
+        "auc": 0.8520425194523588
+      }
+    },
+    "duration_seconds": 2.53,
+    "error": null
+  },
+  {
+    "run_id": "c471d118",
+    "run_name": "xgboost_c471d118",
+    "timestamp": "2025-12-03T22:05:45.148626",
+    "model_type": "xgboost",
+    "framework": "xgboost",
+    "status": "completed",
+    "config": {
+      "dataset": {
+        "path": "mlcli/data/hotel_bookings_processed.csv",
+        "type": "csv",
+        "target_column": "is_canceled",
+        "features": null
+      },
+      "model": {
+        "type": "xgboost",
+        "params": {
+          "n_estimators": 100,
+          "max_depth": 6,
+          "learning_rate": 0.1,
+          "subsample": 0.8,
+          "colsample_bytree": 0.8,
+          "random_state": 42,
+          "use_label_encoder": false,
+          "eval_metric": "logloss"
+        }
+      },
+      "training": {
+        "test_size": 0.2,
+        "random_state": 42,
+        "shuffle": true,
+        "early_stopping_rounds": 10
+      },
+      "evaluation": {
+        "metrics": [
+          "accuracy",
+          "precision",
+          "recall",
+          "f1",
+          "auc"
+        ]
+      },
+      "output": {
+        "model_dir": "mlcli/models",
+        "model_name": "hotel_xgb",
+        "save_format": [
+          "pickle"
+        ],
+        "log_dir": "runs"
+      }
+    },
+    "hyperparameters": {
+      "n_estimators": 100,
+      "max_depth": 6,
+      "learning_rate": 0.1,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "random_state": 42,
+      "use_label_encoder": false,
+      "eval_metric": "logloss"
+    },
+    "dataset": {
+      "path": "mlcli/data/hotel_bookings_processed.csv",
+      "type": "csv",
+      "target_column": "is_canceled",
+      "features": null
+    },
+    "metrics": {
+      "train_accuracy": 0.8321676857358238,
+      "train_precision": 0.8354419657161193,
+      "train_recall": 0.8321676857358238,
+      "train_f1": 0.826228099355862,
+      "train_auc": 0.9063429472898337,
+      "test_accuracy": 0.8288382611609012,
+      "test_precision": 0.8331441050794602,
+      "test_recall": 0.8288382611609012,
+      "test_f1": 0.8226661821438316,
+      "test_auc": 0.9045294140656426
+    },
+    "model_paths": {
+      "pickle": "mlcli\\models\\xgb_model.pkl"
+    },
+    "training_history": {
+      "train_metrics": {
+        "accuracy": 0.8321676857358238,
+        "precision": 0.8354419657161193,
+        "recall": 0.8321676857358238,
+        "f1": 0.826228099355862,
+        "auc": 0.9063429472898337
+      },
+      "feature_importance": [
+        0.005470633041113615,
+        0.02233056165277958,
+        0.0,
+        0.0014509581960737705,
+        0.0014273935230448842,
+        0.005939514841884375,
+        0.0066400920040905476,
+        0.007044519763439894,
+        0.006054962519556284,
+        0.004139238968491554,
+        0.00666083674877882,
+        0.037397269159555435,
+        0.0053138514049351215,
+        0.004184234421700239,
+        0.08130529522895813,
+        0.01738586649298668,
+        0.024383535608649254,
+        0.014704697765409946,
+        0.018938235938549042,
+        0.5065392851829529,
+        0.008497283793985844,
+        0.027699077501893044,
+        0.008376469835639,
+        0.11685533821582794,
+        0.061260852962732315
+      ],
+      "n_features": 25,
+      "n_classes": 2,
+      "best_iteration": 99,
+      "val_metrics": {
+        "accuracy": 0.8288382611609012,
+        "precision": 0.8331441050794602,
+        "recall": 0.8288382611609012,
+        "f1": 0.8226661821438316,
+        "auc": 0.9045294140656426
+      }
+    },
+    "duration_seconds": 1.53,
+    "error": null
+  },
+  {
+    "run_id": "a88f07c7",
+    "run_name": "tf_dnn_a88f07c7",
+    "timestamp": "2025-12-03T22:06:32.935025",
+    "model_type": "tf_dnn",
+    "framework": "tensorflow",
+    "status": "completed",
+    "config": {
+      "dataset": {
+        "path": "mlcli/data/hotel_bookings_processed.csv",
+        "type": "csv",
+        "target_column": "is_canceled",
+        "features": null
+      },
+      "model": {
+        "type": "tf_dnn",
+        "params": {
+          "layers": [
+            128,
+            64,
+            32
+          ],
+          "activation": "relu",
+          "dropout": 0.3,
+          "optimizer": "adam",
+          "learning_rate": 0.001
+        }
+      },
+      "training": {
+        "test_size": 0.2,
+        "random_state": 42,
+        "shuffle": true,
+        "epochs": 50,
+        "batch_size": 64,
+        "validation_split": 0.2,
+        "early_stopping": true,
+        "patience": 5
+      },
+      "evaluation": {
+        "metrics": [
+          "accuracy",
+          "precision",
+          "recall",
+          "f1",
+          "auc"
+        ]
+      },
+      "output": {
+        "model_dir": "mlcli/models",
+        "model_name": "hotel_dnn",
+        "save_format": [
+          "h5",
+          "savedmodel"
+        ],
+        "log_dir": "runs"
+      }
+    },
+    "hyperparameters": {
+      "layers": [
+        128,
+        64,
+        32
+      ],
+      "activation": "relu",
+      "dropout": 0.3,
+      "optimizer": "adam",
+      "learning_rate": 0.001
+    },
+    "dataset": {
+      "path": "mlcli/data/hotel_bookings_processed.csv",
+      "type": "csv",
+      "target_column": "is_canceled",
+      "features": null
+    },
+    "metrics": {
+      "train_accuracy": 0.6309050171706173,
+      "train_precision": 0.3980411406910569,
+      "train_recall": 0.6309050171706173,
+      "train_f1": 0.4881230194283176,
+      "train_auc": 0.5,
+      "test_accuracy": 0.6242985174637742,
+      "test_precision": 0.38974863890746636,
+      "test_recall": 0.6242985174637742,
+      "test_f1": 0.47989779553087436,
+      "test_auc": 0.5,
+      "test_loss": 0.6619221568107605
+    },
+    "model_paths": {
+      "h5": "mlcli\\models\\dnn_model.h5",
+      "savedmodel": "mlcli\\models\\dnn_model.keras"
+    },
+    "training_history": {
+      "history": {
+        "accuracy": [
+          0.6142160296440125,
+          0.6301721334457397,
+          0.6307584643363953,
+          0.6308003067970276,
+          0.6308631300926208,
+          0.6308945417404175,
+          0.6308945417404175,
+          0.630884051322937
+        ],
+        "loss": [
+          1.8152698278427124,
+          0.6614684462547302,
+          0.6589521765708923,
+          0.6593086123466492,
+          0.6587722301483154,
+          0.6590616106987,
+          0.6586678624153137,
+          0.65861576795578
+        ],
+        "precision": [
+          0.37057486176490784,
+          0.3817567527294159,
+          0.3055555522441864,
+          0.380952388048172,
+          0.25,
+          0.4444444477558136,
+          0.4285714328289032,
+          0.3333333432674408
+        ],
+        "recall": [
+          0.06473208218812943,
+          0.0032054008916020393,
+          0.00031203016988001764,
+          0.0004538620705716312,
+          5.67327588214539e-05,
+          0.0001134655176429078,
+          8.509914187015966e-05,
+          5.67327588214539e-05
+        ],
+        "val_accuracy": [
+          0.6242985129356384,
+          0.6242985129356384,
+          0.6242985129356384,
+          0.6242985129356384,
+          0.6242985129356384,
+          0.6242985129356384,
+          0.6242985129356384,
+          0.6242985129356384
+        ],
+        "val_loss": [
+          0.661967396736145,
+          0.6621853113174438,
+          0.6619221568107605,
+          0.661980152130127,
+          0.6619579792022705,
+          0.6619927883148193,
+          0.6621530652046204,
+          0.6620053052902222
+        ],
+        "val_precision": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "val_recall": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "learning_rate": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.0005000000237487257,
+          0.0005000000237487257,
+          0.0005000000237487257,
+          0.0002500000118743628
+        ]
+      },
+      "epochs_trained": 8,
+      "n_features": 25,
+      "n_classes": 2,
+      "total_params": 13697,
+      "train_metrics": {
+        "accuracy": 0.6309050171706173,
+        "precision": 0.3980411406910569,
+        "recall": 0.6309050171706173,
+        "f1": 0.4881230194283176,
+        "auc": 0.5
+      },
+      "val_metrics": {
+        "accuracy": 0.6242985174637742,
+        "precision": 0.38974863890746636,
+        "recall": 0.6242985174637742,
+        "f1": 0.47989779553087436,
+        "auc": 0.5,
+        "loss": 0.6619221568107605
+      }
+    },
+    "duration_seconds": 60.03,
+    "error": null
+  },
+  {
+    "run_id": "07145045",
+    "run_name": "random_forest_07145045",
+    "timestamp": "2025-12-03T23:23:42.811716",
+    "model_type": "random_forest",
+    "framework": "sklearn",
+    "status": "completed",
+    "config": {
+      "dataset": {
+        "path": "mlcli/data/hotel_bookings_processed.csv",
+        "type": "csv",
+        "target_column": "is_canceled",
+        "features": null
+      },
+      "model": {
+        "type": "random_forest",
+        "params": {
+          "n_estimators": 100,
+          "max_depth": 15,
+          "min_samples_split": 5,
+          "min_samples_leaf": 2,
+          "random_state": 42,
+          "n_jobs": -1
+        }
+      },
+      "training": {
+        "test_size": 0.2,
+        "random_state": 42,
+        "shuffle": true
+      },
+      "evaluation": {
+        "metrics": [
+          "accuracy",
+          "precision",
+          "recall",
+          "f1",
+          "auc"
+        ]
+      },
+      "output": {
+        "model_dir": "mlcli/models",
+        "model_name": "hotel_rf",
+        "save_format": [
+          "pickle",
+          "onnx"
+        ],
+        "log_dir": "runs"
+      }
+    },
+    "hyperparameters": {
+      "n_estimators": 100,
+      "max_depth": 15,
+      "min_samples_split": 5,
+      "min_samples_leaf": 2,
+      "random_state": 42,
+      "n_jobs": -1
+    },
+    "dataset": {
+      "path": "mlcli/data/hotel_bookings_processed.csv",
+      "type": "csv",
+      "target_column": "is_canceled",
+      "features": null
+    },
+    "metrics": {
+      "train_accuracy": 0.8453911550381104,
+      "train_precision": 0.8505566725066822,
+      "train_recall": 0.8453911550381104,
+      "train_f1": 0.8396873478084433,
+      "train_auc": 0.9337442380899146,
+      "test_accuracy": 0.8318117095234107,
+      "test_precision": 0.8379610628908541,
+      "test_recall": 0.8318117095234107,
+      "test_f1": 0.8251369256195111,
+      "test_auc": 0.9089561613516454
+    },
+    "model_paths": {
+      "pickle": "mlcli\\models\\rf_model.pkl",
+      "onnx": "mlcli\\models\\rf_model.onnx"
+    },
+    "training_history": {
+      "train_metrics": {
+        "accuracy": 0.8453911550381104,
+        "precision": 0.8505566725066822,
+        "recall": 0.8453911550381104,
+        "f1": 0.8396873478084433,
+        "auc": 0.9337442380899146
+      },
+      "feature_importance": [
+        0.021709981352896143,
+        0.1273342038215307,
+        0.0,
+        0.01288529087040261,
+        0.011531518178425192,
+        0.00982492714573029,
+        0.01759192769978433,
+        0.009123469407094575,
+        0.004411538676178969,
+        0.0003725460501141288,
+        0.008600201370198849,
+        0.08199495344897587,
+        0.019585317931467897,
+        0.0031142106895262435,
+        0.08342462434486589,
+        0.006896027367172054,
+        0.01344794500665546,
+        0.027714839728506108,
+        0.0345368590636097,
+        0.2778883106885162,
+        0.0028757417402678603,
+        0.043635288306457846,
+        0.04493438663875703,
+        0.0408291446152174,
+        0.09573674585764858
+      ],
+      "n_features": 25,
+      "n_classes": 2,
+      "oob_score": null,
+      "val_metrics": {
+        "accuracy": 0.8318117095234107,
+        "precision": 0.8379610628908541,
+        "recall": 0.8318117095234107,
+        "f1": 0.8251369256195111,
+        "auc": 0.9089561613516454
+      }
+    },
+    "duration_seconds": 3.68,
+    "error": null
+  }
+]

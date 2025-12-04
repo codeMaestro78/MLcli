@@ -42,7 +42,7 @@ export default async function DownloadPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <CodeBlock code="pip install mlcli" language="bash" />
+            <CodeBlock code="pip install mlcli-toolkit" language="bash" />
           </CardContent>
         </Card>
 
@@ -57,7 +57,7 @@ export default async function DownloadPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <CodeBlock code="pipx install mlcli" language="bash" />
+            <CodeBlock code="pipx install mlcli-toolkit" language="bash" />
           </CardContent>
         </Card>
 

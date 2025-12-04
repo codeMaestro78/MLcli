@@ -1,6 +1,6 @@
 {
   "dataset": {
-    "path": "data/hotel_bookings_processed.csv",
+    "path": "mlcli/data/hotel_bookings_processed.csv",
     "type": "csv",
     "target_column": "is_canceled",
     "features": null

@@ -133,9 +133,9 @@ export default function AboutPage() {
           <Card className="text-center">
             <CardHeader>
               <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-3xl font-bold text-white">
-                DH
+                DL
               </div>
-              <CardTitle>Devarshi Harsora</CardTitle>
+              <CardTitle>Devarshi Lalani</CardTitle>
               <CardDescription>Creator & Lead Developer</CardDescription>
             </CardHeader>
             <CardContent>
@@ -165,7 +165,7 @@ export default function AboutPage() {
                   </Link>
                 </Button>
                 <Button variant="ghost" size="icon" asChild>
-                  <Link href="mailto:contact@example.com">
+                  <Link href="mailto:devarshilalani.devflow@gmail.com">
                     <Mail className="h-5 w-5" />
                     <span className="sr-only">Email</span>
                   </Link>

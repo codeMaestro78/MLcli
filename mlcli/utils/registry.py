@@ -87,20 +87,20 @@ class ModelRegistry:
         """Resolve a lazy-registered model by importing it."""
         if name not in self._lazy_registry:
             return None
-        
+
         import importlib
         lazy_info = self._lazy_registry[name]
         module = importlib.import_module(lazy_info["module_path"])
         trainer_class = getattr(module, lazy_info["class_name"])
-        
+
         # Move from lazy to regular registry
         self._registry[name] = trainer_class
         del self._lazy_registry[name]
-        
+
         # Update metadata
         if name in self._metadata:
             self._metadata[name]["lazy"] = False
-        
+
         return trainer_class
 
     def get(self, name: str) -> Optional[Type]:
@@ -116,11 +116,11 @@ class ModelRegistry:
         # Check regular registry first
         if name in self._registry:
             return self._registry.get(name)
-        
+
         # Try lazy loading
         if name in self._lazy_registry:
             return self._resolve_lazy(name)
-        
+
         return None
 
     def get_trainer(self, name: str, **kwargs) -> Any:
@@ -222,8 +222,8 @@ class ModelRegistry:
         return len(self._registry)
 
     def __contains__(self,name:str)->bool:
-        """Check if models is registered using 'in' operator. """
-        return name in self._registry
+        """Check if models is registered using 'in' operator (includes lazy). """
+        return name in self._registry or name in self._lazy_registry
 
     def __repr__(self)->str:
         """String representation of registry. """
