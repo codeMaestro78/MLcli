@@ -1,11 +1,11 @@
 'use client';
 
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { BookOpen, Box, ChevronDown, ChevronRight, Code, FlaskConical, Lightbulb, Settings, Sliders, Zap } from 'lucide-react';
@@ -88,7 +88,7 @@ const docsNavigation: SidebarItem[] = [
   },
 ];
 
-const versions = ['v0.1.0', 'latest'];
+const versions = ['v0.1.1', 'latest'];
 
 interface DocsSidebarProps {
   className?: string;

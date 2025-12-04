@@ -153,7 +153,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
+  background:
     radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.15), transparent),
     radial-gradient(ellipse 60% 40% at 80% 50%, hsl(199 89% 48% / 0.08), transparent),
     radial-gradient(ellipse 60% 40% at 20% 80%, hsl(199 89% 48% / 0.06), transparent);
