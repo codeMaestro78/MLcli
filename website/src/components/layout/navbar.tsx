@@ -2,6 +2,7 @@
 
 import { SearchDialog } from '@/components/layout/search';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 import { BookOpen, Download, FlaskConical, Github, Menu, Terminal, X } from 'lucide-react';
 import Link from 'next/link';
@@ -67,8 +68,9 @@ export function Navbar() {
         </div>
 
         {/* Desktop right section */}
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
+        <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-x-4">
           <SearchDialog />
+          <ThemeToggle />
           <Link
             href="https://github.com/codeMaestro78/MLcli"
             target="_blank"
@@ -107,7 +109,7 @@ export function Navbar() {
                 </Link>
               );
             })}
-            <div className="mt-4 flex items-center gap-4 border-t pt-4">
+            <div className="mt-4 flex items-center justify-between gap-4 border-t pt-4">
               <Link
                 href="https://github.com/codeMaestro78/MLcli"
                 target="_blank"
@@ -117,6 +119,7 @@ export function Navbar() {
                 <Github className="h-5 w-5" />
                 <span>GitHub</span>
               </Link>
+              <ThemeToggle />
             </div>
           </div>
         </div>

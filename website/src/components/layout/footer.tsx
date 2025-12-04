@@ -54,8 +54,8 @@ export function Footer() {
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           {/* Brand section */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2">
-              <Terminal className="h-8 w-8 text-mlcli-500" />
+            <Link href="/" className="flex items-center gap-2 group">
+              <Terminal className="h-8 w-8 text-mlcli-500 transition-transform group-hover:scale-110" />
               <span className="text-xl font-bold">mlcli</span>
             </Link>
             <p className="max-w-xs text-sm text-muted-foreground">
@@ -69,7 +69,7 @@ export function Footer() {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
+                  className="text-muted-foreground transition-all hover:text-foreground hover:scale-110"
                   aria-label={item.name}
                 >
                   <item.icon className="h-5 w-5" aria-hidden="true" />
@@ -152,7 +152,7 @@ export function Footer() {
               &copy; {new Date().getFullYear()} mlcli. Open source under MIT License.
             </p>
             <p className="flex items-center gap-1 text-sm text-muted-foreground">
-              Made with <Heart className="h-4 w-4 text-red-500" aria-label="love" /> for the ML
+              Made with <Heart className="h-4 w-4 text-red-500 animate-pulse" aria-label="love" /> for the ML
               community
             </p>
           </div>

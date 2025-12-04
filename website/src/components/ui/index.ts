@@ -11,3 +11,4 @@ export {
     TableHead, TableHeader, TableRow
 } from './table';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
+export { ThemeToggle } from './theme-toggle';
