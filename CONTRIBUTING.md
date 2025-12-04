@@ -145,7 +145,7 @@ def process_data(
     """
     if data.size == 0:
         raise ValueError("Data cannot be empty")
-    
+
     # Implementation
     return processed_data
 ```

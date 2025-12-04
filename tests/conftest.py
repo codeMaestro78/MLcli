@@ -18,10 +18,10 @@ def sample_data():
     np.random.seed(42)
     n_samples = 1000
     n_features = 20
-    
+
     X = np.random.randn(n_samples, n_features)
     y = (X[:, 0] + X[:, 1] > 0).astype(int)
-    
+
     return X, y
 
 
