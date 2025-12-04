@@ -168,9 +168,9 @@ function getFallbackReleases(): GitHubRelease[] {
   return [
     {
       id: 1,
-      tag_name: 'v0.1.0',
-      name: 'mlcli v0.1.0 - Initial Release',
-      body: `## 🚀 Initial Release
+      tag_name: 'v0.1.1',
+      name: 'mlcli-toolkit v0.1.1',
+      body: `## 🚀 Release v0.1.1
 
 ### Features
 - **CLI Training**: Train ML models from the command line
@@ -188,29 +188,29 @@ pip install mlcli-toolkit
 
 ### Quick Start
 \`\`\`bash
-mlcli train -d data.csv -m random_forest --target label
+mlcli train --config config.json
 \`\`\`
 `,
       draft: false,
       prerelease: false,
       created_at: '2025-12-01T10:00:00Z',
       published_at: '2025-12-01T10:00:00Z',
-      html_url: `https://github.com/${GITHUB_REPO}/releases/tag/v0.1.0`,
+      html_url: `https://github.com/${GITHUB_REPO}/releases/tag/v0.1.1`,
       assets: [
         {
           id: 1,
-          name: 'mlcli-0.1.0-py3-none-any.whl',
+          name: 'mlcli_toolkit-0.1.1-py3-none-any.whl',
           size: 156000,
           download_count: 42,
-          browser_download_url: `https://github.com/${GITHUB_REPO}/releases/download/v0.1.0/mlcli-0.1.0-py3-none-any.whl`,
+          browser_download_url: `https://github.com/${GITHUB_REPO}/releases/download/v0.1.1/mlcli_toolkit-0.1.1-py3-none-any.whl`,
           content_type: 'application/zip',
         },
         {
           id: 2,
-          name: 'mlcli-0.1.0.tar.gz',
+          name: 'mlcli_toolkit-0.1.1.tar.gz',
           size: 145000,
           download_count: 28,
-          browser_download_url: `https://github.com/${GITHUB_REPO}/releases/download/v0.1.0/mlcli-0.1.0.tar.gz`,
+          browser_download_url: `https://github.com/${GITHUB_REPO}/releases/download/v0.1.1/mlcli_toolkit-0.1.1.tar.gz`,
           content_type: 'application/gzip',
         },
       ],

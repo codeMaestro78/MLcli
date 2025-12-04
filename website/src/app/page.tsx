@@ -4,23 +4,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { fetchLatestRelease, fetchRepoStats } from '@/lib/api';
 import {
-    ArrowRight,
-    BarChart3,
-    Brain,
-    CheckCircle,
-    Code2,
-    Download,
-    FlaskConical,
-    GitFork,
-    Github,
-    Layers,
-    Rocket,
-    Settings,
-    Sparkles,
-    Star,
-    Terminal,
-    TrendingUp,
-    Zap,
+  ArrowRight,
+  BarChart3,
+  Brain,
+  CheckCircle,
+  Code2,
+  Download,
+  FlaskConical,
+  GitFork,
+  Github,
+  Layers,
+  Rocket,
+  Settings,
+  Sparkles,
+  Star,
+  Terminal,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -72,17 +72,17 @@ const features = [
 const quickstartCode = `# Install mlcli-toolkit
 pip install mlcli-toolkit
 
-# Train a Random Forest model
-mlcli train -d data.csv -m random_forest --target label
+# Train a model using config file
+mlcli train --config configs/rf_config.json
 
 # Evaluate the model
-mlcli evaluate -m models/rf_model.pkl -d test.csv
+mlcli eval --model models/rf_model.pkl --data test.csv
 
 # Track experiments
-mlcli list-experiments
+mlcli list-runs
 
 # Tune hyperparameters
-mlcli tune -d data.csv -m random_forest --method bayesian`;
+mlcli tune --config configs/tune_config.json`;
 
 export default async function HomePage() {
   const [latestRelease, repoStats] = await Promise.all([

@@ -42,7 +42,7 @@ const sections = [
     icon: Brain,
     title: 'Model Explainability',
     description: 'Understand your models with SHAP and LIME.',
-    href: '/docs/explainability',
+    href: '/docs/explainer',
   },
 ];
 

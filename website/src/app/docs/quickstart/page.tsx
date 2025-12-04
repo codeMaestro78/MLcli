@@ -95,19 +95,18 @@ export default function QuickstartPage() {
       <h2 id="evaluate">Evaluate Your Model</h2>
       <p>Evaluate your trained model on a test set:</p>
       <CodeBlock
-        code={`mlcli evaluate \\
+        code={`mlcli eval \\
   --model models/random_forest_model.pkl \\
-  --data data/test.csv \\
-  --target label`}
+  --data data/test.csv`}
         language="bash"
       />
 
       <h2 id="view-experiments">View Experiments</h2>
       <p>List all your experiment runs:</p>
-      <CodeBlock code="mlcli list-experiments" language="bash" />
+      <CodeBlock code="mlcli list-runs" language="bash" />
 
       <p>View details of a specific run:</p>
-      <CodeBlock code="mlcli show-experiment --run-id run_abc123" language="bash" />
+      <CodeBlock code="mlcli show-run --run-id run_abc123" language="bash" />
 
       <h2 id="next-steps">Next Steps</h2>
       <div className="not-prose mt-6 flex gap-4">
