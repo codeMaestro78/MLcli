@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 import logging
 
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers, models, callbacks
 

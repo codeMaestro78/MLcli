@@ -4,7 +4,7 @@ Encoder Preprocessors
 Label, OneHot, and Ordinal encoding for categorical features.
 """
 
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 import numpy as np
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, OrdinalEncoder
 import logging

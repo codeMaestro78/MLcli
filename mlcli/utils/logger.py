@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-from joblib import Logger
 
 # ANSI color code for the console output
 

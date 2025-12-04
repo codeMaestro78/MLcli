@@ -5,7 +5,7 @@ Defines the interface for all hyperparameter tuning strategies.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Callable, Tuple
+from typing import Any, Dict, List, Optional
 import numpy as np
 from pathlib import Path
 import logging
@@ -81,7 +81,6 @@ class BaseTuner(ABC):
         Returns:
             Dictionary containing best parameters and results
         """
-        pass
 
     @abstractmethod
     def get_best_params(self) -> Dict[str, Any]:
@@ -91,7 +90,6 @@ class BaseTuner(ABC):
         Returns:
             Dictionary of best parameters
         """
-        pass
 
     @abstractmethod
     def get_results(self) -> Dict[str, Any]:
@@ -101,7 +99,6 @@ class BaseTuner(ABC):
         Returns:
             Dictionary with all trial results
         """
-        pass
 
     def get_best_score(self) -> float:
         """

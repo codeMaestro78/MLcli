@@ -56,7 +56,6 @@ class BaseTrainer(ABC):
         Returns:
             Dictionary containing training history/metrics
         """
-        pass
 
     @abstractmethod
     def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> Dict[str, float]:
@@ -70,7 +69,6 @@ class BaseTrainer(ABC):
         Returns:
             Dictionary of evaluation metrics
         """
-        pass
 
     @abstractmethod
     def predict(self, X: np.ndarray) -> np.ndarray:
@@ -83,7 +81,6 @@ class BaseTrainer(ABC):
         Returns:
             Predicted labels
         """
-        pass
 
     @abstractmethod
     def predict_proba(self, X: np.ndarray) -> Optional[np.ndarray]:
@@ -96,7 +93,6 @@ class BaseTrainer(ABC):
         Returns:
             Predicted probabilities or None if not supported
         """
-        pass
 
     @abstractmethod
     def save(self, save_dir: Path, formats: List[str]) -> Dict[str, Path]:
@@ -110,7 +106,6 @@ class BaseTrainer(ABC):
         Returns:
             Dictionary mapping format names to file paths
         """
-        pass
 
     @abstractmethod
     def load(self, model_path: Path, model_format: str) -> None:
@@ -121,7 +116,6 @@ class BaseTrainer(ABC):
             model_path: Path to model file
             model_format: Format of the model file
         """
-        pass
 
     @classmethod
     @abstractmethod
@@ -132,7 +126,6 @@ class BaseTrainer(ABC):
         Returns:
             Dictionary of default parameters
         """
-        pass
 
     def get_model(self) -> Any:
         """

@@ -4,7 +4,7 @@ Scaler Preprocessors
 Standard, MinMax, and Robust scaling for features.
 """
 
-from typing import Optional, List
+from typing import Optional
 import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 import logging

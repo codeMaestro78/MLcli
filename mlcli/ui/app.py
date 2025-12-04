@@ -18,17 +18,12 @@ from textual.widgets import (
     Select,
     ListView,
     ListItem,
-    TabbedContent,
-    TabPane,
     Rule,
-    Markdown,
 )
 from textual.screen import Screen
 from textual.binding import Binding
-from textual import events
 from pathlib import Path
-from typing import Optional, List, Dict, Any
-import json
+from typing import Optional, Dict, Any
 
 
 class WelcomeScreen(Screen):
@@ -207,7 +202,7 @@ class TrainScreen(Screen):
 
         try:
             from mlcli import registry
-            from mlcli import trainers  # Trigger registration
+            from mlcli import trainers  # noqa: F401
 
             for model_name in registry.list_models():
                 metadata = registry.get_metadata(model_name)
@@ -359,10 +354,9 @@ class TrainingProgressScreen(Screen):
             from mlcli.config.loader import ConfigLoader
             from mlcli.utils.io import load_data
             from mlcli import registry
-            from mlcli import trainers
+            from mlcli import trainers  # noqa: F401
             from mlcli.runner.experiment_tracker import ExperimentTracker
             from sklearn.model_selection import train_test_split
-            import numpy as np
 
             # Load config
             config_loader = ConfigLoader(self.config_path)
@@ -488,7 +482,7 @@ class TrainingProgressScreen(Screen):
 
             try:
                 tracker.end_run(status="failed", error=str(e))
-            except:
+            except Exception:
                 pass
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -579,7 +573,7 @@ class EvaluateScreen(Screen):
 
         try:
             from mlcli import registry
-            from mlcli import trainers
+            from mlcli import trainers  # noqa: F401
 
             options = [(name, name) for name in registry.list_models()]
             select.set_options(options)
@@ -627,7 +621,7 @@ class EvaluateScreen(Screen):
             status.update("[yellow]⏳ Loading model and data...[/yellow]")
 
             from mlcli import registry
-            from mlcli import trainers
+            from mlcli import trainers  # noqa: F401
             from mlcli.utils.io import load_data
             from pathlib import Path
 
@@ -853,7 +847,7 @@ class ModelsScreen(Screen):
 
         try:
             from mlcli import registry
-            from mlcli import trainers
+            from mlcli import trainers  # noqa: F401
 
             for model_name in registry.list_models():
                 metadata = registry.get_metadata(model_name)
@@ -884,7 +878,7 @@ class ModelsScreen(Screen):
 
         try:
             from mlcli import registry
-            from mlcli import trainers
+            from mlcli import trainers  # noqa: F401
 
             metadata = registry.get_metadata(model_name)
             trainer_class = registry.get(model_name)

@@ -56,7 +56,7 @@ def load_data(
         return _load_numpy(data_path, **kwargs)
     else:
         raise ValueError(
-            f"Unsupported data type :{data_path}. ", f"Supported types: csv,image,numpy"
+            "Unsupported data type :" + str(data_path) + ". ", "Supported types: csv,image,numpy"
         )
 
 
@@ -248,7 +248,7 @@ def save_model(
             json.dump(metadata, f, indent=2)
         logger.debug(f"Saved metadata to :{metadata_path}")
 
-    logger.info(f"Model saved successfully")
+    logger.info("Model saved successfully")
     return save_path
 
 

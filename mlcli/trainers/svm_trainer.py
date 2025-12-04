@@ -106,7 +106,8 @@ class SVMTrainer(BaseTrainer):
             self.training_history["test_metrics"] = test_metrics
 
         self.is_trained = True
-        logger.info(f"Training complete. Accuracy: {train_metrics["accuracy"]:.4f}")
+        accuracy = train_metrics["accuracy"]
+        logger.info(f"Training complete. Accuracy: {accuracy:.4f}")
         logger.info(f"Support vectors: {sum(self.model.n_support_)}")
 
         return self.training_history
@@ -245,7 +246,7 @@ class SVMTrainer(BaseTrainer):
 
         return saved_paths
 
-    def load(self, model_name: Path, model_format: str) -> None:
+    def load(self, model_path: Path, model_format: str) -> None:
         """
         Load SVM model.
 

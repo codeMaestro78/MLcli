@@ -9,8 +9,7 @@ from typing import Any, Dict, List, Optional
 from itertools import product
 from datetime import datetime
 import logging
-from sklearn.model_selection import StratifiedKFold, cross_val_score
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from sklearn.model_selection import StratifiedKFold
 import warnings
 
 from mlcli.tuner.base_tuner import BaseTuner
@@ -165,7 +164,7 @@ class GridSearchTuner(BaseTuner):
 
         if self.verbose >= 1:
             duration = self.get_tuning_duration()
-            logger.info(f"\nGrid Search Complete!")
+            logger.info("\nGrid Search Complete!")
             logger.info(f"Best Score: {best_score:.4f}")
             logger.info(f"Best Params: {best_params}")
             logger.info(f"Total Duration: {duration:.1f}s")
@@ -246,7 +245,7 @@ class GridSearchTuner(BaseTuner):
             for key, value in metrics.items():
                 if isinstance(value, (int, float)):
                     return value
-            raise ValueError(f"Could not find score for metric '{self.scoring}'")
+            raise ValueError("Could not find score for metric '" + self.scoring + "'")
 
     def get_best_params(self) -> Dict[str, Any]:
         """Get best parameters."""

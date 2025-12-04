@@ -98,7 +98,7 @@ class ConfigLoader:
         """
 
         if not self.config:
-            raise ValueError(f"Configuration is Empty")
+            raise ValueError("Configuration is Empty")
 
         # check required keys
         missing_keys = [key for key in self.REQUIRED_KEYS if key not in self.config]
@@ -109,10 +109,10 @@ class ConfigLoader:
             )
         #  validate dataset section
         if "path" not in self.config["dataset"]:
-            raise ValueError(f"'dataset' section must contain 'path key")
+            raise ValueError("'dataset' section must contain 'path key")
         # validate model section
         if "type" not in self.config["model"]:
-            raise ValueError(f"'model' section must contain 'type' key")
+            raise ValueError("'model' section must contain 'type' key")
 
         logger.debug("Configuration validation passed")
 

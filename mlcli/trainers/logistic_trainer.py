@@ -8,7 +8,7 @@ import numpy as np
 import pickle
 import joblib
 from pathlib import Path
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional, List
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 import logging
@@ -123,7 +123,7 @@ class LogisticRegressionTrainer(BaseTrainer):
         """
 
         if self.model is None:
-            raise RuntimeError(f"Model not trained. Call train() first.")
+            raise RuntimeError("Model not trained. Call train() first.")
 
         # Scale features if enabled
         if self.scale_features and self.scaler is not None:

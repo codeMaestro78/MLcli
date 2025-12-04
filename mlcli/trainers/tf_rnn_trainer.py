@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 import logging
 
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers, models, callbacks
 
@@ -308,7 +307,7 @@ class TFRNNTrainer(BaseTrainer):
 
         # Keras evaluation
         results = self.model.evaluate(X_test, y_test, verbose=0)
-        loss, accuracy = results[0], results[1]
+        loss = results[0]
 
         # Detailed metrics
         y_pred = self.predict(X_test)

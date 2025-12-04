@@ -7,10 +7,8 @@ Abstract base class for all preprocessors.
 from abc import ABC, abstractmethod
 from typing import Optional, Dict, Any, Union, List
 import numpy as np
-import pandas as pd
 from pathlib import Path
 import pickle
-import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -51,7 +49,6 @@ class BasePreprocessor(ABC):
         Returns:
             Self
         """
-        pass
 
     @abstractmethod
     def transform(self, X: np.ndarray) -> np.ndarray:
@@ -64,7 +61,6 @@ class BasePreprocessor(ABC):
         Returns:
             Transformed data
         """
-        pass
 
     def fit_transform(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> np.ndarray:
         """

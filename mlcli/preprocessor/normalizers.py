@@ -4,7 +4,7 @@ Normalizer Preprocessor
 Normalize samples to unit norm (L1, L2, Max).
 """
 
-from typing import Optional, List
+from typing import Optional
 import numpy as np
 from sklearn.preprocessing import Normalizer
 import logging

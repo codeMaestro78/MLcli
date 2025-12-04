@@ -6,17 +6,15 @@ model management, hyperparameter tuning, model explainability,
 data preprocessing, and interactive UI.
 """
 
+import json
 import typer
+import numpy as np
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
-from rich import print as rprint
+from rich.progress import Progress, SpinnerColumn, TextColumn
 from pathlib import Path
-from typing import Optional, List
-import json
-import sys
-import numpy as np
+from typing import Optional
 import pandas as pd
 
 # Initialize Typer app
@@ -34,7 +32,7 @@ def get_registry():
     from mlcli import registry
 
     # Import trainers to trigger registration
-    from mlcli import trainers
+    from mlcli import trainers  # noqa: F401
 
     return registry
 
@@ -74,7 +72,6 @@ def train(
     from mlcli.utils.io import load_data
     from mlcli.utils.logger import setup_logger
     from sklearn.model_selection import train_test_split
-    import numpy as np
 
     # Setup logger
     log_level = "INFO" if verbose else "WARNING"
@@ -153,11 +150,11 @@ def train(
         console.print(f"[green]Test samples:[/green] {len(X_test)}")
 
         # Create trainer
-        console.print(f"\n[cyan]Initializing trainer...[/cyan]")
+        console.print("\n[cyan]Initializing trainer...[/cyan]")
         trainer = registry.get_trainer(model_type, config=config_loader.config.get("model", {}))
 
         # Train model
-        console.print(f"\n[bold cyan]Starting training...[/bold cyan]\n")
+        console.print("\n[bold cyan]Starting training...[/bold cyan]\n")
 
         with Progress(
             SpinnerColumn(),
@@ -173,7 +170,7 @@ def train(
         tracker.log_training_history(training_history)
 
         # Evaluate on test set
-        console.print(f"\n[cyan]Evaluating on test set...[/cyan]")
+        console.print("\n[cyan]Evaluating on test set...[/cyan]")
         test_metrics = trainer.evaluate(X_test, y_test)
 
         # Log metrics
@@ -236,7 +233,7 @@ def train(
         # End run with error
         try:
             tracker.end_run(status="failed", error=str(e))
-        except:
+        except Exception:
             pass
 
         if verbose:
@@ -283,7 +280,6 @@ def tune(
     from mlcli.utils.io import load_data
     from mlcli.utils.logger import setup_logger
     from mlcli.tuner import get_tuner
-    import numpy as np
 
     log_level = "INFO" if verbose else "WARNING"
     setup_logger("mlcli", level=log_level)
@@ -339,7 +335,7 @@ def tune(
             console.print("[yellow]Add a 'tuning.param_space' section to your config file[/yellow]")
             raise typer.Exit(1)
 
-        console.print(f"\n[cyan]Parameter Space:[/cyan]")
+        console.print("\n[cyan]Parameter Space:[/cyan]")
         for param, values in param_space.items():
             console.print(f"  {param}: {values}")
 
@@ -529,12 +525,12 @@ def evaluate(
             raise typer.Exit(1)
 
         # Create and load trainer
-        console.print(f"\n[cyan]Loading model...[/cyan]")
+        console.print("\n[cyan]Loading model...[/cyan]")
         trainer = registry.get_trainer(model_type, config={})
         trainer.load(model_path, model_format)
 
         # Evaluate
-        console.print(f"\n[cyan]Evaluating model...[/cyan]")
+        console.print("\n[cyan]Evaluating model...[/cyan]")
         metrics = trainer.evaluate(X, y)
 
         # Display metrics
@@ -810,7 +806,6 @@ def explain(
         mlcli explain -m models/xgb_model.pkl -d data/test.csv -t xgboost --method lime
         mlcli explain -m models/logistic_model.pkl -d data/train.csv -t logistic_regression -e shap --plot-output shap_plot.png
     """
-    from mlcli.config.loader import ConfigLoader
     from mlcli.utils.io import load_data
     from mlcli.utils.logger import setup_logger
     from mlcli.explainer import ExplainerFactory
@@ -872,7 +867,7 @@ def explain(
         # Get the underlying model
         model = trainer.model
 
-        console.print(f"[green]Model loaded successfully[/green]")
+        console.print("[green]Model loaded successfully[/green]")
 
         # Get class names if classification
         class_names = None
@@ -957,7 +952,7 @@ def explain(
             else:
                 plot_path = Path("runs") / f"explanation_{model_type}_{method}_plot.png"
 
-            console.print(f"\n[cyan]Generating plot...[/cyan]")
+            console.print("\n[cyan]Generating plot...[/cyan]")
 
             try:
                 explainer.plot(
@@ -1049,7 +1044,7 @@ def explain_instance(
             raise typer.Exit(1)
 
         # Load model
-        console.print(f"\n[cyan]Loading model...[/cyan]")
+        console.print("\n[cyan]Loading model...[/cyan]")
         trainer = registry.get_trainer(model_type, config={})
         trainer.load(model_path, model_format)
         model = trainer.model
@@ -1108,8 +1103,6 @@ def explain_instance(
 
         # Save explanation
         if output:
-            import json
-
             with open(output, "w") as f:
                 json.dump(explanation, f, indent=2, default=str)
             console.print(f"\n[green]Explanation saved to:[/green] {output}")
@@ -1268,7 +1261,7 @@ def preprocess(
             raise typer.Exit(1)
 
         # Fit and transform
-        console.print(f"\n[bold cyan]Fitting and transforming data...[/bold cyan]")
+        console.print("\n[bold cyan]Fitting and transforming data...[/bold cyan]")
 
         with Progress(
             SpinnerColumn(),
@@ -1431,7 +1424,7 @@ def preprocess_pipeline(
         console.print(f"[green]Pipeline steps:[/green] {len(pipeline)}")
 
         # Fit and transform
-        console.print(f"\n[bold cyan]Running preprocessing pipeline...[/bold cyan]")
+        console.print("\n[bold cyan]Running preprocessing pipeline...[/bold cyan]")
 
         with Progress(
             SpinnerColumn(),
@@ -1602,7 +1595,6 @@ def main():
 
     Train, evaluate, and track machine learning models with ease.
     """
-    pass
 
 
 if __name__ == "__main__":

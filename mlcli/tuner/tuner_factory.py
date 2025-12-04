@@ -4,7 +4,7 @@ Tuner Factory
 Factory pattern for creating tuner instances based on method name.
 """
 
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Type
 import logging
 
 from mlcli.tuner.base_tuner import BaseTuner

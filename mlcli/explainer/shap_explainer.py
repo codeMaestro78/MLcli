@@ -123,8 +123,6 @@ class SHAPExplainer(BaseExplainer):
         Returns:
             Dictionary containing SHAP values and explanations
         """
-        import shap
-
         X = self._validate_input(X)
 
         if X_background is not None:

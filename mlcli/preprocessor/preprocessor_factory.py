@@ -4,7 +4,7 @@ Preprocessor Factory
 Factory for creating preprocessors by name.
 """
 
-from typing import Dict, Any, Optional, List, Type
+from typing import Dict, Any, List, Type
 import logging
 
 from mlcli.preprocessor.base_preprocessor import BasePreprocessor

@@ -6,7 +6,7 @@ Parzen Estimator (TPE) algorithm.
 """
 
 import numpy as np
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Dict, Optional
 from datetime import datetime
 import logging
 from sklearn.model_selection import StratifiedKFold
@@ -163,7 +163,7 @@ class OptunaTuner(BaseTuner):
 
         if self.verbose >= 1:
             duration = self.get_tuning_duration()
-            logger.info(f"\nOptuna Optimization Complete!")
+            logger.info("\nOptuna Optimization Complete!")
             logger.info(f"Best Score: {self.best_score_:.4f}")
             logger.info(f"Best Params: {self.best_params_}")
             logger.info(f"Total Duration: {duration:.1f}s")
@@ -343,7 +343,7 @@ class OptunaTuner(BaseTuner):
             for key, value in metrics.items():
                 if isinstance(value, (int, float)):
                     return value
-            raise ValueError(f"Could not find score for metric '{self.scoring}'")
+            raise ValueError("Could not find score for metric '" + self.scoring + "'")
 
     def get_best_params(self) -> Dict[str, Any]:
         """Get best parameters."""

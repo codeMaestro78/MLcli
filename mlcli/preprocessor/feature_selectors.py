@@ -4,7 +4,7 @@ Feature Selection Preprocessors
 SelectKBest, RFE, and VarianceThreshold for feature selection.
 """
 
-from typing import Optional, List, Dict, Any, Callable
+from typing import Optional, List, Dict, Any
 import numpy as np
 from sklearn.feature_selection import (
     SelectKBest,

@@ -93,7 +93,7 @@ def _compute_classification_metrics(
 
     # Determine if binary or multiclass
     n_classes = len(np.unique(y_test))
-    is_binary = n_classes = 2
+    is_binary = n_classes == 2
 
     try:
         # Accuracy

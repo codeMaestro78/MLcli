@@ -50,7 +50,6 @@ class BaseExplainer(ABC):
         Returns:
             Dictionary containing explanation results
         """
-        pass
 
     @abstractmethod
     def explain_instance(self, instance: Union[np.ndarray, pd.Series], **kwargs) -> Dict[str, Any]:
@@ -64,7 +63,6 @@ class BaseExplainer(ABC):
         Returns:
             Dictionary containing explanation results
         """
-        pass
 
     @abstractmethod
     def get_feature_importance(self) -> Dict[str, float]:
@@ -74,7 +72,6 @@ class BaseExplainer(ABC):
         Returns:
             Dictionary mapping feature names to importance scores
         """
-        pass
 
     @abstractmethod
     def plot(
@@ -88,7 +85,6 @@ class BaseExplainer(ABC):
             output_path: Path to save the plot
             **kwargs: Additional plot arguments
         """
-        pass
 
     def _validate_input(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
         """
