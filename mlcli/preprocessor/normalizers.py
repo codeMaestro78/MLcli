@@ -30,7 +30,7 @@ class NormalizerProcessor(BasePreprocessor):
             norm: Type of norm to use ('l1', 'l2', 'max')
             **kwargs: Additional configuration
         """
-        if norm not in ['l1', 'l2', 'max']:
+        if norm not in ["l1", "l2", "max"]:
             raise ValueError(f"norm must be 'l1', 'l2', or 'max', got: {norm}")
 
         super().__init__(name="normalizer", **kwargs)

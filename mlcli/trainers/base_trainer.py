@@ -42,7 +42,7 @@ class BaseTrainer(ABC):
         X_train: np.ndarray,
         y_train: np.ndarray,
         X_val: Optional[np.ndarray] = None,
-        y_val: Optional[np.ndarray] = None
+        y_val: Optional[np.ndarray] = None,
     ) -> Dict[str, Any]:
         """
         Train the model on provided data.
@@ -59,11 +59,7 @@ class BaseTrainer(ABC):
         pass
 
     @abstractmethod
-    def evaluate(
-        self,
-        X_test: np.ndarray,
-        y_test: np.ndarray
-    ) -> Dict[str, float]:
+    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> Dict[str, float]:
         """
         Evaluate model on test data.
 
@@ -150,8 +146,7 @@ class BaseTrainer(ABC):
         """
         if self.model is None:
             raise RuntimeError(
-                f"{self.__class__.__name__} has no trained model. "
-                "Call train() or load() first."
+                f"{self.__class__.__name__} has no trained model. " "Call train() or load() first."
             )
         return self.model
 

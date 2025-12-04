@@ -53,7 +53,7 @@ class ExperimentTracker:
         """Load existing experiments from file."""
         if self.experiments_file.exists():
             try:
-                with open(self.experiments_file, 'r', encoding='utf-8') as f:
+                with open(self.experiments_file, "r", encoding="utf-8") as f:
                     self.experiments = json.load(f)
                 logger.debug(f"Loaded {len(self.experiments)} experiments")
             except (json.JSONDecodeError, IOError) as e:
@@ -65,7 +65,7 @@ class ExperimentTracker:
     def _save_experiments(self) -> None:
         """Save experiments to file."""
         try:
-            with open(self.experiments_file, 'w', encoding='utf-8') as f:
+            with open(self.experiments_file, "w", encoding="utf-8") as f:
                 json.dump(self.experiments, f, indent=2, default=str)
             logger.debug(f"Saved {len(self.experiments)} experiments")
         except IOError as e:
@@ -76,7 +76,7 @@ class ExperimentTracker:
         model_type: str,
         framework: str,
         config: Dict[str, Any],
-        run_name: Optional[str] = None
+        run_name: Optional[str] = None,
     ) -> str:
         """
         Start a new experiment run.
@@ -107,7 +107,7 @@ class ExperimentTracker:
             "model_paths": {},
             "training_history": {},
             "duration_seconds": None,
-            "error": None
+            "error": None,
         }
 
         self._start_time = datetime.now()
@@ -211,7 +211,7 @@ class ExperimentTracker:
             return {}
 
         # Calculate duration
-        if hasattr(self, '_start_time'):
+        if hasattr(self, "_start_time"):
             duration = (datetime.now() - self._start_time).total_seconds()
             self.current_run["duration_seconds"] = round(duration, 2)
 
@@ -286,7 +286,9 @@ class ExperimentTracker:
         """
         return [run for run in self.experiments if run["framework"] == framework]
 
-    def get_best_run(self, metric: str = "accuracy", higher_is_better: bool = True) -> Optional[Dict[str, Any]]:
+    def get_best_run(
+        self, metric: str = "accuracy", higher_is_better: bool = True
+    ) -> Optional[Dict[str, Any]]:
         """
         Get the best run based on a metric.
 
@@ -300,10 +302,7 @@ class ExperimentTracker:
         if not self.experiments:
             return None
 
-        valid_runs = [
-            run for run in self.experiments
-            if metric in run.get("metrics", {})
-        ]
+        valid_runs = [run for run in self.experiments if metric in run.get("metrics", {})]
 
         if not valid_runs:
             return None
@@ -320,11 +319,7 @@ class ExperimentTracker:
         Returns:
             List of recent runs
         """
-        sorted_runs = sorted(
-            self.experiments,
-            key=lambda r: r["timestamp"],
-            reverse=True
-        )
+        sorted_runs = sorted(self.experiments, key=lambda r: r["timestamp"], reverse=True)
         return sorted_runs[:n]
 
     def delete_run(self, run_id: str) -> bool:
@@ -384,17 +379,13 @@ class ExperimentTracker:
             f"Duration:   {run.get('duration_seconds', 'N/A')}s",
             "",
             "Hyperparameters:",
-            "-" * 40
+            "-" * 40,
         ]
 
         for param, value in run.get("hyperparameters", {}).items():
             lines.append(f"  {param}: {value}")
 
-        lines.extend([
-            "",
-            "Metrics:",
-            "-" * 40
-        ])
+        lines.extend(["", "Metrics:", "-" * 40])
 
         for metric, value in run.get("metrics", {}).items():
             if isinstance(value, float):
@@ -403,11 +394,7 @@ class ExperimentTracker:
                 lines.append(f"  {metric}: {value}")
 
         if run.get("model_paths"):
-            lines.extend([
-                "",
-                "Model Paths:",
-                "-" * 40
-            ])
+            lines.extend(["", "Model Paths:", "-" * 40])
             for fmt, path in run["model_paths"].items():
                 lines.append(f"  {fmt}: {path}")
 
@@ -438,7 +425,7 @@ class ExperimentTracker:
                 "model_type": run["model_type"],
                 "framework": run["framework"],
                 "status": run["status"],
-                "duration_seconds": run.get("duration_seconds", "")
+                "duration_seconds": run.get("duration_seconds", ""),
             }
 
             # Add metrics
@@ -454,7 +441,7 @@ class ExperimentTracker:
 
         columns = sorted(all_columns)
 
-        with open(output_path, 'w', newline='', encoding='utf-8') as f:
+        with open(output_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=columns)
             writer.writeheader()
             writer.writerows(rows)

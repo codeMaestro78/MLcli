@@ -17,5 +17,5 @@ __all__ = [
     "RandomSearchTuner",
     "OptunaTuner",
     "TunerFactory",
-    "get_tuner"
+    "get_tuner",
 ]

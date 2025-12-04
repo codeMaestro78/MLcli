@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
     name="tf_cnn",
     description="TensorFlow Convolutional Neural Network for image classification",
     framework="tensorflow",
-    model_type="classification"
+    model_type="classification",
 )
 class TFCNNTrainer(BaseTrainer):
     """
@@ -43,33 +43,31 @@ class TFCNNTrainer(BaseTrainer):
         """
         super().__init__(config)
 
-        params = self.config.get('params', {})
+        params = self.config.get("params", {})
         default_params = self.get_default_params()
         self.model_params = {**default_params, **params}
 
         # Architecture configuration
-        self.conv_layers = self.model_params.get('conv_layers', [32, 64, 128])
-        self.kernel_size = self.model_params.get('kernel_size', 3)
-        self.pool_size = self.model_params.get('pool_size', 2)
-        self.dense_layers = self.model_params.get('dense_layers', [128])
-        self.dropout = self.model_params.get('dropout', 0.3)
-        self.use_batch_norm = self.model_params.get('batch_normalization', True)
+        self.conv_layers = self.model_params.get("conv_layers", [32, 64, 128])
+        self.kernel_size = self.model_params.get("kernel_size", 3)
+        self.pool_size = self.model_params.get("pool_size", 2)
+        self.dense_layers = self.model_params.get("dense_layers", [128])
+        self.dropout = self.model_params.get("dropout", 0.3)
+        self.use_batch_norm = self.model_params.get("batch_normalization", True)
 
         # Input configuration
-        self.input_shape = tuple(self.model_params.get('input_shape', [224, 224, 3]))
+        self.input_shape = tuple(self.model_params.get("input_shape", [224, 224, 3]))
 
         # Training configuration
-        self.optimizer = self.model_params.get('optimizer', 'adam')
-        self.learning_rate = self.model_params.get('learning_rate', 0.001)
-        self.epochs = self.model_params.get('epochs', 30)
-        self.batch_size = self.model_params.get('batch_size', 32)
+        self.optimizer = self.model_params.get("optimizer", "adam")
+        self.learning_rate = self.model_params.get("learning_rate", 0.001)
+        self.epochs = self.model_params.get("epochs", 30)
+        self.batch_size = self.model_params.get("batch_size", 32)
 
         # Data augmentation
-        self.use_augmentation = self.model_params.get('data_augmentation', False)
+        self.use_augmentation = self.model_params.get("data_augmentation", False)
 
-        logger.info(
-            f"Initialized TFCNNTrainer with input_shape={self.input_shape}"
-        )
+        logger.info(f"Initialized TFCNNTrainer with input_shape={self.input_shape}")
 
     def _build_model(self, n_classes: int) -> keras.Model:
         """
@@ -81,7 +79,7 @@ class TFCNNTrainer(BaseTrainer):
         Returns:
             Compiled Keras model
         """
-        model = models.Sequential(name='CNN')
+        model = models.Sequential(name="CNN")
 
         # Input layer
         model.add(layers.Input(shape=self.input_shape))
@@ -95,57 +93,52 @@ class TFCNNTrainer(BaseTrainer):
         # Convolutional blocks
         for i, filters in enumerate(self.conv_layers):
             # Convolutional layer
-            model.add(layers.Conv2D(
-                filters,
-                kernel_size=self.kernel_size,
-                padding='same',
-                activation=None,
-                name=f'conv_{i+1}'
-            ))
+            model.add(
+                layers.Conv2D(
+                    filters,
+                    kernel_size=self.kernel_size,
+                    padding="same",
+                    activation=None,
+                    name=f"conv_{i+1}",
+                )
+            )
 
             # Batch normalization
             if self.use_batch_norm:
-                model.add(layers.BatchNormalization(name=f'batch_norm_{i+1}'))
+                model.add(layers.BatchNormalization(name=f"batch_norm_{i+1}"))
 
             # Activation
-            model.add(layers.Activation('relu', name=f'relu_{i+1}'))
+            model.add(layers.Activation("relu", name=f"relu_{i+1}"))
 
             # Max pooling
-            model.add(layers.MaxPooling2D(
-                pool_size=self.pool_size,
-                name=f'pool_{i+1}'
-            ))
+            model.add(layers.MaxPooling2D(pool_size=self.pool_size, name=f"pool_{i+1}"))
 
             # Dropout
             if self.dropout > 0:
-                model.add(layers.Dropout(self.dropout, name=f'dropout_{i+1}'))
+                model.add(layers.Dropout(self.dropout, name=f"dropout_{i+1}"))
 
         # Flatten
-        model.add(layers.Flatten(name='flatten'))
+        model.add(layers.Flatten(name="flatten"))
 
         # Dense layers
         for i, units in enumerate(self.dense_layers):
-            model.add(layers.Dense(units, activation='relu', name=f'dense_{i+1}'))
+            model.add(layers.Dense(units, activation="relu", name=f"dense_{i+1}"))
 
             if self.dropout > 0:
-                model.add(layers.Dropout(self.dropout, name=f'dense_dropout_{i+1}'))
+                model.add(layers.Dropout(self.dropout, name=f"dense_dropout_{i+1}"))
 
         # Output layer
         if n_classes == 2:
-            model.add(layers.Dense(1, activation='sigmoid', name='output'))
-            output_loss = 'binary_crossentropy'
+            model.add(layers.Dense(1, activation="sigmoid", name="output"))
+            output_loss = "binary_crossentropy"
         else:
-            model.add(layers.Dense(n_classes, activation='softmax', name='output'))
-            output_loss = 'sparse_categorical_crossentropy'
+            model.add(layers.Dense(n_classes, activation="softmax", name="output"))
+            output_loss = "sparse_categorical_crossentropy"
 
         # Compile model
         optimizer_instance = self._get_optimizer()
 
-        model.compile(
-            optimizer=optimizer_instance,
-            loss=output_loss,
-            metrics=['accuracy']
-        )
+        model.compile(optimizer=optimizer_instance, loss=output_loss, metrics=["accuracy"])
 
         logger.info(f"Built CNN model with {model.count_params()} parameters")
 
@@ -155,15 +148,13 @@ class TFCNNTrainer(BaseTrainer):
         """Get optimizer instance."""
         optimizer_name = self.optimizer.lower()
 
-        if optimizer_name == 'adam':
+        if optimizer_name == "adam":
             return keras.optimizers.Adam(learning_rate=self.learning_rate)
-        elif optimizer_name == 'sgd':
+        elif optimizer_name == "sgd":
             return keras.optimizers.SGD(
-                learning_rate=self.learning_rate,
-                momentum=0.9,
-                nesterov=True
+                learning_rate=self.learning_rate, momentum=0.9, nesterov=True
             )
-        elif optimizer_name == 'rmsprop':
+        elif optimizer_name == "rmsprop":
             return keras.optimizers.RMSprop(learning_rate=self.learning_rate)
         else:
             return keras.optimizers.Adam(learning_rate=self.learning_rate)
@@ -174,21 +165,18 @@ class TFCNNTrainer(BaseTrainer):
 
         if X_val is not None:
             # Early stopping
-            callback_list.append(callbacks.EarlyStopping(
-                monitor='val_loss',
-                patience=10,
-                restore_best_weights=True,
-                verbose=1
-            ))
+            callback_list.append(
+                callbacks.EarlyStopping(
+                    monitor="val_loss", patience=10, restore_best_weights=True, verbose=1
+                )
+            )
 
             # Reduce learning rate
-            callback_list.append(callbacks.ReduceLROnPlateau(
-                monitor='val_loss',
-                factor=0.5,
-                patience=5,
-                min_lr=1e-7,
-                verbose=1
-            ))
+            callback_list.append(
+                callbacks.ReduceLROnPlateau(
+                    monitor="val_loss", factor=0.5, patience=5, min_lr=1e-7, verbose=1
+                )
+            )
 
         return callback_list
 
@@ -197,7 +185,7 @@ class TFCNNTrainer(BaseTrainer):
         X_train: np.ndarray,
         y_train: np.ndarray,
         X_val: Optional[np.ndarray] = None,
-        y_val: Optional[np.ndarray] = None
+        y_val: Optional[np.ndarray] = None,
     ) -> Dict[str, Any]:
         """
         Train CNN model.
@@ -215,9 +203,7 @@ class TFCNNTrainer(BaseTrainer):
 
         # Validate input shape
         if len(X_train.shape) != 4:
-            raise ValueError(
-                f"Expected 4D input (N, H, W, C), got shape {X_train.shape}"
-            )
+            raise ValueError(f"Expected 4D input (N, H, W, C), got shape {X_train.shape}")
 
         # Update input shape from data
         self.input_shape = X_train.shape[1:]
@@ -242,49 +228,43 @@ class TFCNNTrainer(BaseTrainer):
 
         # Train model
         history = self.model.fit(
-            X_train, y_train,
+            X_train,
+            y_train,
             epochs=self.epochs,
             batch_size=self.batch_size,
             validation_data=validation_data,
             callbacks=callback_list,
-            verbose=1
+            verbose=1,
         )
 
         # Store training history
         self.training_history = {
-            'history': {k: [float(v) for v in vals] for k, vals in history.history.items()},
-            'epochs_trained': len(history.history['loss']),
-            'input_shape': self.input_shape,
-            'n_classes': n_classes,
-            'total_params': self.model.count_params()
+            "history": {k: [float(v) for v in vals] for k, vals in history.history.items()},
+            "epochs_trained": len(history.history["loss"]),
+            "input_shape": self.input_shape,
+            "n_classes": n_classes,
+            "total_params": self.model.count_params(),
         }
 
         # Compute final metrics
         y_train_pred = self.predict(X_train)
         y_train_proba = self.predict_proba(X_train)
 
-        train_metrics = compute_metrics(
-            y_train, y_train_pred, y_train_proba,
-            task="classification"
-        )
+        train_metrics = compute_metrics(y_train, y_train_pred, y_train_proba, task="classification")
 
-        self.training_history['train_metrics'] = train_metrics
+        self.training_history["train_metrics"] = train_metrics
 
         # Validation metrics
         if X_val is not None and y_val is not None:
             val_metrics = self.evaluate(X_val, y_val)
-            self.training_history['val_metrics'] = val_metrics
+            self.training_history["val_metrics"] = val_metrics
 
         self.is_trained = True
         logger.info(f"Training complete. Accuracy: {train_metrics['accuracy']:.4f}")
 
         return self.training_history
 
-    def evaluate(
-        self,
-        X_test: np.ndarray,
-        y_test: np.ndarray
-    ) -> Dict[str, float]:
+    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> Dict[str, float]:
         """
         Evaluate CNN model.
 
@@ -306,12 +286,9 @@ class TFCNNTrainer(BaseTrainer):
         y_pred = self.predict(X_test)
         y_proba = self.predict_proba(X_test)
 
-        metrics = compute_metrics(
-            y_test, y_pred, y_proba,
-            task="classification"
-        )
+        metrics = compute_metrics(y_test, y_pred, y_proba, task="classification")
 
-        metrics['loss'] = float(loss)
+        metrics["loss"] = float(loss)
 
         logger.info(f"Evaluation complete. Accuracy: {metrics['accuracy']:.4f}")
 
@@ -381,14 +358,14 @@ class TFCNNTrainer(BaseTrainer):
         for fmt in formats:
             if fmt == "h5":
                 path = save_dir / "cnn_model.h5"
-                self.model.save(str(path), save_format='h5')
-                saved_paths['h5'] = path
+                self.model.save(str(path), save_format="h5")
+                saved_paths["h5"] = path
                 logger.info(f"Saved H5 model to {path}")
 
             elif fmt == "savedmodel":
                 path = save_dir / "cnn_savedmodel"
-                self.model.save(str(path), save_format='tf')
-                saved_paths['savedmodel'] = path
+                self.model.save(str(path), save_format="tf")
+                saved_paths["savedmodel"] = path
                 logger.info(f"Saved SavedModel to {path}")
 
             else:
@@ -437,5 +414,5 @@ class TFCNNTrainer(BaseTrainer):
             "learning_rate": 0.001,
             "epochs": 30,
             "batch_size": 32,
-            "data_augmentation": False
+            "data_augmentation": False,
         }

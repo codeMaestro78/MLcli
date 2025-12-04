@@ -71,6 +71,7 @@ def __getattr__(name: str):
     """Lazy import trainers only when accessed."""
     if name in _LAZY_IMPORTS:
         import importlib
+
         module = importlib.import_module(_LAZY_IMPORTS[name])
         return getattr(module, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
@@ -99,6 +100,7 @@ def get_trainer_class(model_type: str):
         raise ValueError(f"Unknown model type: {model_type}")
 
     import importlib
+
     meta = _MODEL_METADATA[model_type]
     module = importlib.import_module(meta["module"])
     return getattr(module, meta["class"])

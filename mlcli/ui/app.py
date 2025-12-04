@@ -8,9 +8,20 @@ training, evaluation, and experiment management.
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical, ScrollableContainer
 from textual.widgets import (
-    Header, Footer, Button, Static, Label,
-    DataTable, Input, Select, ListView, ListItem,
-    TabbedContent, TabPane, Rule, Markdown
+    Header,
+    Footer,
+    Button,
+    Static,
+    Label,
+    DataTable,
+    Input,
+    Select,
+    ListView,
+    ListItem,
+    TabbedContent,
+    TabPane,
+    Rule,
+    Markdown,
 )
 from textual.screen import Screen
 from textual.binding import Binding
@@ -50,7 +61,7 @@ class WelcomeScreen(Screen):
 ╚══════════════════════════════════════════════════════════════════╝
                 """,
                 id="banner",
-                classes="banner"
+                classes="banner",
             ),
             Horizontal(
                 Button("🎯 Train Model", id="btn-train", variant="primary"),
@@ -58,14 +69,13 @@ class WelcomeScreen(Screen):
                 Button("📈 View Experiments", id="btn-experiments", variant="warning"),
                 Button("🔧 List Models", id="btn-models", variant="default"),
                 id="menu-buttons",
-                classes="menu-buttons"
+                classes="menu-buttons",
             ),
             Static(
-                "\n[dim]Press number keys (1-4) for quick access, or 'q' to quit[/dim]",
-                id="hint"
+                "\n[dim]Press number keys (1-4) for quick access, or 'q' to quit[/dim]", id="hint"
             ),
             id="welcome-container",
-            classes="welcome-container"
+            classes="welcome-container",
         )
         yield Footer()
 
@@ -122,15 +132,15 @@ class TrainScreen(Screen):
                     Static("[bold cyan]1. Select Configuration[/bold cyan]"),
                     ListView(id="config-list"),
                     id="config-section",
-                    classes="section"
+                    classes="section",
                 ),
                 Vertical(
                     Static("[bold cyan]2. Select Model Type[/bold cyan]"),
                     ListView(id="model-list"),
                     id="model-section",
-                    classes="section"
+                    classes="section",
                 ),
-                id="selection-row"
+                id="selection-row",
             ),
             Rule(),
             Static("[bold cyan]3. Override Parameters (optional)[/bold cyan]"),
@@ -138,33 +148,33 @@ class TrainScreen(Screen):
                 Vertical(
                     Label("Epochs:"),
                     Input(placeholder="Leave empty to use config", id="input-epochs"),
-                    classes="param-input"
+                    classes="param-input",
                 ),
                 Vertical(
                     Label("Batch Size:"),
                     Input(placeholder="Leave empty to use config", id="input-batch"),
-                    classes="param-input"
+                    classes="param-input",
                 ),
                 Vertical(
                     Label("Learning Rate:"),
                     Input(placeholder="Leave empty to use config", id="input-lr"),
-                    classes="param-input"
+                    classes="param-input",
                 ),
                 Vertical(
                     Label("Run Name:"),
                     Input(placeholder="Optional run name", id="input-name"),
-                    classes="param-input"
+                    classes="param-input",
                 ),
-                id="params-row"
+                id="params-row",
             ),
             Rule(),
             Horizontal(
                 Button("▶ Start Training", id="btn-start", variant="success"),
                 Button("← Back", id="btn-back", variant="default"),
-                id="action-buttons"
+                id="action-buttons",
             ),
             Static("", id="status-message"),
-            id="train-container"
+            id="train-container",
         )
         yield Footer()
 
@@ -267,7 +277,7 @@ class TrainScreen(Screen):
                 epochs=epochs_input.value if epochs_input.value else None,
                 batch_size=batch_input.value if batch_input.value else None,
                 learning_rate=lr_input.value if lr_input.value else None,
-                run_name=name_input.value if name_input.value else None
+                run_name=name_input.value if name_input.value else None,
             )
         )
 
@@ -285,7 +295,7 @@ class TrainingProgressScreen(Screen):
         epochs: Optional[str] = None,
         batch_size: Optional[str] = None,
         learning_rate: Optional[str] = None,
-        run_name: Optional[str] = None
+        run_name: Optional[str] = None,
     ):
         super().__init__()
         self.config_path = config_path
@@ -305,19 +315,18 @@ class TrainingProgressScreen(Screen):
             Static("", id="progress-status"),
             Rule(),
             Static("[bold cyan]Training Output:[/bold cyan]"),
-            ScrollableContainer(
-                Static("", id="training-log"),
-                id="log-container"
-            ),
+            ScrollableContainer(Static("", id="training-log"), id="log-container"),
             Rule(),
             Static("[bold cyan]Results:[/bold cyan]"),
             DataTable(id="results-table"),
             Horizontal(
                 Button("← Back to Menu", id="btn-back", variant="default"),
-                Button("📈 View in Experiments", id="btn-view-exp", variant="primary", disabled=True),
-                id="result-buttons"
+                Button(
+                    "📈 View in Experiments", id="btn-view-exp", variant="primary", disabled=True
+                ),
+                id="result-buttons",
             ),
-            id="progress-container"
+            id="progress-container",
         )
         yield Footer()
 
@@ -328,6 +337,7 @@ class TrainingProgressScreen(Screen):
     def run_training(self) -> None:
         """Execute the training pipeline."""
         import asyncio
+
         asyncio.create_task(self._async_train())
 
     async def _async_train(self) -> None:
@@ -384,7 +394,7 @@ class TrainingProgressScreen(Screen):
                 model_type=model_type,
                 framework=framework,
                 config=config_loader.to_dict(),
-                run_name=self.run_name
+                run_name=self.run_name,
             )
             add_log(f"✓ Started run: {run_id}")
 
@@ -397,16 +407,17 @@ class TrainingProgressScreen(Screen):
                 data_path=dataset_config["path"],
                 data_type=dataset_config.get("type", "csv"),
                 target_column=dataset_config.get("target_column"),
-                features=dataset_config.get("features")
+                features=dataset_config.get("features"),
             )
             add_log(f"✓ Data loaded: X={X.shape}, y={y.shape}")
 
             # Split data
             training_config = config_loader.get_training_config()
             X_train, X_test, y_train, y_test = train_test_split(
-                X, y,
+                X,
+                y,
                 test_size=training_config.get("test_size", 0.2),
-                random_state=training_config.get("random_state", 42)
+                random_state=training_config.get("random_state", 42),
             )
             add_log(f"✓ Split: train={len(X_train)}, test={len(X_test)}")
 
@@ -414,19 +425,12 @@ class TrainingProgressScreen(Screen):
             status_widget.update("[yellow]⏳ Training model...[/yellow]")
             add_log("Initializing trainer...")
 
-            trainer = registry.get_trainer(
-                model_type,
-                config=config_loader.config.get("model", {})
-            )
+            trainer = registry.get_trainer(model_type, config=config_loader.config.get("model", {}))
             add_log("✓ Trainer initialized")
             add_log("Starting training...")
 
             # Train
-            training_history = trainer.train(
-                X_train, y_train,
-                X_val=X_test,
-                y_val=y_test
-            )
+            training_history = trainer.train(X_train, y_train, X_val=X_test, y_val=y_test)
             add_log("✓ Training complete!")
 
             # Evaluate
@@ -516,23 +520,22 @@ class EvaluateScreen(Screen):
             Rule(),
             Vertical(
                 Label("Model Path:"),
-                Input(placeholder="Path to saved model (e.g., mlcli/models/model.pkl)", id="input-model-path"),
-                classes="input-group"
+                Input(
+                    placeholder="Path to saved model (e.g., mlcli/models/model.pkl)",
+                    id="input-model-path",
+                ),
+                classes="input-group",
             ),
             Vertical(
                 Label("Data Path:"),
                 Input(placeholder="Path to evaluation data (CSV)", id="input-data-path"),
-                classes="input-group"
+                classes="input-group",
             ),
             Horizontal(
                 Vertical(
                     Label("Model Type:"),
-                    Select(
-                        options=[],
-                        id="select-model-type",
-                        prompt="Select model type"
-                    ),
-                    classes="select-group"
+                    Select(options=[], id="select-model-type", prompt="Select model type"),
+                    classes="select-group",
                 ),
                 Vertical(
                     Label("Model Format:"),
@@ -545,28 +548,28 @@ class EvaluateScreen(Screen):
                             ("onnx", "onnx"),
                         ],
                         id="select-format",
-                        prompt="Select format"
+                        prompt="Select format",
                     ),
-                    classes="select-group"
+                    classes="select-group",
                 ),
-                id="selects-row"
+                id="selects-row",
             ),
             Vertical(
                 Label("Target Column:"),
                 Input(placeholder="Name of target column in data", id="input-target"),
-                classes="input-group"
+                classes="input-group",
             ),
             Rule(),
             Horizontal(
                 Button("▶ Evaluate", id="btn-evaluate", variant="success"),
                 Button("← Back", id="btn-back", variant="default"),
-                id="action-buttons"
+                id="action-buttons",
             ),
             Static("", id="eval-status"),
             Rule(),
             Static("[bold cyan]Results:[/bold cyan]"),
             DataTable(id="eval-results"),
-            id="eval-container"
+            id="eval-container",
         )
         yield Footer()
 
@@ -632,7 +635,7 @@ class EvaluateScreen(Screen):
             X, y = load_data(
                 data_path=data_path,
                 data_type="csv",
-                target_column=target_col if target_col else None
+                target_column=target_col if target_col else None,
             )
 
             if y is None:
@@ -684,17 +687,16 @@ class ExperimentsScreen(Screen):
             Rule(),
             Static("[bold cyan]Run Details:[/bold cyan]"),
             ScrollableContainer(
-                Static("Select a run to view details", id="run-details"),
-                id="details-container"
+                Static("Select a run to view details", id="run-details"), id="details-container"
             ),
             Horizontal(
                 Button("🔄 Refresh", id="btn-refresh", variant="default"),
                 Button("🗑️ Delete Selected", id="btn-delete", variant="error"),
                 Button("📥 Export CSV", id="btn-export", variant="primary"),
                 Button("← Back", id="btn-back", variant="default"),
-                id="action-buttons"
+                id="action-buttons",
             ),
-            id="experiments-container"
+            id="experiments-container",
         )
         yield Footer()
 
@@ -707,21 +709,18 @@ class ExperimentsScreen(Screen):
         table = self.query_one("#experiments-table", DataTable)
         table.clear(columns=True)
 
-        table.add_columns(
-            "Run ID", "Name", "Model", "Framework",
-            "Accuracy", "Status", "Timestamp"
-        )
+        table.add_columns("Run ID", "Name", "Model", "Framework", "Accuracy", "Status", "Timestamp")
 
         try:
             from mlcli.runner.experiment_tracker import ExperimentTracker
+
             tracker = ExperimentTracker()
 
             runs = tracker.get_recent_runs(50)
 
             for run in runs:
                 accuracy = run.get("metrics", {}).get(
-                    "test_accuracy",
-                    run.get("metrics", {}).get("accuracy", "N/A")
+                    "test_accuracy", run.get("metrics", {}).get("accuracy", "N/A")
                 )
 
                 if isinstance(accuracy, float):
@@ -734,7 +733,7 @@ class ExperimentsScreen(Screen):
                     run["framework"],
                     str(accuracy),
                     run["status"],
-                    run["timestamp"][:19]
+                    run["timestamp"][:19],
                 )
         except Exception as e:
             table.add_row("Error", str(e), "", "", "", "", "")
@@ -756,6 +755,7 @@ class ExperimentsScreen(Screen):
 
         try:
             from mlcli.runner.experiment_tracker import ExperimentTracker
+
             tracker = ExperimentTracker()
 
             summary = tracker.get_run_summary(run_id)
@@ -790,6 +790,7 @@ class ExperimentsScreen(Screen):
 
         try:
             from mlcli.runner.experiment_tracker import ExperimentTracker
+
             tracker = ExperimentTracker()
             tracker.delete_run(self.selected_run_id)
             self._load_experiments()
@@ -805,6 +806,7 @@ class ExperimentsScreen(Screen):
         """Export experiments to CSV."""
         try:
             from mlcli.runner.experiment_tracker import ExperimentTracker
+
             tracker = ExperimentTracker()
             tracker.export_to_csv("experiments_export.csv")
 
@@ -831,14 +833,10 @@ class ModelsScreen(Screen):
             Rule(),
             Static("[bold cyan]Model Details:[/bold cyan]"),
             ScrollableContainer(
-                Static("Select a model to view details", id="model-details"),
-                id="details-container"
+                Static("Select a model to view details", id="model-details"), id="details-container"
             ),
-            Horizontal(
-                Button("← Back", id="btn-back", variant="default"),
-                id="action-buttons"
-            ),
-            id="models-container"
+            Horizontal(Button("← Back", id="btn-back", variant="default"), id="action-buttons"),
+            id="models-container",
         )
         yield Footer()
 
@@ -864,7 +862,7 @@ class ModelsScreen(Screen):
                         model_name,
                         metadata.get("framework", "unknown"),
                         metadata.get("model_type", "unknown"),
-                        metadata.get("description", "")[:50]
+                        metadata.get("description", "")[:50],
                     )
         except Exception as e:
             table.add_row("Error", str(e), "", "")
@@ -902,9 +900,9 @@ class ModelsScreen(Screen):
                     f"Class: {metadata.get('class_name', 'unknown')}",
                     "",
                     "[bold]Description:[/bold]",
-                    metadata.get('description', 'No description'),
+                    metadata.get("description", "No description"),
                     "",
-                    "[bold]Default Parameters:[/bold]"
+                    "[bold]Default Parameters:[/bold]",
                 ]
 
                 for param, value in default_params.items():

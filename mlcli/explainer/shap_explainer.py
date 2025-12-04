@@ -28,7 +28,7 @@ class SHAPExplainer(BaseExplainer):
         model: Any,
         feature_names: Optional[List[str]] = None,
         class_names: Optional[List[str]] = None,
-        explainer_type: str = "auto"
+        explainer_type: str = "auto",
     ):
         """
         Initialize SHAP explainer.
@@ -47,10 +47,7 @@ class SHAPExplainer(BaseExplainer):
         self.expected_value = None
         self.background_data = None
 
-    def _create_explainer(
-        self,
-        X_background: Optional[np.ndarray] = None
-    ) -> None:
+    def _create_explainer(self, X_background: Optional[np.ndarray] = None) -> None:
         """
         Create appropriate SHAP explainer based on model type.
 
@@ -63,10 +60,12 @@ class SHAPExplainer(BaseExplainer):
 
         if self.explainer_type == "auto":
             # Auto-detect appropriate explainer
-            if any(tree_type in model_type for tree_type in
-                   ['randomforest', 'xgb', 'lgbm', 'catboost', 'gradient', 'tree']):
+            if any(
+                tree_type in model_type
+                for tree_type in ["randomforest", "xgb", "lgbm", "catboost", "gradient", "tree"]
+            ):
                 self.explainer_type = "tree"
-            elif 'linear' in model_type or 'logistic' in model_type:
+            elif "linear" in model_type or "logistic" in model_type:
                 self.explainer_type = "linear"
             else:
                 self.explainer_type = "kernel"
@@ -83,9 +82,7 @@ class SHAPExplainer(BaseExplainer):
         if self.explainer_type == "linear":
             try:
                 if X_background is not None:
-                    self.shap_explainer = shap.LinearExplainer(
-                        self.model, X_background
-                    )
+                    self.shap_explainer = shap.LinearExplainer(self.model, X_background)
                 else:
                     raise ValueError("Background data required for LinearExplainer")
             except Exception as e:
@@ -101,9 +98,7 @@ class SHAPExplainer(BaseExplainer):
 
             # Sample background data if too large
             if len(X_background) > 100:
-                indices = np.random.choice(
-                    len(X_background), 100, replace=False
-                )
+                indices = np.random.choice(len(X_background), 100, replace=False)
                 X_background = X_background[indices]
 
             self.background_data = X_background
@@ -114,7 +109,7 @@ class SHAPExplainer(BaseExplainer):
         X: Union[np.ndarray, pd.DataFrame],
         X_background: Optional[Union[np.ndarray, pd.DataFrame]] = None,
         max_samples: int = 500,
-        **kwargs
+        **kwargs,
     ) -> Dict[str, Any]:
         """
         Generate SHAP explanations for predictions.
@@ -207,9 +202,7 @@ class SHAPExplainer(BaseExplainer):
             shap_values_mean = shap_values_mean[:n_features]
 
         # Create feature importance ranking
-        feature_names = self.feature_names or [
-            f"feature_{i}" for i in range(X.shape[1])
-        ]
+        feature_names = self.feature_names or [f"feature_{i}" for i in range(X.shape[1])]
 
         # Ensure feature_names matches the number of features
         if len(feature_names) != len(shap_values_mean):
@@ -220,12 +213,8 @@ class SHAPExplainer(BaseExplainer):
             feature_names = [f"feature_{i}" for i in range(len(shap_values_mean))]
 
         # Convert to float for JSON serialization
-        importance_dict = {
-            name: float(val) for name, val in zip(feature_names, shap_values_mean)
-        }
-        sorted_importance = dict(
-            sorted(importance_dict.items(), key=lambda x: x[1], reverse=True)
-        )
+        importance_dict = {name: float(val) for name, val in zip(feature_names, shap_values_mean)}
+        sorted_importance = dict(sorted(importance_dict.items(), key=lambda x: x[1], reverse=True))
 
         self.explanations = {
             "method": "shap",
@@ -238,7 +227,7 @@ class SHAPExplainer(BaseExplainer):
                 if isinstance(self.expected_value, np.ndarray)
                 else self.expected_value
             ),
-            "top_features": list(sorted_importance.keys())[:10]
+            "top_features": list(sorted_importance.keys())[:10],
         }
 
         logger.info("SHAP explanation complete")
@@ -249,7 +238,7 @@ class SHAPExplainer(BaseExplainer):
         self,
         instance: Union[np.ndarray, pd.Series],
         X_background: Optional[np.ndarray] = None,
-        **kwargs
+        **kwargs,
     ) -> Dict[str, Any]:
         """
         Generate SHAP explanation for a single instance.
@@ -276,9 +265,7 @@ class SHAPExplainer(BaseExplainer):
         # Get SHAP values for instance
         instance_shap = self.shap_explainer.shap_values(instance)
 
-        feature_names = self.feature_names or [
-            f"feature_{i}" for i in range(n_features)
-        ]
+        feature_names = self.feature_names or [f"feature_{i}" for i in range(n_features)]
 
         # Handle different output formats
         if isinstance(instance_shap, list):
@@ -308,9 +295,7 @@ class SHAPExplainer(BaseExplainer):
             feature_names = [f"feature_{i}" for i in range(len(shap_vals))]
 
         # Convert to float values
-        contributions = {
-            name: float(val) for name, val in zip(feature_names, shap_vals)
-        }
+        contributions = {name: float(val) for name, val in zip(feature_names, shap_vals)}
         sorted_contributions = dict(
             sorted(contributions.items(), key=lambda x: abs(x[1]), reverse=True)
         )
@@ -324,12 +309,8 @@ class SHAPExplainer(BaseExplainer):
                 if isinstance(self.expected_value, np.ndarray)
                 else self.expected_value
             ),
-            "top_positive_features": [
-                k for k, v in sorted_contributions.items() if v > 0
-            ][:5],
-            "top_negative_features": [
-                k for k, v in sorted_contributions.items() if v < 0
-            ][:5]
+            "top_positive_features": [k for k, v in sorted_contributions.items() if v > 0][:5],
+            "top_negative_features": [k for k, v in sorted_contributions.items() if v < 0][:5],
         }
 
     def get_feature_importance(self) -> Dict[str, float]:
@@ -349,7 +330,7 @@ class SHAPExplainer(BaseExplainer):
         plot_type: str = "summary",
         output_path: Optional[Path] = None,
         max_display: int = 20,
-        **kwargs
+        **kwargs,
     ) -> Optional[str]:
         """
         Generate SHAP plots.
@@ -365,7 +346,8 @@ class SHAPExplainer(BaseExplainer):
         """
         import shap
         import matplotlib
-        matplotlib.use('Agg')
+
+        matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
         if self.shap_values is None:
@@ -374,7 +356,7 @@ class SHAPExplainer(BaseExplainer):
         plt.figure(figsize=(12, 8))
 
         # Get data for plotting
-        X_plot = kwargs.get('X')
+        X_plot = kwargs.get("X")
 
         shap_values_plot = self.shap_values
         if isinstance(shap_values_plot, list):
@@ -391,7 +373,7 @@ class SHAPExplainer(BaseExplainer):
                     X_plot,
                     feature_names=self.feature_names,
                     max_display=max_display,
-                    show=False
+                    show=False,
                 )
             else:
                 # Bar plot if no X data
@@ -400,7 +382,7 @@ class SHAPExplainer(BaseExplainer):
                     feature_names=self.feature_names,
                     max_display=max_display,
                     plot_type="bar",
-                    show=False
+                    show=False,
                 )
 
         elif plot_type == "bar":
@@ -408,35 +390,35 @@ class SHAPExplainer(BaseExplainer):
             features = list(importance.keys())[:max_display]
             values = [importance[f] for f in features]
 
-            plt.barh(features[::-1], values[::-1], color='steelblue')
-            plt.xlabel('Mean |SHAP Value|')
-            plt.title('Feature Importance (SHAP)')
+            plt.barh(features[::-1], values[::-1], color="steelblue")
+            plt.xlabel("Mean |SHAP Value|")
+            plt.title("Feature Importance (SHAP)")
             plt.tight_layout()
 
         elif plot_type == "beeswarm":
             if X_plot is not None:
                 shap.plots.beeswarm(
                     shap.Explanation(
-                        values=shap_values_plot,
-                        data=X_plot,
-                        feature_names=self.feature_names
+                        values=shap_values_plot, data=X_plot, feature_names=self.feature_names
                     ),
                     max_display=max_display,
-                    show=False
+                    show=False,
                 )
 
         elif plot_type == "waterfall":
-            instance_idx = kwargs.get('instance_idx', 0)
+            instance_idx = kwargs.get("instance_idx", 0)
             shap.plots.waterfall(
                 shap.Explanation(
                     values=shap_values_plot[instance_idx],
-                    base_values=self.expected_value if not isinstance(
-                        self.expected_value, list
-                    ) else self.expected_value[0],
-                    feature_names=self.feature_names
+                    base_values=(
+                        self.expected_value
+                        if not isinstance(self.expected_value, list)
+                        else self.expected_value[0]
+                    ),
+                    feature_names=self.feature_names,
                 ),
                 max_display=max_display,
-                show=False
+                show=False,
             )
 
         else:
@@ -445,7 +427,7 @@ class SHAPExplainer(BaseExplainer):
         if output_path:
             output_path = Path(output_path)
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            plt.savefig(output_path, dpi=150, bbox_inches='tight')
+            plt.savefig(output_path, dpi=150, bbox_inches="tight")
             plt.close()
             logger.info(f"Plot saved to {output_path}")
             return str(output_path)
@@ -472,10 +454,10 @@ class SHAPExplainer(BaseExplainer):
             f"Features: {self.explanations['n_features']}",
             "",
             "Top 10 Most Important Features:",
-            "-" * 40
+            "-" * 40,
         ]
 
-        importance = self.explanations['feature_importance']
+        importance = self.explanations["feature_importance"]
         for i, (feature, value) in enumerate(list(importance.items())[:10], 1):
             lines.append(f"  {i}. {feature}: {value:.4f}")
 

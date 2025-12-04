@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
     name="random_forest",
     description="Random Forest ensemble classifier",
     framework="sklearn",
-    model_type="classification"
+    model_type="classification",
 )
 class RFTrainer(BaseTrainer):
     """
@@ -42,20 +42,18 @@ class RFTrainer(BaseTrainer):
         """
         super().__init__(config)
 
-        params = self.config.get('params', {})
+        params = self.config.get("params", {})
         default_params = self.get_default_params()
         self.model_params = {**default_params, **params}
 
-        logger.info(
-            f"Initialized RFTrainer with n_estimators={self.model_params['n_estimators']}"
-        )
+        logger.info(f"Initialized RFTrainer with n_estimators={self.model_params['n_estimators']}")
 
     def train(
         self,
         X_train: np.ndarray,
         y_train: np.ndarray,
         X_val: Optional[np.ndarray] = None,
-        y_val: Optional[np.ndarray] = None
+        y_val: Optional[np.ndarray] = None,
     ) -> Dict[str, Any]:
         """
         Train Random Forest model.
@@ -79,10 +77,7 @@ class RFTrainer(BaseTrainer):
         y_train_pred = self.model.predict(X_train)
         y_train_proba = self.model.predict_proba(X_train)
 
-        train_metrics = compute_metrics(
-            y_train, y_train_pred, y_train_proba,
-            task="classification"
-        )
+        train_metrics = compute_metrics(y_train, y_train_pred, y_train_proba, task="classification")
 
         # Feature importance
         feature_importance = self.model.feature_importances_.tolist()
@@ -92,7 +87,7 @@ class RFTrainer(BaseTrainer):
             "feature_importance": feature_importance,
             "n_features": X_train.shape[1],
             "n_classes": len(np.unique(y_train)),
-            "oob_score": self.model.oob_score_ if self.model_params.get('oob_score') else None
+            "oob_score": self.model.oob_score_ if self.model_params.get("oob_score") else None,
         }
 
         # Validation metrics
@@ -105,11 +100,7 @@ class RFTrainer(BaseTrainer):
 
         return self.training_history
 
-    def evaluate(
-        self,
-        X_test: np.ndarray,
-        y_test: np.ndarray
-    ) -> Dict[str, float]:
+    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> Dict[str, float]:
         """
         Evaluate Random Forest model.
 
@@ -126,10 +117,7 @@ class RFTrainer(BaseTrainer):
         y_pred = self.model.predict(X_test)
         y_proba = self.model.predict_proba(X_test)
 
-        metrics = compute_metrics(
-            y_test, y_pred, y_proba,
-            task="classification"
-        )
+        metrics = compute_metrics(y_test, y_pred, y_proba, task="classification")
 
         logger.info(f"Evaluation complete. Accuracy: {metrics['accuracy']:.4f}")
 
@@ -199,21 +187,15 @@ class RFTrainer(BaseTrainer):
         for fmt in formats:
             if fmt == "pickle":
                 path = save_dir / "rf_model.pkl"
-                with open(path, 'wb') as f:
-                    pickle.dump({
-                        'model': self.model,
-                        'config': self.config
-                    }, f)
-                saved_paths['pickle'] = path
+                with open(path, "wb") as f:
+                    pickle.dump({"model": self.model, "config": self.config}, f)
+                saved_paths["pickle"] = path
                 logger.info(f"Saved pickle model to {path}")
 
             elif fmt == "joblib":
                 path = save_dir / "rf_model.joblib"
-                joblib.dump({
-                    'model': self.model,
-                    'config': self.config
-                }, path)
-                saved_paths['joblib'] = path
+                joblib.dump({"model": self.model, "config": self.config}, path)
+                saved_paths["joblib"] = path
                 logger.info(f"Saved joblib model to {path}")
 
             elif fmt == "onnx":
@@ -222,15 +204,15 @@ class RFTrainer(BaseTrainer):
                     from skl2onnx import convert_sklearn
                     from skl2onnx.common.data_types import FloatTensorType
 
-                    n_features = self.training_history.get('n_features', 1)
-                    initial_type = [('float_input', FloatTensorType([None, n_features]))]
+                    n_features = self.training_history.get("n_features", 1)
+                    initial_type = [("float_input", FloatTensorType([None, n_features]))]
 
                     onx = convert_sklearn(self.model, initial_types=initial_type)
 
-                    with open(path, 'wb') as f:
+                    with open(path, "wb") as f:
                         f.write(onx.SerializeToString())
 
-                    saved_paths['onnx'] = path
+                    saved_paths["onnx"] = path
                     logger.info(f"Saved ONNX model to {path}")
 
                 except Exception as e:
@@ -255,18 +237,19 @@ class RFTrainer(BaseTrainer):
             raise FileNotFoundError(f"Model file not found: {model_path}")
 
         if model_format == "pickle":
-            with open(model_path, 'rb') as f:
+            with open(model_path, "rb") as f:
                 data = pickle.load(f)
-                self.model = data['model']
-                self.config = data.get('config', {})
+                self.model = data["model"]
+                self.config = data.get("config", {})
 
         elif model_format == "joblib":
             data = joblib.load(model_path)
-            self.model = data['model']
-            self.config = data.get('config', {})
+            self.model = data["model"]
+            self.config = data.get("config", {})
 
         elif model_format == "onnx":
             import onnxruntime as ort
+
             self.model = ort.InferenceSession(str(model_path))
 
         else:
@@ -291,5 +274,5 @@ class RFTrainer(BaseTrainer):
             "max_features": "sqrt",
             "bootstrap": True,
             "random_state": 42,
-            "n_jobs": -1
+            "n_jobs": -1,
         }

@@ -35,7 +35,7 @@ class OptunaTuner(BaseTuner):
         verbose: int = 1,
         random_state: Optional[int] = 42,
         timeout: Optional[int] = None,
-        pruning: bool = True
+        pruning: bool = True,
     ):
         """
         Initialize Optuna tuner.
@@ -66,6 +66,7 @@ class OptunaTuner(BaseTuner):
         # Check if optuna is available
         try:
             import optuna
+
             self.optuna = optuna
 
             # Set optuna verbosity
@@ -85,7 +86,7 @@ class OptunaTuner(BaseTuner):
         trainer_class: type,
         X: np.ndarray,
         y: np.ndarray,
-        trainer_config: Optional[Dict[str, Any]] = None
+        trainer_config: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Perform Bayesian optimization hyperparameter tuning.
@@ -108,9 +109,7 @@ class OptunaTuner(BaseTuner):
 
         # Cross-validation splitter
         cv_splitter = StratifiedKFold(
-            n_splits=self.cv,
-            shuffle=True,
-            random_state=self.random_state
+            n_splits=self.cv, shuffle=True, random_state=self.random_state
         )
 
         # Store references for objective function
@@ -125,9 +124,7 @@ class OptunaTuner(BaseTuner):
         sampler = self.optuna.samplers.TPESampler(seed=self.random_state)
 
         self.study_ = self.optuna.create_study(
-            direction="maximize",
-            sampler=sampler,
-            study_name="mlcli_hyperparameter_tuning"
+            direction="maximize", sampler=sampler, study_name="mlcli_hyperparameter_tuning"
         )
 
         # Run optimization
@@ -136,7 +133,7 @@ class OptunaTuner(BaseTuner):
             n_trials=self.n_trials,
             timeout=self.timeout,
             n_jobs=self.n_jobs,
-            show_progress_bar=(self.verbose >= 1)
+            show_progress_bar=(self.verbose >= 1),
         )
 
         self.end_time_ = datetime.now()
@@ -151,15 +148,17 @@ class OptunaTuner(BaseTuner):
                     "params": trial.params,
                     "score": trial.value if trial.value is not None else 0,
                     "trial": trial.number,
-                    "state": str(trial.state)
+                    "state": str(trial.state),
                 }
                 for trial in self.study_.trials
             ],
             "n_trials": len(self.study_.trials),
-            "n_completed": len([t for t in self.study_.trials
-                               if t.state == self.optuna.trial.TrialState.COMPLETE]),
-            "n_pruned": len([t for t in self.study_.trials
-                           if t.state == self.optuna.trial.TrialState.PRUNED])
+            "n_completed": len(
+                [t for t in self.study_.trials if t.state == self.optuna.trial.TrialState.COMPLETE]
+            ),
+            "n_pruned": len(
+                [t for t in self.study_.trials if t.state == self.optuna.trial.TrialState.PRUNED]
+            ),
         }
 
         if self.verbose >= 1:
@@ -168,14 +167,16 @@ class OptunaTuner(BaseTuner):
             logger.info(f"Best Score: {self.best_score_:.4f}")
             logger.info(f"Best Params: {self.best_params_}")
             logger.info(f"Total Duration: {duration:.1f}s")
-            logger.info(f"Trials: {self.cv_results_['n_completed']} completed, "
-                       f"{self.cv_results_['n_pruned']} pruned")
+            logger.info(
+                f"Trials: {self.cv_results_['n_completed']} completed, "
+                f"{self.cv_results_['n_pruned']} pruned"
+            )
 
         return {
             "best_params": self.best_params_,
             "best_score": self.best_score_,
             "cv_results": self.cv_results_,
-            "duration": self.get_tuning_duration()
+            "duration": self.get_tuning_duration(),
         }
 
     def _objective(self, trial) -> float:
@@ -259,18 +260,11 @@ class OptunaTuner(BaseTuner):
         params = {}
 
         for param_name, param_config in self.param_space.items():
-            params[param_name] = self._suggest_single_param(
-                trial, param_name, param_config
-            )
+            params[param_name] = self._suggest_single_param(trial, param_name, param_config)
 
         return params
 
-    def _suggest_single_param(
-        self,
-        trial,
-        param_name: str,
-        param_config: Any
-    ) -> Any:
+    def _suggest_single_param(self, trial, param_name: str, param_config: Any) -> Any:
         """
         Suggest a single parameter value.
 
@@ -336,7 +330,7 @@ class OptunaTuner(BaseTuner):
             "roc_auc": "roc_auc",
             "auc": "roc_auc",
             "precision": "precision",
-            "recall": "recall"
+            "recall": "recall",
         }
 
         metric_key = scoring_map.get(self.scoring, self.scoring)
@@ -366,7 +360,7 @@ class OptunaTuner(BaseTuner):
             "best_score": self.best_score_,
             "cv_results": self.cv_results_,
             "tuning_history": self.tuning_history_,
-            "duration": self.get_tuning_duration()
+            "duration": self.get_tuning_duration(),
         }
 
     def get_importance(self) -> Dict[str, float]:

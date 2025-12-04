@@ -28,7 +28,7 @@ class LIMEExplainer(BaseExplainer):
         model: Any,
         feature_names: Optional[List[str]] = None,
         class_names: Optional[List[str]] = None,
-        mode: str = "classification"
+        mode: str = "classification",
     ):
         """
         Initialize LIME explainer.
@@ -45,9 +45,7 @@ class LIMEExplainer(BaseExplainer):
         self.instance_explanations = []
 
     def _create_explainer(
-        self,
-        X_train: np.ndarray,
-        categorical_features: Optional[List[int]] = None
+        self, X_train: np.ndarray, categorical_features: Optional[List[int]] = None
     ) -> None:
         """
         Create LIME explainer.
@@ -58,9 +56,7 @@ class LIMEExplainer(BaseExplainer):
         """
         from lime.lime_tabular import LimeTabularExplainer
 
-        feature_names = self.feature_names or [
-            f"feature_{i}" for i in range(X_train.shape[1])
-        ]
+        feature_names = self.feature_names or [f"feature_{i}" for i in range(X_train.shape[1])]
 
         self.lime_explainer = LimeTabularExplainer(
             training_data=X_train,
@@ -68,7 +64,7 @@ class LIMEExplainer(BaseExplainer):
             class_names=self.class_names,
             categorical_features=categorical_features,
             mode=self.mode,
-            verbose=False
+            verbose=False,
         )
 
         logger.info(f"Created LIME {self.mode} explainer")
@@ -81,7 +77,7 @@ class LIMEExplainer(BaseExplainer):
         num_samples: int = 5000,
         max_instances: int = 100,
         categorical_features: Optional[List[int]] = None,
-        **kwargs
+        **kwargs,
     ) -> Dict[str, Any]:
         """
         Generate LIME explanations for multiple instances.
@@ -124,33 +120,28 @@ class LIMEExplainer(BaseExplainer):
 
         for i, instance in enumerate(X):
             exp = self.lime_explainer.explain_instance(
-                instance,
-                predict_fn,
-                num_features=num_features,
-                num_samples=num_samples
+                instance, predict_fn, num_features=num_features, num_samples=num_samples
             )
 
             instance_exp = {
-                'instance_idx': i,
-                'features': dict(exp.as_list()),
-                'score': exp.score if hasattr(exp, 'score') else None,
-                'local_pred': exp.local_pred[0] if hasattr(exp, 'local_pred') else None
+                "instance_idx": i,
+                "features": dict(exp.as_list()),
+                "score": exp.score if hasattr(exp, "score") else None,
+                "local_pred": exp.local_pred[0] if hasattr(exp, "local_pred") else None,
             }
             self.instance_explanations.append(instance_exp)
 
             # Aggregate importance
             for feature, importance in exp.as_list():
                 # Extract feature name (LIME returns conditions like "feature > 5")
-                feature_name = feature.split()[0] if ' ' in feature else feature
+                feature_name = feature.split()[0] if " " in feature else feature
 
                 if feature_name not in feature_importance_sum:
                     feature_importance_sum[feature_name] = []
                 feature_importance_sum[feature_name].append(abs(importance))
 
         # Average importance across instances
-        feature_importance = {
-            k: np.mean(v) for k, v in feature_importance_sum.items()
-        }
+        feature_importance = {k: np.mean(v) for k, v in feature_importance_sum.items()}
         sorted_importance = dict(
             sorted(feature_importance.items(), key=lambda x: x[1], reverse=True)
         )
@@ -163,7 +154,7 @@ class LIMEExplainer(BaseExplainer):
             "num_features_explained": num_features,
             "num_samples_per_instance": num_samples,
             "feature_importance": sorted_importance,
-            "top_features": list(sorted_importance.keys())[:10]
+            "top_features": list(sorted_importance.keys())[:10],
         }
 
         logger.info("LIME explanation complete")
@@ -177,7 +168,7 @@ class LIMEExplainer(BaseExplainer):
         num_features: int = 10,
         num_samples: int = 5000,
         categorical_features: Optional[List[int]] = None,
-        **kwargs
+        **kwargs,
     ) -> Dict[str, Any]:
         """
         Generate LIME explanation for a single instance.
@@ -200,7 +191,7 @@ class LIMEExplainer(BaseExplainer):
 
         # Support X_background as alias for X_train
         if X_train is None:
-            X_train = kwargs.get('X_background')
+            X_train = kwargs.get("X_background")
 
         if self.lime_explainer is None:
             if X_train is None:
@@ -211,10 +202,7 @@ class LIMEExplainer(BaseExplainer):
         predict_fn = self._get_predict_function()
 
         exp = self.lime_explainer.explain_instance(
-            instance,
-            predict_fn,
-            num_features=num_features,
-            num_samples=num_samples
+            instance, predict_fn, num_features=num_features, num_samples=num_samples
         )
 
         # Get feature contributions
@@ -239,15 +227,15 @@ class LIMEExplainer(BaseExplainer):
             "negative_contributions": dict(
                 sorted(negative_features.items(), key=lambda x: abs(x[1]), reverse=True)
             ),
-            "local_model_score": exp.score if hasattr(exp, 'score') else None
+            "local_model_score": exp.score if hasattr(exp, "score") else None,
         }
 
         # Add prediction info
-        if hasattr(exp, 'local_pred'):
-            result['local_prediction'] = exp.local_pred[0]
+        if hasattr(exp, "local_pred"):
+            result["local_prediction"] = exp.local_pred[0]
 
-        if self.mode == "classification" and hasattr(exp, 'predict_proba'):
-            result['predicted_probabilities'] = exp.predict_proba.tolist()
+        if self.mode == "classification" and hasattr(exp, "predict_proba"):
+            result["predicted_probabilities"] = exp.predict_proba.tolist()
 
         return result
 
@@ -269,7 +257,7 @@ class LIMEExplainer(BaseExplainer):
         output_path: Optional[Path] = None,
         max_display: int = 20,
         instance_idx: int = 0,
-        **kwargs
+        **kwargs,
     ) -> Optional[str]:
         """
         Generate LIME plots.
@@ -285,7 +273,8 @@ class LIMEExplainer(BaseExplainer):
             Path to saved plot or None
         """
         import matplotlib
-        matplotlib.use('Agg')
+
+        matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
         if self.explanations is None:
@@ -299,11 +288,11 @@ class LIMEExplainer(BaseExplainer):
             features = list(importance.keys())[:max_display]
             values = [importance[f] for f in features]
 
-            colors = ['steelblue' if v >= 0 else 'coral' for v in values]
+            colors = ["steelblue" if v >= 0 else "coral" for v in values]
 
             plt.barh(features[::-1], values[::-1], color=colors[::-1])
-            plt.xlabel('Mean |LIME Weight|')
-            plt.title('Feature Importance (LIME)')
+            plt.xlabel("Mean |LIME Weight|")
+            plt.title("Feature Importance (LIME)")
             plt.tight_layout()
 
         elif plot_type == "instance":
@@ -312,17 +301,17 @@ class LIMEExplainer(BaseExplainer):
                 raise ValueError(f"Instance {instance_idx} not found")
 
             instance_exp = self.instance_explanations[instance_idx]
-            contributions = instance_exp['features']
+            contributions = instance_exp["features"]
 
             features = list(contributions.keys())[:max_display]
             values = [contributions[f] for f in features]
 
-            colors = ['green' if v >= 0 else 'red' for v in values]
+            colors = ["green" if v >= 0 else "red" for v in values]
 
             plt.barh(features[::-1], values[::-1], color=colors[::-1])
-            plt.xlabel('LIME Weight')
-            plt.title(f'LIME Explanation - Instance {instance_idx}')
-            plt.axvline(x=0, color='black', linestyle='-', linewidth=0.5)
+            plt.xlabel("LIME Weight")
+            plt.title(f"LIME Explanation - Instance {instance_idx}")
+            plt.axvline(x=0, color="black", linestyle="-", linewidth=0.5)
             plt.tight_layout()
 
         else:
@@ -331,7 +320,7 @@ class LIMEExplainer(BaseExplainer):
         if output_path:
             output_path = Path(output_path)
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            plt.savefig(output_path, dpi=150, bbox_inches='tight')
+            plt.savefig(output_path, dpi=150, bbox_inches="tight")
             plt.close()
             logger.info(f"Plot saved to {output_path}")
             return str(output_path)
@@ -359,10 +348,10 @@ class LIMEExplainer(BaseExplainer):
             f"Samples per Instance: {self.explanations['num_samples_per_instance']}",
             "",
             "Top 10 Most Important Features (Averaged):",
-            "-" * 40
+            "-" * 40,
         ]
 
-        importance = self.explanations['feature_importance']
+        importance = self.explanations["feature_importance"]
         for i, (feature, value) in enumerate(list(importance.items())[:10], 1):
             lines.append(f"  {i}. {feature}: {value:.4f}")
 

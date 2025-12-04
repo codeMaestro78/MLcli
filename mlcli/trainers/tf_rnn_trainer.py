@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
     name="tf_rnn",
     description="TensorFlow RNN/LSTM/GRU for sequence classification",
     framework="tensorflow",
-    model_type="classification"
+    model_type="classification",
 )
 class TFRNNTrainer(BaseTrainer):
     """
@@ -43,34 +43,32 @@ class TFRNNTrainer(BaseTrainer):
         """
         super().__init__(config)
 
-        params = self.config.get('params', {})
+        params = self.config.get("params", {})
         default_params = self.get_default_params()
         self.model_params = {**default_params, **params}
 
         # Architecture configuration
-        self.rnn_type = self.model_params.get('rnn_type', 'lstm')  # lstm, gru, simple_rnn
-        self.rnn_units = self.model_params.get('rnn_units', [128, 64])
-        self.bidirectional = self.model_params.get('bidirectional', False)
-        self.dropout = self.model_params.get('dropout', 0.2)
-        self.recurrent_dropout = self.model_params.get('recurrent_dropout', 0.2)
+        self.rnn_type = self.model_params.get("rnn_type", "lstm")  # lstm, gru, simple_rnn
+        self.rnn_units = self.model_params.get("rnn_units", [128, 64])
+        self.bidirectional = self.model_params.get("bidirectional", False)
+        self.dropout = self.model_params.get("dropout", 0.2)
+        self.recurrent_dropout = self.model_params.get("recurrent_dropout", 0.2)
 
         # Dense layers after RNN
-        self.dense_layers = self.model_params.get('dense_layers', [64])
+        self.dense_layers = self.model_params.get("dense_layers", [64])
 
         # Input configuration
-        self.max_sequence_length = self.model_params.get('max_sequence_length', 100)
-        self.embedding_dim = self.model_params.get('embedding_dim', None)
-        self.vocab_size = self.model_params.get('vocab_size', None)
+        self.max_sequence_length = self.model_params.get("max_sequence_length", 100)
+        self.embedding_dim = self.model_params.get("embedding_dim", None)
+        self.vocab_size = self.model_params.get("vocab_size", None)
 
         # Training configuration
-        self.optimizer = self.model_params.get('optimizer', 'adam')
-        self.learning_rate = self.model_params.get('learning_rate', 0.001)
-        self.epochs = self.model_params.get('epochs', 25)
-        self.batch_size = self.model_params.get('batch_size', 32)
+        self.optimizer = self.model_params.get("optimizer", "adam")
+        self.learning_rate = self.model_params.get("learning_rate", 0.001)
+        self.epochs = self.model_params.get("epochs", 25)
+        self.batch_size = self.model_params.get("batch_size", 32)
 
-        logger.info(
-            f"Initialized TFRNNTrainer with {self.rnn_type.upper()} architecture"
-        )
+        logger.info(f"Initialized TFRNNTrainer with {self.rnn_type.upper()} architecture")
 
     def _get_rnn_layer(self, units: int, return_sequences: bool = True):
         """
@@ -85,26 +83,26 @@ class TFRNNTrainer(BaseTrainer):
         """
         rnn_type = self.rnn_type.lower()
 
-        if rnn_type == 'lstm':
+        if rnn_type == "lstm":
             layer = layers.LSTM(
                 units,
                 return_sequences=return_sequences,
                 dropout=self.dropout,
-                recurrent_dropout=self.recurrent_dropout
+                recurrent_dropout=self.recurrent_dropout,
             )
-        elif rnn_type == 'gru':
+        elif rnn_type == "gru":
             layer = layers.GRU(
                 units,
                 return_sequences=return_sequences,
                 dropout=self.dropout,
-                recurrent_dropout=self.recurrent_dropout
+                recurrent_dropout=self.recurrent_dropout,
             )
-        elif rnn_type == 'simple_rnn':
+        elif rnn_type == "simple_rnn":
             layer = layers.SimpleRNN(
                 units,
                 return_sequences=return_sequences,
                 dropout=self.dropout,
-                recurrent_dropout=self.recurrent_dropout
+                recurrent_dropout=self.recurrent_dropout,
             )
         else:
             raise ValueError(f"Unknown RNN type: {rnn_type}")
@@ -126,24 +124,26 @@ class TFRNNTrainer(BaseTrainer):
         Returns:
             Compiled Keras model
         """
-        model = models.Sequential(name='RNN')
+        model = models.Sequential(name="RNN")
 
         # Input layer
         model.add(layers.Input(shape=input_shape))
 
         # Embedding layer (if vocabulary-based input)
         if self.vocab_size and self.embedding_dim:
-            model.add(layers.Embedding(
-                input_dim=self.vocab_size,
-                output_dim=self.embedding_dim,
-                mask_zero=True,
-                name='embedding'
-            ))
+            model.add(
+                layers.Embedding(
+                    input_dim=self.vocab_size,
+                    output_dim=self.embedding_dim,
+                    mask_zero=True,
+                    name="embedding",
+                )
+            )
 
         # RNN layers
         for i, units in enumerate(self.rnn_units):
             # Return sequences for all but the last RNN layer
-            return_sequences = (i < len(self.rnn_units) - 1)
+            return_sequences = i < len(self.rnn_units) - 1
 
             rnn_layer = self._get_rnn_layer(units, return_sequences)
             model.add(rnn_layer)
@@ -154,27 +154,23 @@ class TFRNNTrainer(BaseTrainer):
 
         # Dense layers
         for i, units in enumerate(self.dense_layers):
-            model.add(layers.Dense(units, activation='relu', name=f'dense_{i+1}'))
+            model.add(layers.Dense(units, activation="relu", name=f"dense_{i+1}"))
 
             if self.dropout > 0:
-                model.add(layers.Dropout(self.dropout, name=f'dropout_{i+1}'))
+                model.add(layers.Dropout(self.dropout, name=f"dropout_{i+1}"))
 
         # Output layer
         if n_classes == 2:
-            model.add(layers.Dense(1, activation='sigmoid', name='output'))
-            output_loss = 'binary_crossentropy'
+            model.add(layers.Dense(1, activation="sigmoid", name="output"))
+            output_loss = "binary_crossentropy"
         else:
-            model.add(layers.Dense(n_classes, activation='softmax', name='output'))
-            output_loss = 'sparse_categorical_crossentropy'
+            model.add(layers.Dense(n_classes, activation="softmax", name="output"))
+            output_loss = "sparse_categorical_crossentropy"
 
         # Compile model
         optimizer_instance = self._get_optimizer()
 
-        model.compile(
-            optimizer=optimizer_instance,
-            loss=output_loss,
-            metrics=['accuracy']
-        )
+        model.compile(optimizer=optimizer_instance, loss=output_loss, metrics=["accuracy"])
 
         logger.info(f"Built RNN model with {model.count_params()} parameters")
 
@@ -184,11 +180,11 @@ class TFRNNTrainer(BaseTrainer):
         """Get optimizer instance."""
         optimizer_name = self.optimizer.lower()
 
-        if optimizer_name == 'adam':
+        if optimizer_name == "adam":
             return keras.optimizers.Adam(learning_rate=self.learning_rate)
-        elif optimizer_name == 'rmsprop':
+        elif optimizer_name == "rmsprop":
             return keras.optimizers.RMSprop(learning_rate=self.learning_rate)
-        elif optimizer_name == 'sgd':
+        elif optimizer_name == "sgd":
             return keras.optimizers.SGD(learning_rate=self.learning_rate, momentum=0.9)
         else:
             return keras.optimizers.Adam(learning_rate=self.learning_rate)
@@ -198,20 +194,17 @@ class TFRNNTrainer(BaseTrainer):
         callback_list = []
 
         if X_val is not None:
-            callback_list.append(callbacks.EarlyStopping(
-                monitor='val_loss',
-                patience=5,
-                restore_best_weights=True,
-                verbose=1
-            ))
+            callback_list.append(
+                callbacks.EarlyStopping(
+                    monitor="val_loss", patience=5, restore_best_weights=True, verbose=1
+                )
+            )
 
-            callback_list.append(callbacks.ReduceLROnPlateau(
-                monitor='val_loss',
-                factor=0.5,
-                patience=3,
-                min_lr=1e-7,
-                verbose=1
-            ))
+            callback_list.append(
+                callbacks.ReduceLROnPlateau(
+                    monitor="val_loss", factor=0.5, patience=3, min_lr=1e-7, verbose=1
+                )
+            )
 
         return callback_list
 
@@ -220,7 +213,7 @@ class TFRNNTrainer(BaseTrainer):
         X_train: np.ndarray,
         y_train: np.ndarray,
         X_val: Optional[np.ndarray] = None,
-        y_val: Optional[np.ndarray] = None
+        y_val: Optional[np.ndarray] = None,
     ) -> Dict[str, Any]:
         """
         Train RNN model.
@@ -238,9 +231,7 @@ class TFRNNTrainer(BaseTrainer):
 
         # Validate input shape
         if len(X_train.shape) < 2:
-            raise ValueError(
-                f"Expected 2D or 3D input, got shape {X_train.shape}"
-            )
+            raise ValueError(f"Expected 2D or 3D input, got shape {X_train.shape}")
 
         # Determine input shape (excluding batch dimension)
         input_shape = X_train.shape[1:]
@@ -265,49 +256,43 @@ class TFRNNTrainer(BaseTrainer):
 
         # Train model
         history = self.model.fit(
-            X_train, y_train,
+            X_train,
+            y_train,
             epochs=self.epochs,
             batch_size=self.batch_size,
             validation_data=validation_data,
             callbacks=callback_list,
-            verbose=1
+            verbose=1,
         )
 
         # Store training history
         self.training_history = {
-            'history': {k: [float(v) for v in vals] for k, vals in history.history.items()},
-            'epochs_trained': len(history.history['loss']),
-            'input_shape': input_shape,
-            'n_classes': n_classes,
-            'total_params': self.model.count_params()
+            "history": {k: [float(v) for v in vals] for k, vals in history.history.items()},
+            "epochs_trained": len(history.history["loss"]),
+            "input_shape": input_shape,
+            "n_classes": n_classes,
+            "total_params": self.model.count_params(),
         }
 
         # Compute final metrics
         y_train_pred = self.predict(X_train)
         y_train_proba = self.predict_proba(X_train)
 
-        train_metrics = compute_metrics(
-            y_train, y_train_pred, y_train_proba,
-            task="classification"
-        )
+        train_metrics = compute_metrics(y_train, y_train_pred, y_train_proba, task="classification")
 
-        self.training_history['train_metrics'] = train_metrics
+        self.training_history["train_metrics"] = train_metrics
 
         # Validation metrics
         if X_val is not None and y_val is not None:
             val_metrics = self.evaluate(X_val, y_val)
-            self.training_history['val_metrics'] = val_metrics
+            self.training_history["val_metrics"] = val_metrics
 
         self.is_trained = True
         logger.info(f"Training complete. Accuracy: {train_metrics['accuracy']:.4f}")
 
         return self.training_history
 
-    def evaluate(
-        self,
-        X_test: np.ndarray,
-        y_test: np.ndarray
-    ) -> Dict[str, float]:
+    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> Dict[str, float]:
         """
         Evaluate RNN model.
 
@@ -329,12 +314,9 @@ class TFRNNTrainer(BaseTrainer):
         y_pred = self.predict(X_test)
         y_proba = self.predict_proba(X_test)
 
-        metrics = compute_metrics(
-            y_test, y_pred, y_proba,
-            task="classification"
-        )
+        metrics = compute_metrics(y_test, y_pred, y_proba, task="classification")
 
-        metrics['loss'] = float(loss)
+        metrics["loss"] = float(loss)
 
         logger.info(f"Evaluation complete. Accuracy: {metrics['accuracy']:.4f}")
 
@@ -405,14 +387,14 @@ class TFRNNTrainer(BaseTrainer):
         for fmt in formats:
             if fmt == "h5":
                 path = save_dir / "rnn_model.h5"
-                self.model.save(str(path), save_format='h5')
-                saved_paths['h5'] = path
+                self.model.save(str(path), save_format="h5")
+                saved_paths["h5"] = path
                 logger.info(f"Saved H5 model to {path}")
 
             elif fmt == "savedmodel":
                 path = save_dir / "rnn_savedmodel"
-                self.model.save(str(path), save_format='tf')
-                saved_paths['savedmodel'] = path
+                self.model.save(str(path), save_format="tf")
+                saved_paths["savedmodel"] = path
                 logger.info(f"Saved SavedModel to {path}")
 
             else:
@@ -462,5 +444,5 @@ class TFRNNTrainer(BaseTrainer):
             "optimizer": "adam",
             "learning_rate": 0.001,
             "epochs": 25,
-            "batch_size": 32
+            "batch_size": 32,
         }

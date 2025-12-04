@@ -27,8 +27,14 @@ class ModelRegistry:
         self._lazy_registry: Dict[str, Dict[str, str]] = {}  # For lazy loading
         self._metadata: Dict[str, Dict[str, Any]] = {}
 
-    def register(self, name: str, trainer_class: Type, description: str = "",
-                 framework: str = "unknown", model_type: str = "unknown") -> None:
+    def register(
+        self,
+        name: str,
+        trainer_class: Type,
+        description: str = "",
+        framework: str = "unknown",
+        model_type: str = "unknown",
+    ) -> None:
         """
         Register a trainer class with metadata.
 
@@ -51,14 +57,20 @@ class ModelRegistry:
             "description": description,
             "framework": framework,
             "model_type": model_type,
-            "class_name": trainer_class.__name__
+            "class_name": trainer_class.__name__,
         }
 
         logger.debug(f"Registered model: {name} -> {trainer_class.__name__}")
 
-    def register_lazy(self, name: str, module_path: str, class_name: str,
-                      description: str = "", framework: str = "unknown",
-                      model_type: str = "unknown") -> None:
+    def register_lazy(
+        self,
+        name: str,
+        module_path: str,
+        class_name: str,
+        description: str = "",
+        framework: str = "unknown",
+        model_type: str = "unknown",
+    ) -> None:
         """
         Register a trainer for lazy loading (doesn't import the module yet).
 
@@ -89,6 +101,7 @@ class ModelRegistry:
             return None
 
         import importlib
+
         lazy_info = self._lazy_registry[name]
         module = importlib.import_module(lazy_info["module_path"])
         trainer_class = getattr(module, lazy_info["class_name"])
@@ -140,8 +153,9 @@ class ModelRegistry:
         trainer_class = self.get(name)
         if trainer_class is None:
             available = ", ".join(self.list_models())
-            raise KeyError(f"Model '{name}' not found in registry. "
-                          f"Available models: {available}")
+            raise KeyError(
+                f"Model '{name}' not found in registry. " f"Available models: {available}"
+            )
 
         return trainer_class(**kwargs)
 
@@ -155,8 +169,7 @@ class ModelRegistry:
         all_models = set(self._registry.keys()) | set(self._lazy_registry.keys())
         return sorted(all_models)
 
-
-    def get_metadata(self,name:str)->Optional[Dict[str,Any]]:
+    def get_metadata(self, name: str) -> Optional[Dict[str, Any]]:
         """
         Get metadata for a registered model.
 
@@ -168,7 +181,7 @@ class ModelRegistry:
         """
         return self._metadata.get(name)
 
-    def get_all_metadata(self)->Dict[str,Dict[str,Any]]:
+    def get_all_metadata(self) -> Dict[str, Dict[str, Any]]:
         """
         Get metadata for all registered models.
 
@@ -176,7 +189,8 @@ class ModelRegistry:
             Dictionary mapping model names to their metadata
         """
         return self._metadata.copy()
-    def get_models_by_framework(self,framework:str)->List[str]:
+
+    def get_models_by_framework(self, framework: str) -> List[str]:
         """
         Get all models for a specific framework.
 
@@ -186,7 +200,7 @@ class ModelRegistry:
         Returns:
             List of model names
         """
-        return [name for name,meta in self._metadata.items() if meta.get("framework")==framework]
+        return [name for name, meta in self._metadata.items() if meta.get("framework") == framework]
 
     def is_registered(self, name: str) -> bool:
         """
@@ -200,7 +214,7 @@ class ModelRegistry:
         """
         return name in self._registry or name in self._lazy_registry
 
-    def unregister(self,name:str)->bool:
+    def unregister(self, name: str) -> bool:
         """
         Remove a model from the registry.
 
@@ -217,19 +231,22 @@ class ModelRegistry:
             return True
         return False
 
-    def __len__(self)->int:
-        """Return number of registered models. """
+    def __len__(self) -> int:
+        """Return number of registered models."""
         return len(self._registry)
 
-    def __contains__(self,name:str)->bool:
-        """Check if models is registered using 'in' operator (includes lazy). """
+    def __contains__(self, name: str) -> bool:
+        """Check if models is registered using 'in' operator (includes lazy)."""
         return name in self._registry or name in self._lazy_registry
 
-    def __repr__(self)->str:
-        """String representation of registry. """
+    def __repr__(self) -> str:
+        """String representation of registry."""
         return f"ModelRegistry(models- {len(self._registry)})"
 
-def register_model(name:str,description:str="",framework:str="unknown",model_type:str="classification"):
+
+def register_model(
+    name: str, description: str = "", framework: str = "unknown", model_type: str = "classification"
+):
     """
     Decorator for auto-registering trainer classes.
 
@@ -249,13 +266,16 @@ def register_model(name:str,description:str="",framework:str="unknown",model_typ
         Decorator function
     """
 
-    def decorator(trainer_class:Type)->Type:
+    def decorator(trainer_class: Type) -> Type:
         from mlcli import registry
 
-        registry.register(name=name,trainer_class=trainer_class,
-                          description=description,framework=framework,
-                          model_type=model_type)
+        registry.register(
+            name=name,
+            trainer_class=trainer_class,
+            description=description,
+            framework=framework,
+            model_type=model_type,
+        )
         return trainer_class
+
     return decorator
-
-

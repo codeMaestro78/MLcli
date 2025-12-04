@@ -33,10 +33,7 @@ class StandardScalerProcessor(BasePreprocessor):
         super().__init__(name="standard_scaler", **kwargs)
         self.with_mean = with_mean
         self.with_std = with_std
-        self._preprocessor = StandardScaler(
-            with_mean=with_mean,
-            with_std=with_std
-        )
+        self._preprocessor = StandardScaler(with_mean=with_mean, with_std=with_std)
 
     def fit(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> "StandardScalerProcessor":
         """
@@ -96,11 +93,13 @@ class StandardScalerProcessor(BasePreprocessor):
         """Get scaler parameters."""
         params = super().get_params()
         if self._fitted:
-            params.update({
-                "mean": self._preprocessor.mean_.tolist(),
-                "scale": self._preprocessor.scale_.tolist(),
-                "var": self._preprocessor.var_.tolist()
-            })
+            params.update(
+                {
+                    "mean": self._preprocessor.mean_.tolist(),
+                    "scale": self._preprocessor.scale_.tolist(),
+                    "var": self._preprocessor.var_.tolist(),
+                }
+            )
         return params
 
 
@@ -163,12 +162,14 @@ class MinMaxScalerProcessor(BasePreprocessor):
         """Get scaler parameters."""
         params = super().get_params()
         if self._fitted:
-            params.update({
-                "data_min": self._preprocessor.data_min_.tolist(),
-                "data_max": self._preprocessor.data_max_.tolist(),
-                "data_range": self._preprocessor.data_range_.tolist(),
-                "scale": self._preprocessor.scale_.tolist()
-            })
+            params.update(
+                {
+                    "data_min": self._preprocessor.data_min_.tolist(),
+                    "data_max": self._preprocessor.data_max_.tolist(),
+                    "data_range": self._preprocessor.data_range_.tolist(),
+                    "scale": self._preprocessor.scale_.tolist(),
+                }
+            )
         return params
 
 
@@ -184,7 +185,7 @@ class RobustScalerProcessor(BasePreprocessor):
         with_centering: bool = True,
         with_scaling: bool = True,
         quantile_range: tuple = (25.0, 75.0),
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize RobustScaler.
@@ -200,9 +201,7 @@ class RobustScalerProcessor(BasePreprocessor):
         self.with_scaling = with_scaling
         self.quantile_range = quantile_range
         self._preprocessor = RobustScaler(
-            with_centering=with_centering,
-            with_scaling=with_scaling,
-            quantile_range=quantile_range
+            with_centering=with_centering, with_scaling=with_scaling, quantile_range=quantile_range
         )
 
     def fit(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> "RobustScalerProcessor":
@@ -245,8 +244,18 @@ class RobustScalerProcessor(BasePreprocessor):
         """Get scaler parameters."""
         params = super().get_params()
         if self._fitted:
-            params.update({
-                "center": self._preprocessor.center_.tolist() if self._preprocessor.center_ is not None else None,
-                "scale": self._preprocessor.scale_.tolist() if self._preprocessor.scale_ is not None else None
-            })
+            params.update(
+                {
+                    "center": (
+                        self._preprocessor.center_.tolist()
+                        if self._preprocessor.center_ is not None
+                        else None
+                    ),
+                    "scale": (
+                        self._preprocessor.scale_.tolist()
+                        if self._preprocessor.scale_ is not None
+                        else None
+                    ),
+                }
+            )
         return params

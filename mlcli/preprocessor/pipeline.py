@@ -54,10 +54,7 @@ class PreprocessingPipeline:
         return self
 
     def add_preprocessor(
-        self,
-        method: str,
-        name: Optional[str] = None,
-        **kwargs
+        self, method: str, name: Optional[str] = None, **kwargs
     ) -> "PreprocessingPipeline":
         """
         Add a preprocessor by method name.
@@ -78,7 +75,7 @@ class PreprocessingPipeline:
         self,
         X: np.ndarray,
         y: Optional[np.ndarray] = None,
-        feature_names: Optional[List[str]] = None
+        feature_names: Optional[List[str]] = None,
     ) -> "PreprocessingPipeline":
         """
         Fit all preprocessors in sequence.
@@ -150,7 +147,7 @@ class PreprocessingPipeline:
         self,
         X: np.ndarray,
         y: Optional[np.ndarray] = None,
-        feature_names: Optional[List[str]] = None
+        feature_names: Optional[List[str]] = None,
     ) -> np.ndarray:
         """
         Fit and transform data.
@@ -189,9 +186,7 @@ class PreprocessingPipeline:
             try:
                 X_inverse = preprocessor.inverse_transform(X_inverse)
             except NotImplementedError:
-                logger.warning(
-                    f"Step '{step_name}' does not support inverse_transform"
-                )
+                logger.warning(f"Step '{step_name}' does not support inverse_transform")
                 break
 
         return X_inverse
@@ -225,18 +220,15 @@ class PreprocessingPipeline:
             ],
             "is_fitted": self._fitted,
             "n_features_in": len(self._feature_names_in) if self._feature_names_in else None,
-            "n_features_out": len(self._feature_names_out) if self._feature_names_out else None
+            "n_features_out": len(self._feature_names_out) if self._feature_names_out else None,
         }
 
     def get_info(self) -> Dict[str, Any]:
         """Get pipeline information."""
         return {
             "n_steps": len(self.steps),
-            "steps": [
-                {"name": name, "type": p.__class__.__name__}
-                for name, p in self.steps
-            ],
-            "is_fitted": self._fitted
+            "steps": [{"name": name, "type": p.__class__.__name__} for name, p in self.steps],
+            "is_fitted": self._fitted,
         }
 
     def save(self, save_path: Union[str, Path]) -> Path:
@@ -256,10 +248,10 @@ class PreprocessingPipeline:
             "steps": self.steps,
             "fitted": self._fitted,
             "feature_names_in": self._feature_names_in,
-            "feature_names_out": self._feature_names_out
+            "feature_names_out": self._feature_names_out,
         }
 
-        with open(save_path, 'wb') as f:
+        with open(save_path, "wb") as f:
             pickle.dump(pipeline_data, f)
 
         logger.info(f"Saved pipeline to: {save_path}")
@@ -281,7 +273,7 @@ class PreprocessingPipeline:
         if not load_path.exists():
             raise FileNotFoundError(f"Pipeline file not found: {load_path}")
 
-        with open(load_path, 'rb') as f:
+        with open(load_path, "rb") as f:
             data = pickle.load(f)
 
         pipeline = cls(steps=data["steps"])

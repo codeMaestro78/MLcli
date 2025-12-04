@@ -9,10 +9,11 @@ Overall, it ensures that both training and evaluation pipelines always receive c
 import json
 import yaml
 from pathlib import Path
-from typing import Optional,Dict, Any,Union
+from typing import Optional, Dict, Any, Union
 import logging
 
-logger=logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
+
 
 class ConfigLoader:
     """
@@ -22,24 +23,24 @@ class ConfigLoader:
     with support for defaults and overrides.
     """
 
-    REQUIRED_KEYS=["dataset","model"]
-    OPTIONAL_KEYS=["training","evaluation","output"]
+    REQUIRED_KEYS = ["dataset", "model"]
+    OPTIONAL_KEYS = ["training", "evaluation", "output"]
 
-    def __init__(self,config_path:Optional[Union[str,Path]]=None):
+    def __init__(self, config_path: Optional[Union[str, Path]] = None):
         """
         Initialize config loader.
 
         Args:
             config_path: Path to configuration file (optional)
         """
-        self.config_path=Path(config_path) if config_path else None
-        self.config: Dict[str,Any] = {}
+        self.config_path = Path(config_path) if config_path else None
+        self.config: Dict[str, Any] = {}
 
         # Auto-load if path provided
         if self.config_path:
             self.load(self.config_path)
 
-    def load(self,config_path:Union[str,Path])->Dict[str,Any]:
+    def load(self, config_path: Union[str, Path]) -> Dict[str, Any]:
         """
         Load configuration from file.
 
@@ -53,7 +54,7 @@ class ConfigLoader:
             FileNotFoundError: If config file doesn't exist
             ValueError: If file format is unsupported or invalid
         """
-        config_path=Path(config_path)
+        config_path = Path(config_path)
 
         if not config_path.exists():
             raise FileNotFoundError(f"Config file not found : {config_path}")
@@ -61,18 +62,17 @@ class ConfigLoader:
 
         # Determine file type and load
 
-        suffix=config_path.suffix.lower()
+        suffix = config_path.suffix.lower()
 
         try:
-            with open(config_path,"r",encoding="utf-8-sig") as f:
+            with open(config_path, "r", encoding="utf-8-sig") as f:
                 if suffix == ".json":
-                    self.config=json.load(f)
-                elif suffix in ['.yaml','.yml']:
-                    self.config=yaml.safe_load(f)
+                    self.config = json.load(f)
+                elif suffix in [".yaml", ".yml"]:
+                    self.config = yaml.safe_load(f)
                 else:
                     raise ValueError(
-                        f"Unsupported config format :{suffix}."
-                        f"Use .json, .yaml or .yml "
+                        f"Unsupported config format :{suffix}." f"Use .json, .yaml or .yml "
                     )
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON in {config_path} :{e}")
@@ -89,7 +89,7 @@ class ConfigLoader:
 
         return self.config
 
-    def validate(self)->None:
+    def validate(self) -> None:
         """
         Validate loaded configuration.
 
@@ -101,7 +101,7 @@ class ConfigLoader:
             raise ValueError(f"Configuration is Empty")
 
         # check required keys
-        missing_keys=[key for key in self.REQUIRED_KEYS if key not in self.config]
+        missing_keys = [key for key in self.REQUIRED_KEYS if key not in self.config]
         if missing_keys:
             raise ValueError(
                 f"Missing required configuration keys: {missing_keys}."
@@ -116,43 +116,37 @@ class ConfigLoader:
 
         logger.debug("Configuration validation passed")
 
-    def _apply_defaults(self)->None:
+    def _apply_defaults(self) -> None:
         """Apply default values for optional sections."""
         # Default training config
         if "training" not in self.config:
-            self.config["training"]={}
+            self.config["training"] = {}
 
-        training_defaults={
-            "test_size":0.2,
-            "random_state":42,
-            "shuffle":True
-        }
-        for key ,value in training_defaults.items():
-            self.config["training"].setdefault(key,value)
+        training_defaults = {"test_size": 0.2, "random_state": 42, "shuffle": True}
+        for key, value in training_defaults.items():
+            self.config["training"].setdefault(key, value)
 
         # Default evaluation config
         if "evaluation" not in self.config:
-            self.config["evaluation"]={}
+            self.config["evaluation"] = {}
 
-        eval_defaults={
-            "metrics":["accuracy","precision","recall","f1"]
-        }
+        eval_defaults = {"metrics": ["accuracy", "precision", "recall", "f1"]}
         for key, value in eval_defaults.items():
-            self.config["evaluation"].setdefault(key,value)
+            self.config["evaluation"].setdefault(key, value)
 
         # Default output config
         if "output" not in self.config:
-            self.config["output"]={}
+            self.config["output"] = {}
 
-        output_defaults={
-            "model_dir":"mlcli/models",
-            "save_format":["pickle","onmx"],
-            "log_dir":"runs"
+        output_defaults = {
+            "model_dir": "mlcli/models",
+            "save_format": ["pickle", "onmx"],
+            "log_dir": "runs",
         }
-        for key,value in output_defaults.items():
-            self.config["output"].setdefault(key,value)
+        for key, value in output_defaults.items():
+            self.config["output"].setdefault(key, value)
 
-    def get(self,key:str,default:Any=None)->Any:
+    def get(self, key: str, default: Any = None) -> Any:
         """
         Get configuration value by key.
 
@@ -163,11 +157,11 @@ class ConfigLoader:
         Returns:
             Configuration value or default
         """
-        keys=key.split(".")
-        value= self.config
+        keys = key.split(".")
+        value = self.config
 
         for k in keys:
-            if isinstance(value,dict):
+            if isinstance(value, dict):
                 value = value.get(k)
                 if value is None:
                     return default
@@ -175,7 +169,7 @@ class ConfigLoader:
                 return default
         return value
 
-    def set(self,key:str,value:Any)->None:
+    def set(self, key: str, value: Any) -> None:
         """
         Set configuration value.
 
@@ -183,20 +177,20 @@ class ConfigLoader:
             key: Configuration key (supports dot notation)
             value: Value to set
         """
-        keys=key.split(".")
-        config=self.config
+        keys = key.split(".")
+        config = self.config
 
         # Navigate to nested key
         for k in keys[:-1]:
             if k not in config:
-                config[k]={}
-            config=config[k]
+                config[k] = {}
+            config = config[k]
 
         # Set value
-        config[keys[-1]]=value
+        config[keys[-1]] = value
         logger.debug(f"Set config :{key} --> {value}")
 
-    def get_model_type(self)->str:
+    def get_model_type(self) -> str:
         """
         Get model type from configuration.
 
@@ -205,7 +199,7 @@ class ConfigLoader:
         """
         return self.config.get("model", {}).get("type", "unknown")
 
-    def get_model_params(self)->Dict[str,Any]:
+    def get_model_params(self) -> Dict[str, Any]:
         """
         Get model parameters from configuration.
 
@@ -214,44 +208,44 @@ class ConfigLoader:
         """
         return self.config.get("model", {}).get("params", {})
 
-    def get_dataset_config(self)->Dict[str,Any]:
+    def get_dataset_config(self) -> Dict[str, Any]:
         """
         Get dataset configuration.
 
         Returns:
             Dataset configuration dictionary
         """
-        return self.config.get("dataset",{})
+        return self.config.get("dataset", {})
 
-    def get_training_config(self)->Dict[str,Any]:
+    def get_training_config(self) -> Dict[str, Any]:
         """
         Get training configuration.
 
         Returns:
             Training configuration dictionary
         """
-        return self.config.get("training",{})
+        return self.config.get("training", {})
 
-    def get_output_config(self)->Dict[str,Any]:
+    def get_output_config(self) -> Dict[str, Any]:
         """
         Get output configuration.
 
         Returns:
             Output configuration dictionary
         """
-        return self.config.get("output",{})
+        return self.config.get("output", {})
 
-    def merge(self,overrides:Dict[str,Any])->None:
+    def merge(self, overrides: Dict[str, Any]) -> None:
         """
         Merge override values into configuration.
 
         Args:
             overrides: Dictionary of values to override
         """
-        self._deep_merge(self.config,overrides)
+        self._deep_merge(self.config, overrides)
         logger.debug(f"Applied configuration overrides :{list(overrides.keys())}")
 
-    def _deep_merge(self,base:Dict,override:Dict)->Dict:
+    def _deep_merge(self, base: Dict, override: Dict) -> Dict:
         """
         Recursively merge two dictionaries.
 
@@ -263,15 +257,14 @@ class ConfigLoader:
             Merged dictionary
         """
 
-        for key,value in override.items():
-            if key in base and isinstance(base[key],dict) and isinstance(value,dict):
-                self._deep_merge(base[key],value)
+        for key, value in override.items():
+            if key in base and isinstance(base[key], dict) and isinstance(value, dict):
+                self._deep_merge(base[key], value)
             else:
-                base[key]=value
+                base[key] = value
         return base
 
-
-    def save(self,output_path:Union[str,Path])->None:
+    def save(self, output_path: Union[str, Path]) -> None:
         """
         Save current configuration to file.
 
@@ -279,22 +272,22 @@ class ConfigLoader:
             output_path: Path to save configuration
         """
 
-        output_path=Path(output_path)
-        suffix=output_path.suffix.lower()
+        output_path = Path(output_path)
+        suffix = output_path.suffix.lower()
 
-        output_path.mkdir(parents=True,exist_ok=True)
+        output_path.mkdir(parents=True, exist_ok=True)
 
-        with open(output_path,"w",encoding="utf-8") as f:
-            if suffix == '.json':
-                json.dump(self.config,f,indent=2)
-            elif suffix  in ['.yaml','.yml']:
-                yaml.dump(self.config,f,default_flow_style=False)
+        with open(output_path, "w", encoding="utf-8") as f:
+            if suffix == ".json":
+                json.dump(self.config, f, indent=2)
+            elif suffix in [".yaml", ".yml"]:
+                yaml.dump(self.config, f, default_flow_style=False)
             else:
                 raise ValueError(f"Unsupported format : {suffix}")
 
         logger.info(f"Configuration saved to: {output_path}")
 
-    def to_dict(self)->Dict[str,Any]:
+    def to_dict(self) -> Dict[str, Any]:
         """
         Get configuration as dictionary.
 
@@ -303,16 +296,16 @@ class ConfigLoader:
         """
         return self.config.copy()
 
-    def __repr__(self)->str:
+    def __repr__(self) -> str:
         """String representation"""
         return f"ConfigLoader(model_type='{self.get_model_type()}')"
 
-    def __str__(self)->str:
+    def __str__(self) -> str:
         """Readable String"""
-        return json.dumps(self.config,indent=2)
+        return json.dumps(self.config, indent=2)
 
 
-def load_config(config_path:Union[str,Path])->ConfigLoader:
+def load_config(config_path: Union[str, Path]) -> ConfigLoader:
     """
     Convenience function to load configuration.
 

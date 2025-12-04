@@ -113,7 +113,7 @@ class OneHotEncoderProcessor(BasePreprocessor):
         drop: Optional[str] = None,
         sparse_output: bool = False,
         handle_unknown: str = "error",
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize OneHotEncoder.
@@ -134,7 +134,7 @@ class OneHotEncoderProcessor(BasePreprocessor):
             categories=categories,
             drop=drop,
             sparse_output=sparse_output,
-            handle_unknown=handle_unknown
+            handle_unknown=handle_unknown,
         )
 
     def fit(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> "OneHotEncoderProcessor":
@@ -159,7 +159,9 @@ class OneHotEncoderProcessor(BasePreprocessor):
         # Generate output feature names
         self._feature_names_out = []
         for i, cats in enumerate(self._preprocessor.categories_):
-            feature_name = self._feature_names_in[i] if i < len(self._feature_names_in) else f"feature_{i}"
+            feature_name = (
+                self._feature_names_in[i] if i < len(self._feature_names_in) else f"feature_{i}"
+            )
             for cat in cats:
                 self._feature_names_out.append(f"{feature_name}_{cat}")
 
@@ -182,7 +184,7 @@ class OneHotEncoderProcessor(BasePreprocessor):
         result = self._preprocessor.transform(X)
 
         # Convert to dense array if sparse
-        if hasattr(result, 'toarray'):
+        if hasattr(result, "toarray"):
             result = result.toarray()
 
         return result
@@ -215,7 +217,7 @@ class OrdinalEncoderProcessor(BasePreprocessor):
         categories: str = "auto",
         handle_unknown: str = "error",
         unknown_value: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize OrdinalEncoder.
@@ -231,9 +233,7 @@ class OrdinalEncoderProcessor(BasePreprocessor):
         self.handle_unknown = handle_unknown
         self.unknown_value = unknown_value
         self._preprocessor = OrdinalEncoder(
-            categories=categories,
-            handle_unknown=handle_unknown,
-            unknown_value=unknown_value
+            categories=categories, handle_unknown=handle_unknown, unknown_value=unknown_value
         )
 
     def fit(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> "OrdinalEncoderProcessor":

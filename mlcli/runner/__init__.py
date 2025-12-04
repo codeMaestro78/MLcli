@@ -2,5 +2,4 @@
 
 from mlcli.runner.experiment_tracker import ExperimentTracker
 
-__all__=["ExperimentTracker"]
-
+__all__ = ["ExperimentTracker"]

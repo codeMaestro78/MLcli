@@ -23,7 +23,7 @@ import pandas as pd
 app = typer.Typer(
     name="mlcli",
     help="Production ML/DL CLI for training, evaluation, hyperparameter tuning, and experiment tracking",
-    add_completion=False
+    add_completion=False,
 )
 
 console = Console()
@@ -32,50 +32,36 @@ console = Console()
 def get_registry():
     """Get the model registry with all trainers loaded."""
     from mlcli import registry
+
     # Import trainers to trigger registration
     from mlcli import trainers
+
     return registry
 
 
 def get_tracker():
     """Get experiment tracker instance."""
     from mlcli.runner.experiment_tracker import ExperimentTracker
+
     return ExperimentTracker()
 
 
 @app.command("train")
 def train(
     config: Path = typer.Option(
-        ...,
-        "--config", "-c",
-        help="Path to configuration file (JSON or YAML)",
-        exists=True
+        ..., "--config", "-c", help="Path to configuration file (JSON or YAML)", exists=True
     ),
     output_dir: Optional[Path] = typer.Option(
-        None,
-        "--output", "-o",
-        help="Output directory for models (overrides config)"
+        None, "--output", "-o", help="Output directory for models (overrides config)"
     ),
-    run_name: Optional[str] = typer.Option(
-        None,
-        "--name", "-n",
-        help="Name for this training run"
-    ),
+    run_name: Optional[str] = typer.Option(None, "--name", "-n", help="Name for this training run"),
     epochs: Optional[int] = typer.Option(
-        None,
-        "--epochs", "-e",
-        help="Number of epochs (overrides config, for DL models)"
+        None, "--epochs", "-e", help="Number of epochs (overrides config, for DL models)"
     ),
     batch_size: Optional[int] = typer.Option(
-        None,
-        "--batch-size", "-b",
-        help="Batch size (overrides config, for DL models)"
+        None, "--batch-size", "-b", help="Batch size (overrides config, for DL models)"
     ),
-    verbose: bool = typer.Option(
-        True,
-        "--verbose/--quiet", "-v/-q",
-        help="Verbose output"
-    )
+    verbose: bool = typer.Option(True, "--verbose/--quiet", "-v/-q", help="Verbose output"),
 ):
     """
     Train a model using configuration file.
@@ -94,10 +80,7 @@ def train(
     log_level = "INFO" if verbose else "WARNING"
     setup_logger("mlcli", level=log_level)
 
-    console.print(Panel.fit(
-        "[bold blue]MLCLI Training Pipeline[/bold blue]",
-        border_style="blue"
-    ))
+    console.print(Panel.fit("[bold blue]MLCLI Training Pipeline[/bold blue]", border_style="blue"))
 
     try:
         # Load configuration
@@ -137,7 +120,7 @@ def train(
             model_type=model_type,
             framework=framework,
             config=config_loader.to_dict(),
-            run_name=run_name
+            run_name=run_name,
         )
 
         console.print(f"[green]Run ID:[/green] {run_id}")
@@ -150,10 +133,12 @@ def train(
             data_path=dataset_config["path"],
             data_type=dataset_config.get("type", "csv"),
             target_column=dataset_config.get("target_column"),
-            features=dataset_config.get("features")
+            features=dataset_config.get("features"),
         )
 
-        console.print(f"[green]Dataset shape:[/green] X={X.shape}, y={y.shape if y is not None else 'None'}")
+        console.print(
+            f"[green]Dataset shape:[/green] X={X.shape}, y={y.shape if y is not None else 'None'}"
+        )
 
         # Train/test split
         training_config = config_loader.get_training_config()
@@ -169,10 +154,7 @@ def train(
 
         # Create trainer
         console.print(f"\n[cyan]Initializing trainer...[/cyan]")
-        trainer = registry.get_trainer(
-            model_type,
-            config=config_loader.config.get("model", {})
-        )
+        trainer = registry.get_trainer(model_type, config=config_loader.config.get("model", {}))
 
         # Train model
         console.print(f"\n[bold cyan]Starting training...[/bold cyan]\n")
@@ -181,15 +163,11 @@ def train(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=console,
-            transient=True
+            transient=True,
         ) as progress:
             progress.add_task("Training model...", total=None)
 
-            training_history = trainer.train(
-                X_train, y_train,
-                X_val=X_test,
-                y_val=y_test
-            )
+            training_history = trainer.train(X_train, y_train, X_val=X_test, y_val=y_test)
 
         # Log training history
         tracker.log_training_history(training_history)
@@ -241,14 +219,16 @@ def train(
         run_data = tracker.end_run(status="completed")
 
         # Final summary
-        console.print(Panel.fit(
-            f"[bold green]Training Complete![/bold green]\n\n"
-            f"Run ID: {run_id}\n"
-            f"Test Accuracy: {test_metrics.get('accuracy', 'N/A'):.4f}\n"
-            f"Duration: {run_data.get('duration_seconds', 0):.1f}s",
-            title="Summary",
-            border_style="green"
-        ))
+        console.print(
+            Panel.fit(
+                f"[bold green]Training Complete![/bold green]\n\n"
+                f"Run ID: {run_id}\n"
+                f"Test Accuracy: {test_metrics.get('accuracy', 'N/A'):.4f}\n"
+                f"Duration: {run_data.get('duration_seconds', 0):.1f}s",
+                title="Summary",
+                border_style="green",
+            )
+        )
 
     except Exception as e:
         console.print(f"\n[red]Error during training:[/red] {str(e)}")
@@ -268,46 +248,28 @@ def train(
 @app.command("tune")
 def tune(
     config: Path = typer.Option(
-        ...,
-        "--config", "-c",
-        help="Path to tuning configuration file (JSON or YAML)",
-        exists=True
+        ..., "--config", "-c", help="Path to tuning configuration file (JSON or YAML)", exists=True
     ),
     method: str = typer.Option(
-        "random",
-        "--method", "-m",
-        help="Tuning method: grid, random, or bayesian"
+        "random", "--method", "-m", help="Tuning method: grid, random, or bayesian"
     ),
     n_trials: int = typer.Option(
-        50,
-        "--n-trials", "-n",
-        help="Number of trials/iterations for random/bayesian search"
+        50, "--n-trials", "-n", help="Number of trials/iterations for random/bayesian search"
     ),
-    cv: int = typer.Option(
-        5,
-        "--cv",
-        help="Number of cross-validation folds"
-    ),
+    cv: int = typer.Option(5, "--cv", help="Number of cross-validation folds"),
     scoring: str = typer.Option(
         "accuracy",
-        "--scoring", "-s",
-        help="Metric to optimize (accuracy, f1, roc_auc, precision, recall)"
+        "--scoring",
+        "-s",
+        help="Metric to optimize (accuracy, f1, roc_auc, precision, recall)",
     ),
     output: Optional[Path] = typer.Option(
-        None,
-        "--output", "-o",
-        help="Path to save tuning results (JSON)"
+        None, "--output", "-o", help="Path to save tuning results (JSON)"
     ),
     train_best: bool = typer.Option(
-        False,
-        "--train-best",
-        help="Train a model with the best parameters after tuning"
+        False, "--train-best", help="Train a model with the best parameters after tuning"
     ),
-    verbose: bool = typer.Option(
-        True,
-        "--verbose/--quiet", "-v/-q",
-        help="Verbose output"
-    )
+    verbose: bool = typer.Option(True, "--verbose/--quiet", "-v/-q", help="Verbose output"),
 ):
     """
     Tune hyperparameters using Grid Search, Random Search, or Bayesian Optimization.
@@ -326,10 +288,11 @@ def tune(
     log_level = "INFO" if verbose else "WARNING"
     setup_logger("mlcli", level=log_level)
 
-    console.print(Panel.fit(
-        "[bold magenta]MLCLI Hyperparameter Tuning[/bold magenta]",
-        border_style="magenta"
-    ))
+    console.print(
+        Panel.fit(
+            "[bold magenta]MLCLI Hyperparameter Tuning[/bold magenta]", border_style="magenta"
+        )
+    )
 
     try:
         # Load configuration
@@ -363,7 +326,7 @@ def tune(
             data_path=dataset_config["path"],
             data_type=dataset_config.get("type", "csv"),
             target_column=dataset_config.get("target_column"),
-            features=dataset_config.get("features")
+            features=dataset_config.get("features"),
         )
 
         console.print(f"[green]Dataset shape:[/green] X={X.shape}, y={y.shape}")
@@ -385,7 +348,9 @@ def tune(
         base_config = config_loader.config.get("model", {})
 
         # Create tuner
-        console.print(f"\n[bold cyan]Starting {method.upper()} hyperparameter tuning...[/bold cyan]\n")
+        console.print(
+            f"\n[bold cyan]Starting {method.upper()} hyperparameter tuning...[/bold cyan]\n"
+        )
 
         tuner = get_tuner(
             method=method,
@@ -394,22 +359,19 @@ def tune(
             scoring=scoring,
             cv=cv,
             verbose=2 if verbose else 0,
-            random_state=config_loader.get_training_config().get("random_state", 42)
+            random_state=config_loader.get_training_config().get("random_state", 42),
         )
 
         # Run tuning
-        results = tuner.tune(
-            trainer_class=trainer_class,
-            X=X,
-            y=y,
-            trainer_config=base_config
-        )
+        results = tuner.tune(trainer_class=trainer_class, X=X, y=y, trainer_config=base_config)
 
         # Display results
         console.print("\n")
 
         # Best parameters table
-        best_params_table = Table(title="Best Hyperparameters", show_header=True, header_style="bold green")
+        best_params_table = Table(
+            title="Best Hyperparameters", show_header=True, header_style="bold green"
+        )
         best_params_table.add_column("Parameter", style="cyan")
         best_params_table.add_column("Value", style="green")
 
@@ -422,14 +384,16 @@ def tune(
         console.print(best_params_table)
 
         # Summary panel
-        console.print(Panel.fit(
-            f"[bold green]Tuning Complete![/bold green]\n\n"
-            f"Best Score ({scoring}): {results['best_score']:.4f}\n"
-            f"Total Trials: {len(tuner.tuning_history_)}\n"
-            f"Duration: {results['duration']:.1f}s",
-            title="Summary",
-            border_style="green"
-        ))
+        console.print(
+            Panel.fit(
+                f"[bold green]Tuning Complete![/bold green]\n\n"
+                f"Best Score ({scoring}): {results['best_score']:.4f}\n"
+                f"Total Trials: {len(tuner.tuning_history_)}\n"
+                f"Duration: {results['duration']:.1f}s",
+                title="Summary",
+                border_style="green",
+            )
+        )
 
         # Top 5 results
         top_results = tuner.get_top_n_params(5)
@@ -444,7 +408,7 @@ def tune(
                 top_table.add_row(
                     str(i),
                     f"{result['score']:.4f}",
-                    params_str[:60] + "..." if len(params_str) > 60 else params_str
+                    params_str[:60] + "..." if len(params_str) > 60 else params_str,
                 )
 
             console.print(top_table)
@@ -482,7 +446,9 @@ def tune(
 
             test_metrics = trainer.evaluate(X_test, y_test)
 
-            console.print(f"\n[green]Final Model Test Accuracy:[/green] {test_metrics.get('accuracy', 0):.4f}")
+            console.print(
+                f"\n[green]Final Model Test Accuracy:[/green] {test_metrics.get('accuracy', 0):.4f}"
+            )
 
             # Save model
             output_config = config_loader.get_output_config()
@@ -503,37 +469,21 @@ def tune(
 @app.command("eval")
 def evaluate(
     model_path: Path = typer.Option(
-        ...,
-        "--model", "-m",
-        help="Path to saved model file",
-        exists=True
+        ..., "--model", "-m", help="Path to saved model file", exists=True
     ),
     data_path: Path = typer.Option(
-        ...,
-        "--data", "-d",
-        help="Path to evaluation data",
-        exists=True
+        ..., "--data", "-d", help="Path to evaluation data", exists=True
     ),
     model_type: str = typer.Option(
-        ...,
-        "--type", "-t",
-        help="Model type (e.g., logistic_regression, tf_dnn)"
+        ..., "--type", "-t", help="Model type (e.g., logistic_regression, tf_dnn)"
     ),
     model_format: str = typer.Option(
-        "pickle",
-        "--format", "-f",
-        help="Model format (pickle, joblib, h5, savedmodel, onnx)"
+        "pickle", "--format", "-f", help="Model format (pickle, joblib, h5, savedmodel, onnx)"
     ),
     target_column: Optional[str] = typer.Option(
-        None,
-        "--target",
-        help="Target column name in data"
+        None, "--target", help="Target column name in data"
     ),
-    verbose: bool = typer.Option(
-        True,
-        "--verbose/--quiet", "-v/-q",
-        help="Verbose output"
-    )
+    verbose: bool = typer.Option(True, "--verbose/--quiet", "-v/-q", help="Verbose output"),
 ):
     """
     Evaluate a saved model on a dataset.
@@ -548,10 +498,9 @@ def evaluate(
     log_level = "INFO" if verbose else "WARNING"
     setup_logger("mlcli", level=log_level)
 
-    console.print(Panel.fit(
-        "[bold blue]MLCLI Evaluation Pipeline[/bold blue]",
-        border_style="blue"
-    ))
+    console.print(
+        Panel.fit("[bold blue]MLCLI Evaluation Pipeline[/bold blue]", border_style="blue")
+    )
 
     try:
         # Get registry and validate model type
@@ -569,16 +518,14 @@ def evaluate(
         # Load data
         console.print(f"\n[cyan]Loading data from:[/cyan] {data_path}")
 
-        X, y = load_data(
-            data_path=data_path,
-            data_type="csv",
-            target_column=target_column
-        )
+        X, y = load_data(data_path=data_path, data_type="csv", target_column=target_column)
 
         console.print(f"[green]Data shape:[/green] X={X.shape}")
 
         if y is None:
-            console.print("[yellow]Warning:[/yellow] No target column specified, cannot compute metrics")
+            console.print(
+                "[yellow]Warning:[/yellow] No target column specified, cannot compute metrics"
+            )
             raise typer.Exit(1)
 
         # Create and load trainer
@@ -615,9 +562,7 @@ def evaluate(
 @app.command("list-models")
 def list_models(
     framework: Optional[str] = typer.Option(
-        None,
-        "--framework", "-f",
-        help="Filter by framework (sklearn, tensorflow, xgboost)"
+        None, "--framework", "-f", help="Filter by framework (sklearn, tensorflow, xgboost)"
     )
 ):
     """
@@ -629,10 +574,7 @@ def list_models(
     """
     registry = get_registry()
 
-    console.print(Panel.fit(
-        "[bold blue]Available Model Trainers[/bold blue]",
-        border_style="blue"
-    ))
+    console.print(Panel.fit("[bold blue]Available Model Trainers[/bold blue]", border_style="blue"))
 
     # Get models to display
     if framework:
@@ -657,7 +599,7 @@ def list_models(
                 model_name,
                 metadata.get("framework", "unknown"),
                 metadata.get("model_type", "unknown"),
-                metadata.get("description", "")
+                metadata.get("description", ""),
             )
 
     console.print(table)
@@ -674,10 +616,9 @@ def list_tuners():
     """
     from mlcli.tuner import TunerFactory
 
-    console.print(Panel.fit(
-        "[bold magenta]Available Tuning Methods[/bold magenta]",
-        border_style="magenta"
-    ))
+    console.print(
+        Panel.fit("[bold magenta]Available Tuning Methods[/bold magenta]", border_style="magenta")
+    )
 
     table = Table(show_header=True, header_style="bold cyan")
     table.add_column("Method", style="green")
@@ -688,10 +629,7 @@ def list_tuners():
     for method in TunerFactory.list_methods():
         info = TunerFactory.get_method_info(method)
         table.add_row(
-            method,
-            info.get("name", method),
-            info.get("best_for", ""),
-            info.get("description", "")
+            method, info.get("name", method), info.get("best_for", ""), info.get("description", "")
         )
 
     console.print(table)
@@ -701,21 +639,9 @@ def list_tuners():
 
 @app.command("list-runs")
 def list_runs(
-    n: int = typer.Option(
-        10,
-        "--last", "-n",
-        help="Number of recent runs to show"
-    ),
-    model_type: Optional[str] = typer.Option(
-        None,
-        "--model", "-m",
-        help="Filter by model type"
-    ),
-    framework: Optional[str] = typer.Option(
-        None,
-        "--framework", "-f",
-        help="Filter by framework"
-    )
+    n: int = typer.Option(10, "--last", "-n", help="Number of recent runs to show"),
+    model_type: Optional[str] = typer.Option(None, "--model", "-m", help="Filter by model type"),
+    framework: Optional[str] = typer.Option(None, "--framework", "-f", help="Filter by framework"),
 ):
     """
     List experiment runs from the tracker.
@@ -727,10 +653,7 @@ def list_runs(
     """
     tracker = get_tracker()
 
-    console.print(Panel.fit(
-        "[bold blue]Experiment Runs[/bold blue]",
-        border_style="blue"
-    ))
+    console.print(Panel.fit("[bold blue]Experiment Runs[/bold blue]", border_style="blue"))
 
     # Get runs
     if model_type:
@@ -754,17 +677,16 @@ def list_runs(
     table.add_column("Timestamp")
 
     for run in runs[:n]:
-        accuracy = run.get("metrics", {}).get("test_accuracy",
-                   run.get("metrics", {}).get("accuracy", "N/A"))
+        accuracy = run.get("metrics", {}).get(
+            "test_accuracy", run.get("metrics", {}).get("accuracy", "N/A")
+        )
 
         if isinstance(accuracy, float):
             accuracy = f"{accuracy:.4f}"
 
-        status_color = {
-            "completed": "green",
-            "failed": "red",
-            "running": "yellow"
-        }.get(run["status"], "white")
+        status_color = {"completed": "green", "failed": "red", "running": "yellow"}.get(
+            run["status"], "white"
+        )
 
         table.add_row(
             run["run_id"],
@@ -772,7 +694,7 @@ def list_runs(
             run["model_type"],
             f"[{status_color}]{run['status']}[/{status_color}]",
             str(accuracy),
-            run["timestamp"][:19]
+            run["timestamp"][:19],
         )
 
     console.print(table)
@@ -780,12 +702,7 @@ def list_runs(
 
 
 @app.command("show-run")
-def show_run(
-    run_id: str = typer.Argument(
-        ...,
-        help="Run ID to display"
-    )
-):
+def show_run(run_id: str = typer.Argument(..., help="Run ID to display")):
     """
     Show detailed information about a specific run.
 
@@ -806,15 +723,8 @@ def show_run(
 
 @app.command("delete-run")
 def delete_run(
-    run_id: str = typer.Argument(
-        ...,
-        help="Run ID to delete"
-    ),
-    force: bool = typer.Option(
-        False,
-        "--force", "-f",
-        help="Skip confirmation"
-    )
+    run_id: str = typer.Argument(..., help="Run ID to delete"),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation"),
 ):
     """
     Delete an experiment run.
@@ -843,11 +753,7 @@ def delete_run(
 
 @app.command("export-runs")
 def export_runs(
-    output: Path = typer.Option(
-        "experiments.csv",
-        "--output", "-o",
-        help="Output CSV file path"
-    )
+    output: Path = typer.Option("experiments.csv", "--output", "-o", help="Output CSV file path")
 ):
     """
     Export experiment runs to CSV file.
@@ -869,62 +775,32 @@ def export_runs(
 @app.command("explain")
 def explain(
     model_path: Path = typer.Option(
-        ...,
-        "--model", "-m",
-        help="Path to saved model file",
-        exists=True
+        ..., "--model", "-m", help="Path to saved model file", exists=True
     ),
     data_path: Path = typer.Option(
-        ...,
-        "--data", "-d",
-        help="Path to data for explanation",
-        exists=True
+        ..., "--data", "-d", help="Path to data for explanation", exists=True
     ),
     model_type: str = typer.Option(
-        ...,
-        "--type", "-t",
-        help="Model type (e.g., logistic_regression, random_forest, xgboost)"
+        ..., "--type", "-t", help="Model type (e.g., logistic_regression, random_forest, xgboost)"
     ),
-    method: str = typer.Option(
-        "shap",
-        "--method", "-e",
-        help="Explanation method: shap or lime"
-    ),
+    method: str = typer.Option("shap", "--method", "-e", help="Explanation method: shap or lime"),
     model_format: str = typer.Option(
-        "pickle",
-        "--format", "-f",
-        help="Model format (pickle, joblib)"
+        "pickle", "--format", "-f", help="Model format (pickle, joblib)"
     ),
     target_column: Optional[str] = typer.Option(
-        None,
-        "--target",
-        help="Target column name in data"
+        None, "--target", help="Target column name in data"
     ),
     num_samples: int = typer.Option(
-        100,
-        "--num-samples", "-n",
-        help="Number of samples to explain"
+        100, "--num-samples", "-n", help="Number of samples to explain"
     ),
     output: Optional[Path] = typer.Option(
-        None,
-        "--output", "-o",
-        help="Output path for explanation results (JSON)"
+        None, "--output", "-o", help="Output path for explanation results (JSON)"
     ),
-    plot: bool = typer.Option(
-        True,
-        "--plot/--no-plot",
-        help="Generate explanation plot"
-    ),
+    plot: bool = typer.Option(True, "--plot/--no-plot", help="Generate explanation plot"),
     plot_output: Optional[Path] = typer.Option(
-        None,
-        "--plot-output", "-p",
-        help="Output path for plot (PNG)"
+        None, "--plot-output", "-p", help="Output path for plot (PNG)"
     ),
-    verbose: bool = typer.Option(
-        True,
-        "--verbose/--quiet", "-v/-q",
-        help="Verbose output"
-    )
+    verbose: bool = typer.Option(True, "--verbose/--quiet", "-v/-q", help="Verbose output"),
 ):
     """
     Explain model predictions using SHAP or LIME.
@@ -942,10 +818,9 @@ def explain(
     log_level = "INFO" if verbose else "WARNING"
     setup_logger("mlcli", level=log_level)
 
-    console.print(Panel.fit(
-        "[bold cyan]MLCLI Model Explainability[/bold cyan]",
-        border_style="cyan"
-    ))
+    console.print(
+        Panel.fit("[bold cyan]MLCLI Model Explainability[/bold cyan]", border_style="cyan")
+    )
 
     try:
         # Validate model type
@@ -961,8 +836,12 @@ def explain(
 
         # Check for TensorFlow models - not fully supported yet
         if framework == "tensorflow":
-            console.print("[yellow]Warning:[/yellow] SHAP/LIME support for TensorFlow models is limited.")
-            console.print("[yellow]Results may vary. Consider using Tree-based models for best explanations.[/yellow]")
+            console.print(
+                "[yellow]Warning:[/yellow] SHAP/LIME support for TensorFlow models is limited."
+            )
+            console.print(
+                "[yellow]Results may vary. Consider using Tree-based models for best explanations.[/yellow]"
+            )
 
         console.print(f"[green]Model type:[/green] {model_type}")
         console.print(f"[green]Framework:[/green] {framework}")
@@ -971,14 +850,11 @@ def explain(
         # Load data
         console.print(f"\n[cyan]Loading data from:[/cyan] {data_path}")
 
-        X, y = load_data(
-            data_path=data_path,
-            data_type="csv",
-            target_column=target_column
-        )
+        X, y = load_data(data_path=data_path, data_type="csv", target_column=target_column)
 
         # Store feature names if available
         import pandas as pd
+
         df = pd.read_csv(data_path)
         if target_column and target_column in df.columns:
             feature_names = [col for col in df.columns if col != target_column]
@@ -1008,27 +884,26 @@ def explain(
         console.print(f"\n[bold cyan]Creating {method.upper()} explainer...[/bold cyan]")
 
         explainer = ExplainerFactory.create(
-            method=method,
-            model=model,
-            feature_names=feature_names,
-            class_names=class_names
+            method=method, model=model, feature_names=feature_names, class_names=class_names
         )
 
         # Generate explanations
-        console.print(f"\n[cyan]Generating explanations for {min(num_samples, len(X))} samples...[/cyan]")
+        console.print(
+            f"\n[cyan]Generating explanations for {min(num_samples, len(X))} samples...[/cyan]"
+        )
 
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=console,
-            transient=True
+            transient=True,
         ) as progress:
             progress.add_task(f"Computing {method.upper()} values...", total=None)
 
             explanation = explainer.explain(
                 X=X[:num_samples],
                 X_background=X,  # Use all data as background
-                max_samples=num_samples
+                max_samples=num_samples,
             )
 
         # Display results
@@ -1038,7 +913,7 @@ def explain(
         importance_table = Table(
             title=f"Feature Importance ({method.upper()})",
             show_header=True,
-            header_style="bold cyan"
+            header_style="bold cyan",
         )
         importance_table.add_column("Rank", style="yellow", width=6)
         importance_table.add_column("Feature", style="green")
@@ -1049,24 +924,22 @@ def explain(
             # Handle both scalar and array values
             if isinstance(value, (list, np.ndarray)):
                 value = np.mean(value)
-            importance_table.add_row(
-                str(i),
-                feature[:40],
-                f"{value:.6f}"
-            )
+            importance_table.add_row(str(i), feature[:40], f"{value:.6f}")
 
         console.print(importance_table)
 
         # Summary panel
-        console.print(Panel.fit(
-            f"[bold green]Explanation Complete![/bold green]\n\n"
-            f"Method: {method.upper()}\n"
-            f"Samples Analyzed: {explanation.get('n_samples', num_samples)}\n"
-            f"Features: {explanation.get('n_features', len(feature_names))}\n"
-            f"Top Feature: {list(importance.keys())[0] if importance else 'N/A'}",
-            title="Summary",
-            border_style="green"
-        ))
+        console.print(
+            Panel.fit(
+                f"[bold green]Explanation Complete![/bold green]\n\n"
+                f"Method: {method.upper()}\n"
+                f"Samples Analyzed: {explanation.get('n_samples', num_samples)}\n"
+                f"Features: {explanation.get('n_features', len(feature_names))}\n"
+                f"Top Feature: {list(importance.keys())[0] if importance else 'N/A'}",
+                title="Summary",
+                border_style="green",
+            )
+        )
 
         # Save explanation results
         if output:
@@ -1088,10 +961,7 @@ def explain(
 
             try:
                 explainer.plot(
-                    plot_type="bar",
-                    output_path=plot_path,
-                    max_display=15,
-                    X=X[:num_samples]
+                    plot_type="bar", output_path=plot_path, max_display=15, X=X[:num_samples]
                 )
                 console.print(f"[green]Plot saved to:[/green] {plot_path}")
             except Exception as e:
@@ -1110,52 +980,24 @@ def explain(
 @app.command("explain-instance")
 def explain_instance(
     model_path: Path = typer.Option(
-        ...,
-        "--model", "-m",
-        help="Path to saved model file",
-        exists=True
+        ..., "--model", "-m", help="Path to saved model file", exists=True
     ),
-    data_path: Path = typer.Option(
-        ...,
-        "--data", "-d",
-        help="Path to data file",
-        exists=True
-    ),
+    data_path: Path = typer.Option(..., "--data", "-d", help="Path to data file", exists=True),
     model_type: str = typer.Option(
-        ...,
-        "--type", "-t",
-        help="Model type (e.g., logistic_regression, random_forest)"
+        ..., "--type", "-t", help="Model type (e.g., logistic_regression, random_forest)"
     ),
-    instance_idx: int = typer.Option(
-        0,
-        "--instance", "-i",
-        help="Index of instance to explain"
-    ),
-    method: str = typer.Option(
-        "shap",
-        "--method", "-e",
-        help="Explanation method: shap or lime"
-    ),
+    instance_idx: int = typer.Option(0, "--instance", "-i", help="Index of instance to explain"),
+    method: str = typer.Option("shap", "--method", "-e", help="Explanation method: shap or lime"),
     model_format: str = typer.Option(
-        "pickle",
-        "--format", "-f",
-        help="Model format (pickle, joblib)"
+        "pickle", "--format", "-f", help="Model format (pickle, joblib)"
     ),
     target_column: Optional[str] = typer.Option(
-        None,
-        "--target",
-        help="Target column name in data"
+        None, "--target", help="Target column name in data"
     ),
     output: Optional[Path] = typer.Option(
-        None,
-        "--output", "-o",
-        help="Output path for explanation (JSON)"
+        None, "--output", "-o", help="Output path for explanation (JSON)"
     ),
-    verbose: bool = typer.Option(
-        True,
-        "--verbose/--quiet", "-v/-q",
-        help="Verbose output"
-    )
+    verbose: bool = typer.Option(True, "--verbose/--quiet", "-v/-q", help="Verbose output"),
 ):
     """
     Explain a single prediction using SHAP or LIME.
@@ -1171,10 +1013,9 @@ def explain_instance(
     log_level = "INFO" if verbose else "WARNING"
     setup_logger("mlcli", level=log_level)
 
-    console.print(Panel.fit(
-        "[bold cyan]MLCLI Instance Explanation[/bold cyan]",
-        border_style="cyan"
-    ))
+    console.print(
+        Panel.fit("[bold cyan]MLCLI Instance Explanation[/bold cyan]", border_style="cyan")
+    )
 
     try:
         # Validate model type
@@ -1191,13 +1032,10 @@ def explain_instance(
         # Load data
         console.print(f"\n[cyan]Loading data from:[/cyan] {data_path}")
 
-        X, y = load_data(
-            data_path=data_path,
-            data_type="csv",
-            target_column=target_column
-        )
+        X, y = load_data(data_path=data_path, data_type="csv", target_column=target_column)
 
         import pandas as pd
+
         df = pd.read_csv(data_path)
         if target_column and target_column in df.columns:
             feature_names = [col for col in df.columns if col != target_column]
@@ -1205,7 +1043,9 @@ def explain_instance(
             feature_names = df.columns.tolist()
 
         if instance_idx >= len(X):
-            console.print(f"[red]Error:[/red] Instance {instance_idx} out of range (max: {len(X)-1})")
+            console.print(
+                f"[red]Error:[/red] Instance {instance_idx} out of range (max: {len(X)-1})"
+            )
             raise typer.Exit(1)
 
         # Load model
@@ -1215,21 +1055,14 @@ def explain_instance(
         model = trainer.model
 
         # Create explainer
-        explainer = ExplainerFactory.create(
-            method=method,
-            model=model,
-            feature_names=feature_names
-        )
+        explainer = ExplainerFactory.create(method=method, model=model, feature_names=feature_names)
 
         # Get instance explanation
         instance = X[instance_idx]
 
         console.print(f"\n[cyan]Explaining instance {instance_idx}...[/cyan]")
 
-        explanation = explainer.explain_instance(
-            instance=instance,
-            X_background=X
-        )
+        explanation = explainer.explain_instance(instance=instance, X_background=X)
 
         # Display instance values
         console.print("\n[bold]Instance Feature Values:[/bold]")
@@ -1255,11 +1088,7 @@ def explain_instance(
         contributions = explanation.get("feature_contributions", {})
         for feat, contrib in list(contributions.items())[:10]:
             direction = "[green]↑ Positive[/green]" if contrib > 0 else "[red]↓ Negative[/red]"
-            contrib_table.add_row(
-                feat[:40],
-                f"{contrib:.6f}",
-                direction
-            )
+            contrib_table.add_row(feat[:40], f"{contrib:.6f}", direction)
 
         console.print(contrib_table)
 
@@ -1268,17 +1097,20 @@ def explain_instance(
             actual = y[instance_idx]
             predicted = trainer.predict(instance.reshape(1, -1))[0]
 
-            console.print(Panel.fit(
-                f"[bold]Prediction Info[/bold]\n\n"
-                f"Actual: {actual}\n"
-                f"Predicted: {predicted}",
-                border_style="blue"
-            ))
+            console.print(
+                Panel.fit(
+                    f"[bold]Prediction Info[/bold]\n\n"
+                    f"Actual: {actual}\n"
+                    f"Predicted: {predicted}",
+                    border_style="blue",
+                )
+            )
 
         # Save explanation
         if output:
             import json
-            with open(output, 'w') as f:
+
+            with open(output, "w") as f:
                 json.dump(explanation, f, indent=2, default=str)
             console.print(f"\n[green]Explanation saved to:[/green] {output}")
 
@@ -1301,10 +1133,9 @@ def list_explainers():
     """
     from mlcli.explainer import ExplainerFactory
 
-    console.print(Panel.fit(
-        "[bold cyan]Available Explanation Methods[/bold cyan]",
-        border_style="cyan"
-    ))
+    console.print(
+        Panel.fit("[bold cyan]Available Explanation Methods[/bold cyan]", border_style="cyan")
+    )
 
     table = Table(show_header=True, header_style="bold cyan")
     table.add_column("Method", style="green")
@@ -1318,78 +1149,55 @@ def list_explainers():
             method,
             info.get("full_name", method),
             info.get("best_for", ""),
-            info.get("description", "")
+            info.get("description", ""),
         )
 
     console.print(table)
 
-    console.print("\n[dim]Usage: mlcli explain --model <model.pkl> --data <data.csv> --type <model_type> --method <method>[/dim]")
-    console.print("[dim]       mlcli explain-instance --model <model.pkl> --data <data.csv> --type <model_type> --instance <idx>[/dim]")
+    console.print(
+        "\n[dim]Usage: mlcli explain --model <model.pkl> --data <data.csv> --type <model_type> --method <method>[/dim]"
+    )
+    console.print(
+        "[dim]       mlcli explain-instance --model <model.pkl> --data <data.csv> --type <model_type> --instance <idx>[/dim]"
+    )
 
 
 @app.command("preprocess")
 def preprocess(
     data_path: Path = typer.Option(
-        ...,
-        "--data", "-d",
-        help="Path to input data file (CSV)",
-        exists=True
+        ..., "--data", "-d", help="Path to input data file (CSV)", exists=True
     ),
-    output: Path = typer.Option(
-        ...,
-        "--output", "-o",
-        help="Path to save preprocessed data (CSV)"
-    ),
+    output: Path = typer.Option(..., "--output", "-o", help="Path to save preprocessed data (CSV)"),
     method: str = typer.Option(
         "standard_scaler",
-        "--method", "-m",
-        help="Preprocessing method (standard_scaler, minmax_scaler, robust_scaler, normalizer, select_k_best, rfe, variance_threshold)"
+        "--method",
+        "-m",
+        help="Preprocessing method (standard_scaler, minmax_scaler, robust_scaler, normalizer, select_k_best, rfe, variance_threshold)",
     ),
     target_column: Optional[str] = typer.Option(
-        None,
-        "--target", "-t",
-        help="Target column name (required for feature selection)"
+        None, "--target", "-t", help="Target column name (required for feature selection)"
     ),
     columns: Optional[str] = typer.Option(
         None,
-        "--columns", "-c",
-        help="Comma-separated list of columns to preprocess (default: all numeric)"
+        "--columns",
+        "-c",
+        help="Comma-separated list of columns to preprocess (default: all numeric)",
     ),
-    k: int = typer.Option(
-        10,
-        "--k",
-        help="Number of features for SelectKBest or RFE"
-    ),
+    k: int = typer.Option(10, "--k", help="Number of features for SelectKBest or RFE"),
     threshold: float = typer.Option(
-        0.0,
-        "--threshold",
-        help="Variance threshold for VarianceThreshold"
+        0.0, "--threshold", help="Variance threshold for VarianceThreshold"
     ),
-    norm: str = typer.Option(
-        "l2",
-        "--norm",
-        help="Norm type for Normalizer (l1, l2, max)"
-    ),
+    norm: str = typer.Option("l2", "--norm", help="Norm type for Normalizer (l1, l2, max)"),
     feature_range_min: float = typer.Option(
-        0.0,
-        "--range-min",
-        help="Min value for MinMaxScaler range"
+        0.0, "--range-min", help="Min value for MinMaxScaler range"
     ),
     feature_range_max: float = typer.Option(
-        1.0,
-        "--range-max",
-        help="Max value for MinMaxScaler range"
+        1.0, "--range-max", help="Max value for MinMaxScaler range"
     ),
     save_preprocessor: Optional[Path] = typer.Option(
-        None,
-        "--save-preprocessor", "-s",
-        help="Path to save fitted preprocessor (pickle)"
+        None, "--save-preprocessor", "-s", help="Path to save fitted preprocessor (pickle)"
     ),
-    verbose: bool = typer.Option(
-        True,
-        "--verbose/--quiet", "-v/-q",
-        help="Verbose output"
-    )
+    verbose: bool = typer.Option(True, "--verbose/--quiet", "-v/-q", help="Verbose output"),
 ):
     """
     Preprocess data using various scaling, normalization, or feature selection methods.
@@ -1406,10 +1214,9 @@ def preprocess(
     log_level = "INFO" if verbose else "WARNING"
     setup_logger("mlcli", level=log_level)
 
-    console.print(Panel.fit(
-        "[bold green]MLCLI Data Preprocessing[/bold green]",
-        border_style="green"
-    ))
+    console.print(
+        Panel.fit("[bold green]MLCLI Data Preprocessing[/bold green]", border_style="green")
+    )
 
     try:
         # Load data
@@ -1467,7 +1274,7 @@ def preprocess(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=console,
-            transient=True
+            transient=True,
         ) as progress:
             progress.add_task(f"Applying {method}...", total=None)
             X_transformed = preprocessor.fit_transform(X, y)
@@ -1488,7 +1295,11 @@ def preprocess(
 
         # Add non-preprocessed columns back
         for col in df.columns:
-            if col not in preprocess_cols and col != target_column and col not in df_transformed.columns:
+            if (
+                col not in preprocess_cols
+                and col != target_column
+                and col not in df_transformed.columns
+            ):
                 df_transformed[col] = df[col].values
 
         # Save preprocessed data
@@ -1497,7 +1308,9 @@ def preprocess(
         console.print(f"\n[green]Preprocessed data saved to:[/green] {output}")
 
         # Display preprocessing info
-        info_table = Table(title="Preprocessing Summary", show_header=True, header_style="bold green")
+        info_table = Table(
+            title="Preprocessing Summary", show_header=True, header_style="bold green"
+        )
         info_table.add_column("Property", style="cyan")
         info_table.add_column("Value", style="green")
 
@@ -1524,14 +1337,16 @@ def preprocess(
             console.print(f"[green]Preprocessor saved to:[/green] {save_preprocessor}")
 
         # Summary panel
-        console.print(Panel.fit(
-            f"[bold green]Preprocessing Complete![/bold green]\n\n"
-            f"Method: {method}\n"
-            f"Input: {X.shape} → Output: {X_transformed.shape}\n"
-            f"Output: {output}",
-            title="Summary",
-            border_style="green"
-        ))
+        console.print(
+            Panel.fit(
+                f"[bold green]Preprocessing Complete![/bold green]\n\n"
+                f"Method: {method}\n"
+                f"Input: {X.shape} → Output: {X_transformed.shape}\n"
+                f"Output: {output}",
+                title="Summary",
+                border_style="green",
+            )
+        )
 
     except Exception as e:
         console.print(f"\n[red]Error during preprocessing:[/red] {str(e)}")
@@ -1543,41 +1358,23 @@ def preprocess(
 @app.command("preprocess-pipeline")
 def preprocess_pipeline(
     data_path: Path = typer.Option(
-        ...,
-        "--data", "-d",
-        help="Path to input data file (CSV)",
-        exists=True
+        ..., "--data", "-d", help="Path to input data file (CSV)", exists=True
     ),
-    output: Path = typer.Option(
-        ...,
-        "--output", "-o",
-        help="Path to save preprocessed data (CSV)"
-    ),
+    output: Path = typer.Option(..., "--output", "-o", help="Path to save preprocessed data (CSV)"),
     config: Optional[Path] = typer.Option(
-        None,
-        "--config", "-c",
-        help="Path to pipeline config file (JSON/YAML)"
+        None, "--config", "-c", help="Path to pipeline config file (JSON/YAML)"
     ),
     steps: Optional[str] = typer.Option(
         None,
-        "--steps", "-s",
-        help="Comma-separated preprocessing steps (e.g., 'standard_scaler,select_k_best')"
+        "--steps",
+        "-s",
+        help="Comma-separated preprocessing steps (e.g., 'standard_scaler,select_k_best')",
     ),
-    target_column: Optional[str] = typer.Option(
-        None,
-        "--target", "-t",
-        help="Target column name"
-    ),
+    target_column: Optional[str] = typer.Option(None, "--target", "-t", help="Target column name"),
     save_pipeline: Optional[Path] = typer.Option(
-        None,
-        "--save-pipeline", "-p",
-        help="Path to save fitted pipeline (pickle)"
+        None, "--save-pipeline", "-p", help="Path to save fitted pipeline (pickle)"
     ),
-    verbose: bool = typer.Option(
-        True,
-        "--verbose/--quiet", "-v/-q",
-        help="Verbose output"
-    )
+    verbose: bool = typer.Option(True, "--verbose/--quiet", "-v/-q", help="Verbose output"),
 ):
     """
     Apply a preprocessing pipeline with multiple steps.
@@ -1592,10 +1389,9 @@ def preprocess_pipeline(
     log_level = "INFO" if verbose else "WARNING"
     setup_logger("mlcli", level=log_level)
 
-    console.print(Panel.fit(
-        "[bold green]MLCLI Preprocessing Pipeline[/bold green]",
-        border_style="green"
-    ))
+    console.print(
+        Panel.fit("[bold green]MLCLI Preprocessing Pipeline[/bold green]", border_style="green")
+    )
 
     try:
         # Load data
@@ -1617,6 +1413,7 @@ def preprocess_pipeline(
         if config:
             # Load from config file
             from mlcli.config.loader import ConfigLoader
+
             config_loader = ConfigLoader(config)
             pipeline_config = config_loader.config.get("preprocessing", {})
             pipeline = PreprocessingPipeline.from_config(pipeline_config)
@@ -1640,7 +1437,7 @@ def preprocess_pipeline(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=console,
-            transient=True
+            transient=True,
         ) as progress:
             progress.add_task("Processing...", total=None)
             X_transformed = pipeline.fit_transform(X, y, feature_names=numeric_cols)
@@ -1648,7 +1445,9 @@ def preprocess_pipeline(
         console.print(f"[green]Transformed shape:[/green] {X_transformed.shape}")
 
         # Get output feature names
-        output_feature_names = pipeline.get_feature_names_out() or [f"feature_{i}" for i in range(X_transformed.shape[1])]
+        output_feature_names = pipeline.get_feature_names_out() or [
+            f"feature_{i}" for i in range(X_transformed.shape[1])
+        ]
 
         # Create output dataframe
         df_transformed = pd.DataFrame(X_transformed, columns=output_feature_names)
@@ -1672,7 +1471,7 @@ def preprocess_pipeline(
             info_table.add_row(
                 name,
                 preprocessor.__class__.__name__,
-                "[green]✓ Fitted[/green]" if preprocessor.is_fitted else "[red]✗ Not Fitted[/red]"
+                "[green]✓ Fitted[/green]" if preprocessor.is_fitted else "[red]✗ Not Fitted[/red]",
             )
 
         console.print(info_table)
@@ -1682,14 +1481,16 @@ def preprocess_pipeline(
             pipeline.save(save_pipeline)
             console.print(f"[green]Pipeline saved to:[/green] {save_pipeline}")
 
-        console.print(Panel.fit(
-            f"[bold green]Pipeline Complete![/bold green]\n\n"
-            f"Steps: {len(pipeline)}\n"
-            f"Input: {X.shape} → Output: {X_transformed.shape}\n"
-            f"Output: {output}",
-            title="Summary",
-            border_style="green"
-        ))
+        console.print(
+            Panel.fit(
+                f"[bold green]Pipeline Complete![/bold green]\n\n"
+                f"Steps: {len(pipeline)}\n"
+                f"Input: {X.shape} → Output: {X_transformed.shape}\n"
+                f"Output: {output}",
+                title="Summary",
+                border_style="green",
+            )
+        )
 
     except Exception as e:
         console.print(f"\n[red]Error during pipeline execution:[/red] {str(e)}")
@@ -1702,8 +1503,9 @@ def preprocess_pipeline(
 def list_preprocessors(
     category: Optional[str] = typer.Option(
         None,
-        "--category", "-c",
-        help="Filter by category (Scaling, Normalization, Encoding, Feature Selection)"
+        "--category",
+        "-c",
+        help="Filter by category (Scaling, Normalization, Encoding, Feature Selection)",
     )
 ):
     """
@@ -1715,10 +1517,9 @@ def list_preprocessors(
     """
     from mlcli.preprocessor import PreprocessorFactory
 
-    console.print(Panel.fit(
-        "[bold green]Available Preprocessing Methods[/bold green]",
-        border_style="green"
-    ))
+    console.print(
+        Panel.fit("[bold green]Available Preprocessing Methods[/bold green]", border_style="green")
+    )
 
     # Get preprocessors by category
     categories = PreprocessorFactory.list_by_category()
@@ -1732,28 +1533,24 @@ def list_preprocessors(
         categories = {category: categories[category]}
 
     for cat_name, methods in categories.items():
-        table = Table(
-            title=f"{cat_name}",
-            show_header=True,
-            header_style="bold green"
-        )
+        table = Table(title=f"{cat_name}", show_header=True, header_style="bold green")
         table.add_column("Method", style="cyan")
         table.add_column("Name", style="yellow")
         table.add_column("Description")
 
         for method in methods:
             info = PreprocessorFactory.get_method_info(method)
-            table.add_row(
-                method,
-                info.get("name", method),
-                info.get("description", "")
-            )
+            table.add_row(method, info.get("name", method), info.get("description", ""))
 
         console.print(table)
         console.print()
 
-    console.print("[dim]Usage: mlcli preprocess --data <data.csv> --output <output.csv> --method <method>[/dim]")
-    console.print("[dim]       mlcli preprocess-pipeline --data <data.csv> --output <output.csv> --steps <step1,step2>[/dim]")
+    console.print(
+        "[dim]Usage: mlcli preprocess --data <data.csv> --output <output.csv> --method <method>[/dim]"
+    )
+    console.print(
+        "[dim]       mlcli preprocess-pipeline --data <data.csv> --output <output.csv> --steps <step1,step2>[/dim]"
+    )
 
 
 @app.command("ui")
@@ -1764,10 +1561,9 @@ def launch_ui():
     Example:
         mlcli ui
     """
-    console.print(Panel.fit(
-        "[bold blue]Launching MLCLI Interactive UI...[/bold blue]",
-        border_style="blue"
-    ))
+    console.print(
+        Panel.fit("[bold blue]Launching MLCLI Interactive UI...[/bold blue]", border_style="blue")
+    )
 
     try:
         from mlcli.ui.app import MLCLIApp
@@ -1789,12 +1585,14 @@ def version():
     """Show MLCLI version information."""
     from mlcli import __version__
 
-    console.print(Panel.fit(
-        f"[bold blue]MLCLI[/bold blue] v{__version__}\n\n"
-        f"[dim]Production ML/DL CLI for training, evaluation,\n"
-        f"and experiment tracking[/dim]",
-        border_style="blue"
-    ))
+    console.print(
+        Panel.fit(
+            f"[bold blue]MLCLI[/bold blue] v{__version__}\n\n"
+            f"[dim]Production ML/DL CLI for training, evaluation,\n"
+            f"and experiment tracking[/dim]",
+            border_style="blue",
+        )
+    )
 
 
 @app.callback()
