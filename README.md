@@ -20,7 +20,7 @@
 
 **A powerful, modular CLI tool for training, evaluating, and tracking ML/DL models**
 
-[📖 Documentation](https://mlcli-toolkit.vercel.app) • [📦 PyPI](https://pypi.org/project/mlcli-toolkit/) • [Features](#-features) • [Installation](#️-complete-setup-guide-from-scratch) • [Usage](#-all-cli-commands) • [Configuration](#-configuration-files) • [Contributing](#-contributing)
+[📖 Documentation](https://mlcli.vercel.app/) • [📦 PyPI](https://pypi.org/project/mlcli-toolkit/) • [Features](#-features) • [Installation](#️-complete-setup-guide-from-scratch) • [Usage](#-all-cli-commands) • [Configuration](#-configuration-files) • [Contributing](#-contributing)
 
 </div>
 
