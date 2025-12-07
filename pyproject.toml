@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mlcli-toolkit"
-version = "0.1.1"
+version = "0.2.0"
 description = "A production-ready CLI toolkit for training, evaluating, and tracking Machine Learning and Deep Learning models with experiment tracking, hyperparameter tuning, model explainability, and an interactive TUI"
 readme = "README.md"
 requires-python = ">=3.10"
