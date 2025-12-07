@@ -36,8 +36,10 @@
     "next-mdx-remote": "^4.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-markdown": "^10.1.0",
     "react-syntax-highlighter": "^15.5.0",
     "recharts": "^2.12.2",
+    "remark-gfm": "^4.0.1",
     "swr": "^2.2.5",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7"

@@ -8,6 +8,10 @@ import type { GitHubAsset, GitHubRelease } from '@/types';
 import { Calendar, Download, ExternalLink, FileDown, Tag, User } from 'lucide-react';
 import Link from 'next/link';
 import * as React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface ReleaseListProps {
   releases: GitHubRelease[];
@@ -92,17 +96,32 @@ export function ReleaseItem({ release, isLatest }: ReleaseItemProps) {
       {expanded && (
         <CardContent className="space-y-4">
           {/* Release notes */}
-          <div className="prose prose-sm max-w-none dark:prose-invert">
-            <div
-              dangerouslySetInnerHTML={{
-                __html: release.body
-                  .replace(/^### /gm, '<h3>')
-                  .replace(/^## /gm, '<h2>')
-                  .replace(/^# /gm, '<h1>')
-                  .replace(/\n/g, '<br />')
-                  .replace(/`([^`]+)`/g, '<code>$1</code>'),
+          <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-bold prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-3 prose-h3:text-lg prose-h3:mt-4 prose-h3:mb-2 prose-ul:my-2 prose-li:my-1 prose-p:my-2 prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-pre:bg-transparent prose-pre:p-0">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                code({ node, inline, className, children, ...props }: any) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  return !inline && match ? (
+                    <SyntaxHighlighter
+                      style={oneDark}
+                      language={match[1]}
+                      PreTag="div"
+                      className="rounded-lg !mt-2 !mb-4"
+                      {...props}
+                    >
+                      {String(children).replace(/\n$/, '')}
+                    </SyntaxHighlighter>
+                  ) : (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                },
               }}
-            />
+            >
+              {release.body}
+            </ReactMarkdown>
           </div>
 
           {/* Assets */}
