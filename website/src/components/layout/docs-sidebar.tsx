@@ -88,7 +88,7 @@ const docsNavigation: SidebarItem[] = [
   },
 ];
 
-const versions = ['v0.1.1', 'latest'];
+const versions = ['v0.2.0', 'v0.1.1', 'latest'];
 
 interface DocsSidebarProps {
   className?: string;

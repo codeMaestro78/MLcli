@@ -168,13 +168,21 @@ function getFallbackReleases(): GitHubRelease[] {
   return [
     {
       id: 1,
-      tag_name: 'v0.1.1',
-      name: 'mlcli-toolkit v0.1.1',
-      body: `## 🚀 Release v0.1.1
+      tag_name: 'v0.2.0',
+      name: 'mlcli-toolkit v0.2.0',
+      body: `## 🚀 Release v0.2.0 - Production Ready!
+
+### What's New
+- **Documentation**: Comprehensive docs/, examples/, and tests/ folders
+- **Contributing**: CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md
+- **Testing**: pytest framework with trainer and tuner tests
+- **Examples**: Sample configs for all models and tuning strategies
+- **Improved**: GridSearchTuner parameter handling
+- **Cleaned**: Production-ready structure
 
 ### Features
 - **CLI Training**: Train ML models from the command line
-- **Multiple Algorithms**: Support for Random Forest, XGBoost, SVM, Logistic Regression
+- **Multiple Algorithms**: Random Forest, XGBoost, SVM, Logistic Regression
 - **Deep Learning**: TensorFlow DNN, CNN, RNN trainers
 - **Experiment Tracking**: Track and compare experiment runs
 - **Hyperparameter Tuning**: Grid, Random, and Bayesian optimization
@@ -188,29 +196,30 @@ pip install mlcli-toolkit
 
 ### Quick Start
 \`\`\`bash
-mlcli train --config config.json
+mlcli train --config configs/rf_config.json
+mlcli ui  # Interactive terminal UI
 \`\`\`
 `,
       draft: false,
       prerelease: false,
-      created_at: '2025-12-01T10:00:00Z',
-      published_at: '2025-12-01T10:00:00Z',
-      html_url: `https://github.com/${GITHUB_REPO}/releases/tag/v0.1.1`,
+      created_at: '2025-12-07T10:00:00Z',
+      published_at: '2025-12-07T10:00:00Z',
+      html_url: `https://github.com/${GITHUB_REPO}/releases/tag/v0.2.0`,
       assets: [
         {
           id: 1,
-          name: 'mlcli_toolkit-0.1.1-py3-none-any.whl',
-          size: 156000,
-          download_count: 42,
-          browser_download_url: `https://github.com/${GITHUB_REPO}/releases/download/v0.1.1/mlcli_toolkit-0.1.1-py3-none-any.whl`,
+          name: 'mlcli_toolkit-0.2.0-py3-none-any.whl',
+          size: 160000,
+          download_count: 0,
+          browser_download_url: `https://github.com/${GITHUB_REPO}/releases/download/v0.2.0/mlcli_toolkit-0.2.0-py3-none-any.whl`,
           content_type: 'application/zip',
         },
         {
           id: 2,
-          name: 'mlcli_toolkit-0.1.1.tar.gz',
-          size: 145000,
-          download_count: 28,
-          browser_download_url: `https://github.com/${GITHUB_REPO}/releases/download/v0.1.1/mlcli_toolkit-0.1.1.tar.gz`,
+          name: 'mlcli_toolkit-0.2.0.tar.gz',
+          size: 148000,
+          download_count: 0,
+          browser_download_url: `https://github.com/${GITHUB_REPO}/releases/download/v0.2.0/mlcli_toolkit-0.2.0.tar.gz`,
           content_type: 'application/gzip',
         },
       ],
