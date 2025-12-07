@@ -100,20 +100,22 @@ export function ReleaseItem({ release, isLatest }: ReleaseItemProps) {
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                code({ inline, className, children, ...props }) {
+                code(props) {
+                  const { children, className, ...rest } = props;
                   const match = /language-(\w+)/.exec(className || '');
-                  return !inline && match ? (
+                  const isInline = !match;
+                  
+                  return !isInline && match ? (
                     <SyntaxHighlighter
-                      style={oneDark}
+                      style={oneDark as { [key: string]: React.CSSProperties }}
                       language={match[1]}
                       PreTag="div"
                       className="rounded-lg !mt-2 !mb-4"
-                      {...props}
                     >
                       {String(children).replace(/\n$/, '')}
                     </SyntaxHighlighter>
                   ) : (
-                    <code className={className} {...props}>
+                    <code className={className} {...rest}>
                       {children}
                     </code>
                   );
