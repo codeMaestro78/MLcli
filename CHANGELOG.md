@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-12-07
+
+### Added
+- **Documentation**
+  - Created comprehensive `docs/` folder with getting-started guide, installation instructions
+  - Added `examples/` folder with sample configs for all model types (RF, XGB, Logistic, DNN)
+  - Added example tuning configurations for hyperparameter optimization
+  - Added `CONTRIBUTING.md` with detailed contribution guidelines
+  - Added `CODE_OF_CONDUCT.md` for community standards
+  - Added `SECURITY.md` for vulnerability reporting
+
+- **Testing Infrastructure**
+  - Created `tests/` folder with pytest framework
+  - Added test suite for trainers (RF, XGBoost, Logistic Regression)
+  - Added test suite for tuners (Grid Search, Random Search)
+  - Added shared fixtures and configuration in `conftest.py`
+
+### Changed
+- Cleaned up project structure for production deployment
+- Updated `.gitignore` to exclude generated artifacts properly
+- Improved GridSearchTuner to handle `n_trials` parameter gracefully
+
+### Removed
+- Hotel-specific datasets and configurations (moved to generic examples)
+- Test experiment artifacts from repository
+- Empty `scripts/` directory
+
+### Fixed
+- GridSearchTuner now properly filters out unsupported `n_trials` parameter
+- Configuration files now use generic `data/your_data.csv` paths
+
 ## [0.1.0] - 2025-12-03
 
 ### Added
