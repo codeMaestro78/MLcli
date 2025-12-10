@@ -72,6 +72,10 @@ dependencies = [
     "textual>=0.40.0",
     "typer[all]>=0.7.0",
     "xgboost>=1.7",
+    "lightgbm>=4.0.0",
+    "catboost>=1.2.0",
+    "statsmodels>=0.14.0",
+    "prophet>=1.1.0",
 ]
 
 [project.optional-dependencies]
