@@ -1,6 +1,6 @@
 # MLCLI Complete Documentation
 
-> **Version:** 0.3.0  
+> **Version:** 0.3.0
 > **Last Updated:** December 2025
 
 This document contains comprehensive documentation for MLCLI - Machine Learning Command Line Interface.
@@ -142,6 +142,7 @@ mlcli list-models
 ```
 
 **Output:**
+
 ```
 Available Model Trainers:
 ================================================================================
@@ -360,10 +361,10 @@ mlcli ui
 
 ### Available Methods
 
-| Method | Name | Best For |
-|--------|------|----------|
-| `grid` | Grid Search | Small parameter spaces with discrete values |
-| `random` | Random Search | Large parameter spaces, continuous params |
+| Method     | Name                           | Best For                                    |
+| ---------- | ------------------------------ | ------------------------------------------- |
+| `grid`     | Grid Search                    | Small parameter spaces with discrete values |
+| `random`   | Random Search                  | Large parameter spaces, continuous params   |
 | `bayesian` | Bayesian Optimization (Optuna) | Expensive evaluations, complex param spaces |
 
 ### Commands
@@ -387,15 +388,15 @@ mlcli tune --config configs/tune_rf_config.json --method random --n-trials 50 --
 
 ### Tuning Options
 
-| Option | Description |
-|--------|-------------|
-| `--config`, `-c` | Path to tuning configuration file |
-| `--method`, `-m` | Tuning method: `grid`, `random`, or `bayesian` |
-| `--n-trials`, `-n` | Number of trials (for random/bayesian) |
-| `--cv` | Number of cross-validation folds |
-| `--scoring`, `-s` | Metric to optimize: `accuracy`, `f1`, `roc_auc`, `precision`, `recall` |
-| `--output`, `-o` | Path to save tuning results (JSON) |
-| `--train-best` | Train a model with best params after tuning |
+| Option             | Description                                                            |
+| ------------------ | ---------------------------------------------------------------------- |
+| `--config`, `-c`   | Path to tuning configuration file                                      |
+| `--method`, `-m`   | Tuning method: `grid`, `random`, or `bayesian`                         |
+| `--n-trials`, `-n` | Number of trials (for random/bayesian)                                 |
+| `--cv`             | Number of cross-validation folds                                       |
+| `--scoring`, `-s`  | Metric to optimize: `accuracy`, `f1`, `roc_auc`, `precision`, `recall` |
+| `--output`, `-o`   | Path to save tuning results (JSON)                                     |
+| `--train-best`     | Train a model with best params after tuning                            |
 
 ### Grid Search Configuration
 
@@ -449,12 +450,12 @@ mlcli tune --config configs/tune_rf_config.json --method random --n-trials 50 --
   },
   "tuning": {
     "param_space": {
-      "n_estimators": {"type": "int", "low": 50, "high": 500},
-      "max_depth": {"type": "int", "low": 3, "high": 15},
-      "learning_rate": {"type": "loguniform", "low": 0.01, "high": 0.3},
-      "subsample": {"type": "uniform", "low": 0.6, "high": 1.0},
-      "colsample_bytree": {"type": "uniform", "low": 0.6, "high": 1.0},
-      "min_child_weight": {"type": "int", "low": 1, "high": 10}
+      "n_estimators": { "type": "int", "low": 50, "high": 500 },
+      "max_depth": { "type": "int", "low": 3, "high": 15 },
+      "learning_rate": { "type": "loguniform", "low": 0.01, "high": 0.3 },
+      "subsample": { "type": "uniform", "low": 0.6, "high": 1.0 },
+      "colsample_bytree": { "type": "uniform", "low": 0.6, "high": 1.0 },
+      "min_child_weight": { "type": "int", "low": 1, "high": 10 }
     }
   },
   "output": {
@@ -466,13 +467,13 @@ mlcli tune --config configs/tune_rf_config.json --method random --n-trials 50 --
 
 ### Parameter Distribution Types
 
-| Type | Description | Example |
-|------|-------------|---------|
-| `list/tuple` | Discrete choices | `[50, 100, 200]` |
-| `int` | Integer range | `{"type": "int", "low": 1, "high": 100}` |
-| `uniform` | Uniform float | `{"type": "uniform", "low": 0.0, "high": 1.0}` |
-| `loguniform` | Log-uniform | `{"type": "loguniform", "low": 0.001, "high": 1.0}` |
-| `categorical` | Choice | `{"type": "categorical", "choices": ["a", "b"]}` |
+| Type          | Description      | Example                                             |
+| ------------- | ---------------- | --------------------------------------------------- |
+| `list/tuple`  | Discrete choices | `[50, 100, 200]`                                    |
+| `int`         | Integer range    | `{"type": "int", "low": 1, "high": 100}`            |
+| `uniform`     | Uniform float    | `{"type": "uniform", "low": 0.0, "high": 1.0}`      |
+| `loguniform`  | Log-uniform      | `{"type": "loguniform", "low": 0.001, "high": 1.0}` |
+| `categorical` | Choice           | `{"type": "categorical", "choices": ["a", "b"]}`    |
 
 ---
 
@@ -480,10 +481,10 @@ mlcli tune --config configs/tune_rf_config.json --method random --n-trials 50 --
 
 ### Available Methods
 
-| Method | Full Name | Best For |
-|--------|-----------|----------|
-| `shap` | SHapley Additive exPlanations | Tree-based models, global explanations |
-| `lime` | Local Interpretable Model-agnostic Explanations | Any model, local explanations |
+| Method | Full Name                                       | Best For                               |
+| ------ | ----------------------------------------------- | -------------------------------------- |
+| `shap` | SHapley Additive exPlanations                   | Tree-based models, global explanations |
+| `lime` | Local Interpretable Model-agnostic Explanations | Any model, local explanations          |
 
 ### Commands
 
@@ -507,26 +508,26 @@ mlcli explain-instance -m models/xgb_model.pkl -d data/test.csv -t xgboost -i 5 
 
 ### Explainability Options
 
-| Option | Description |
-|--------|-------------|
-| `--model`, `-m` | Path to saved model file |
-| `--data`, `-d` | Path to data file |
-| `--type`, `-t` | Model type (random_forest, xgboost, logistic_regression) |
-| `--method`, `-e` | Explanation method: `shap` or `lime` |
-| `--num-samples`, `-n` | Number of samples to explain (default: 100) |
-| `--output`, `-o` | Path to save explanation results (JSON) |
-| `--plot/--no-plot` | Generate explanation plot |
-| `--plot-output`, `-p` | Path to save plot (PNG) |
+| Option                | Description                                              |
+| --------------------- | -------------------------------------------------------- |
+| `--model`, `-m`       | Path to saved model file                                 |
+| `--data`, `-d`        | Path to data file                                        |
+| `--type`, `-t`        | Model type (random_forest, xgboost, logistic_regression) |
+| `--method`, `-e`      | Explanation method: `shap` or `lime`                     |
+| `--num-samples`, `-n` | Number of samples to explain (default: 100)              |
+| `--output`, `-o`      | Path to save explanation results (JSON)                  |
+| `--plot/--no-plot`    | Generate explanation plot                                |
+| `--plot-output`, `-p` | Path to save plot (PNG)                                  |
 
 ### SHAP vs LIME Comparison
 
-| Feature | SHAP | LIME |
-|---------|------|------|
-| **Type** | Global + Local | Local |
-| **Theory** | Game Theory (Shapley Values) | Local Surrogate Models |
-| **Best For** | Tree models (RF, XGBoost) | Any black-box model |
-| **Speed** | Fast for trees | Slower (samples required) |
-| **Consistency** | Mathematically consistent | Varies by sampling |
+| Feature         | SHAP                         | LIME                      |
+| --------------- | ---------------------------- | ------------------------- |
+| **Type**        | Global + Local               | Local                     |
+| **Theory**      | Game Theory (Shapley Values) | Local Surrogate Models    |
+| **Best For**    | Tree models (RF, XGBoost)    | Any black-box model       |
+| **Speed**       | Fast for trees               | Slower (samples required) |
+| **Consistency** | Mathematically consistent    | Varies by sampling        |
 
 ---
 
@@ -534,20 +535,20 @@ mlcli explain-instance -m models/xgb_model.pkl -d data/test.csv -t xgboost -i 5 
 
 ### Available Preprocessors
 
-| Category | Method | Description |
-|----------|--------|-------------|
-| **Scaling** | `standard_scaler` | Standardize to zero mean, unit variance |
-| | `minmax_scaler` | Scale to range (default 0-1) |
-| | `robust_scaler` | Scale using median/IQR (outlier-resistant) |
-| **Normalization** | `normalizer` | Normalize samples to unit norm |
-| | `l1_normalizer` | L1 norm normalization |
-| | `l2_normalizer` | L2 norm normalization |
-| **Encoding** | `label_encoder` | Encode labels to 0 to n_classes-1 |
-| | `onehot_encoder` | One-hot encode categorical features |
-| | `ordinal_encoder` | Ordinal encode categorical features |
-| **Feature Selection** | `select_k_best` | Select top K features |
-| | `rfe` | Recursive Feature Elimination |
-| | `variance_threshold` | Remove low-variance features |
+| Category              | Method               | Description                                |
+| --------------------- | -------------------- | ------------------------------------------ |
+| **Scaling**           | `standard_scaler`    | Standardize to zero mean, unit variance    |
+|                       | `minmax_scaler`      | Scale to range (default 0-1)               |
+|                       | `robust_scaler`      | Scale using median/IQR (outlier-resistant) |
+| **Normalization**     | `normalizer`         | Normalize samples to unit norm             |
+|                       | `l1_normalizer`      | L1 norm normalization                      |
+|                       | `l2_normalizer`      | L2 norm normalization                      |
+| **Encoding**          | `label_encoder`      | Encode labels to 0 to n_classes-1          |
+|                       | `onehot_encoder`     | One-hot encode categorical features        |
+|                       | `ordinal_encoder`    | Ordinal encode categorical features        |
+| **Feature Selection** | `select_k_best`      | Select top K features                      |
+|                       | `rfe`                | Recursive Feature Elimination              |
+|                       | `variance_threshold` | Remove low-variance features               |
 
 ### Commands
 
@@ -585,18 +586,18 @@ mlcli preprocess-pipeline --data data/train.csv --output data/processed.csv --st
 
 ### Preprocessing Options
 
-| Option | Description |
-|--------|-------------|
-| `--data`, `-d` | Path to input CSV data |
-| `--output`, `-o` | Path to save preprocessed data |
-| `--method`, `-m` | Preprocessing method |
-| `--target`, `-t` | Target column (for feature selection) |
-| `--columns`, `-c` | Specific columns to preprocess |
-| `--k` | Number of features (SelectKBest/RFE) |
-| `--threshold` | Variance threshold |
-| `--norm` | Norm type (l1, l2, max) |
-| `--range-min`, `--range-max` | MinMaxScaler range |
-| `--save-preprocessor`, `-s` | Save fitted preprocessor |
+| Option                       | Description                           |
+| ---------------------------- | ------------------------------------- |
+| `--data`, `-d`               | Path to input CSV data                |
+| `--output`, `-o`             | Path to save preprocessed data        |
+| `--method`, `-m`             | Preprocessing method                  |
+| `--target`, `-t`             | Target column (for feature selection) |
+| `--columns`, `-c`            | Specific columns to preprocess        |
+| `--k`                        | Number of features (SelectKBest/RFE)  |
+| `--threshold`                | Variance threshold                    |
+| `--norm`                     | Norm type (l1, l2, max)               |
+| `--range-min`, `--range-max` | MinMaxScaler range                    |
+| `--save-preprocessor`, `-s`  | Save fitted preprocessor              |
 
 ---
 
@@ -617,13 +618,13 @@ mlcli ui
 
 ### Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `h` | Go to Home screen |
-| `q` | Quit application |
-| `Enter` | Select/Confirm |
-| `↑↓` | Navigate lists |
-| `Tab` | Move between fields |
+| Key     | Action              |
+| ------- | ------------------- |
+| `h`     | Go to Home screen   |
+| `q`     | Quit application    |
+| `Enter` | Select/Confirm      |
+| `↑↓`    | Navigate lists      |
+| `Tab`   | Move between fields |
 
 ---
 
@@ -762,23 +763,23 @@ pip install shap lime matplotlib
 
 ## Quick Reference
 
-| Task | Command |
-|------|---------|
-| Install | `pip install mlcli-toolkit` |
-| Show help | `mlcli --help` |
-| List models | `mlcli list-models` |
-| List tuners | `mlcli list-tuners` |
-| List explainers | `mlcli list-explainers` |
-| List preprocessors | `mlcli list-preprocessors` |
-| Train model | `mlcli train --config <config.json>` |
-| Tune hyperparameters | `mlcli tune -c <config> -m random -n 100` |
-| Explain model (SHAP) | `mlcli explain -m <model.pkl> -d <data.csv> -t <type> -e shap` |
-| Explain instance | `mlcli explain-instance -m <model.pkl> -d <data.csv> -t <type> -i <idx>` |
-| Preprocess data | `mlcli preprocess -d <data.csv> -o <output.csv> -m standard_scaler` |
-| Evaluate model | `mlcli eval --model-path <path> --data-path <path> --model-type <type>` |
-| List runs | `mlcli list-runs` |
-| Export runs | `mlcli export-runs --output <file.csv>` |
-| Launch UI | `mlcli ui` |
+| Task                 | Command                                                                  |
+| -------------------- | ------------------------------------------------------------------------ |
+| Install              | `pip install mlcli-toolkit`                                              |
+| Show help            | `mlcli --help`                                                           |
+| List models          | `mlcli list-models`                                                      |
+| List tuners          | `mlcli list-tuners`                                                      |
+| List explainers      | `mlcli list-explainers`                                                  |
+| List preprocessors   | `mlcli list-preprocessors`                                               |
+| Train model          | `mlcli train --config <config.json>`                                     |
+| Tune hyperparameters | `mlcli tune -c <config> -m random -n 100`                                |
+| Explain model (SHAP) | `mlcli explain -m <model.pkl> -d <data.csv> -t <type> -e shap`           |
+| Explain instance     | `mlcli explain-instance -m <model.pkl> -d <data.csv> -t <type> -i <idx>` |
+| Preprocess data      | `mlcli preprocess -d <data.csv> -o <output.csv> -m standard_scaler`      |
+| Evaluate model       | `mlcli eval --model-path <path> --data-path <path> --model-type <type>`  |
+| List runs            | `mlcli list-runs`                                                        |
+| Export runs          | `mlcli export-runs --output <file.csv>`                                  |
+| Launch UI            | `mlcli ui`                                                               |
 
 ---
 
