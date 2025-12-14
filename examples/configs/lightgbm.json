@@ -1,0 +1,33 @@
+{
+  "model_type": "lightgbm",
+  "task_type": "classification",
+  "data": {
+    "train_path": "data/train.csv",
+    "test_path": "data/test.csv",
+    "target_column": "target",
+    "feature_columns": null
+  },
+  "preprocessing": {
+    "scaler": "standard",
+    "handle_missing": "mean",
+    "encode_categorical": true
+  },
+  "params": {
+    "n_estimators": 100,
+    "max_depth": -1,
+    "learning_rate": 0.1,
+    "num_leaves": 31,
+    "min_child_samples": 20,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "reg_alpha": 0.0,
+    "reg_lambda": 0.0,
+    "boosting_type": "gbdt"
+  },
+  "early_stopping_rounds": 50,
+  "output": {
+    "model_dir": "models/",
+    "run_dir": "runs/",
+    "formats": ["pickle", "lightgbm"]
+  }
+}

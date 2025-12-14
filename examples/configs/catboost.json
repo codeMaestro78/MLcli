@@ -1,0 +1,29 @@
+{
+  "model_type": "catboost",
+  "task_type": "classification",
+  "data": {
+    "train_path": "data/train.csv",
+    "test_path": "data/test.csv",
+    "target_column": "target",
+    "feature_columns": null
+  },
+  "preprocessing": {
+    "scaler": "standard",
+    "handle_missing": "mean",
+    "encode_categorical": false
+  },
+  "cat_features": null,
+  "params": {
+    "iterations": 100,
+    "depth": 6,
+    "learning_rate": 0.1,
+    "l2_leaf_reg": 3.0,
+    "border_count": 254
+  },
+  "early_stopping_rounds": 50,
+  "output": {
+    "model_dir": "models/",
+    "run_dir": "runs/",
+    "formats": ["pickle", "catboost"]
+  }
+}
