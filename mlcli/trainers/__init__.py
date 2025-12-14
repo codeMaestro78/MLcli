@@ -2,19 +2,31 @@
 
 from mlcli.trainers.base_trainer import BaseTrainer
 
-# Lazy imports - TensorFlow trainers are only loaded when accessed
+# Lazy imports - Trainers are only loaded when accessed
 _LAZY_IMPORTS = {
+    # Classification/Regression - sklearn
     "LogisticRegressionTrainer": "mlcli.trainers.logistic_trainer",
     "SVMTrainer": "mlcli.trainers.svm_trainer",
     "RFTrainer": "mlcli.trainers.rf_trainer",
+    # Gradient Boosting
     "XGBTrainer": "mlcli.trainers.xgb_trainer",
+    "LightGBMTrainer": "mlcli.trainers.lightgbm_trainer",
+    "CatBoostTrainer": "mlcli.trainers.catboost_trainer",
+    # Deep Learning - TensorFlow
     "TFDNNTrainer": "mlcli.trainers.tf_dnn_trainer",
     "TFCNNTrainer": "mlcli.trainers.tf_cnn_trainer",
     "TFRNNTrainer": "mlcli.trainers.tf_rnn_trainer",
+    # Clustering
+    "KMeansTrainer": "mlcli.trainers.clustering.kmeans_trainer",
+    "DBSCANTrainer": "mlcli.trainers.clustering.dbscan_trainer",
+    # Anomaly Detection
+    "IsolationForestTrainer": "mlcli.trainers.anomaly.isolation_forest_trainer",
+    "OneClassSVMTrainer": "mlcli.trainers.anomaly.one_class_svm_trainer",
 }
 
 # Pre-register models without importing heavy dependencies
 _MODEL_METADATA = {
+    # Classification - sklearn
     "logistic_regression": {
         "class": "LogisticRegressionTrainer",
         "module": "mlcli.trainers.logistic_trainer",
@@ -36,6 +48,7 @@ _MODEL_METADATA = {
         "framework": "sklearn",
         "model_type": "classification",
     },
+    # Gradient Boosting
     "xgboost": {
         "class": "XGBTrainer",
         "module": "mlcli.trainers.xgb_trainer",
@@ -43,6 +56,21 @@ _MODEL_METADATA = {
         "framework": "xgboost",
         "model_type": "classification",
     },
+    "lightgbm": {
+        "class": "LightGBMTrainer",
+        "module": "mlcli.trainers.lightgbm_trainer",
+        "description": "LightGBM gradient boosting classifier/regressor",
+        "framework": "lightgbm",
+        "model_type": "classification",
+    },
+    "catboost": {
+        "class": "CatBoostTrainer",
+        "module": "mlcli.trainers.catboost_trainer",
+        "description": "CatBoost gradient boosting with automatic categorical handling",
+        "framework": "catboost",
+        "model_type": "classification",
+    },
+    # Deep Learning - TensorFlow
     "tf_dnn": {
         "class": "TFDNNTrainer",
         "module": "mlcli.trainers.tf_dnn_trainer",
@@ -63,6 +91,36 @@ _MODEL_METADATA = {
         "description": "TensorFlow RNN/LSTM/GRU for sequence classification",
         "framework": "tensorflow",
         "model_type": "classification",
+    },
+    # Clustering
+    "kmeans": {
+        "class": "KMeansTrainer",
+        "module": "mlcli.trainers.clustering.kmeans_trainer",
+        "description": "K-Means clustering algorithm",
+        "framework": "sklearn",
+        "model_type": "clustering",
+    },
+    "dbscan": {
+        "class": "DBSCANTrainer",
+        "module": "mlcli.trainers.clustering.dbscan_trainer",
+        "description": "DBSCAN density-based clustering algorithm",
+        "framework": "sklearn",
+        "model_type": "clustering",
+    },
+    # Anomaly Detection
+    "isolation_forest": {
+        "class": "IsolationForestTrainer",
+        "module": "mlcli.trainers.anomaly.isolation_forest_trainer",
+        "description": "Isolation Forest anomaly detection algorithm",
+        "framework": "sklearn",
+        "model_type": "anomaly_detection",
+    },
+    "one_class_svm": {
+        "class": "OneClassSVMTrainer",
+        "module": "mlcli.trainers.anomaly.one_class_svm_trainer",
+        "description": "One-Class SVM anomaly detection algorithm",
+        "framework": "sklearn",
+        "model_type": "anomaly_detection",
     },
 }
 
@@ -108,13 +166,25 @@ def get_trainer_class(model_type: str):
 
 __all__ = [
     "BaseTrainer",
+    # Classification - sklearn
     "LogisticRegressionTrainer",
     "SVMTrainer",
     "RFTrainer",
+    # Gradient Boosting
     "XGBTrainer",
+    "LightGBMTrainer",
+    "CatBoostTrainer",
+    # Deep Learning - TensorFlow
     "TFDNNTrainer",
     "TFCNNTrainer",
     "TFRNNTrainer",
+    # Clustering
+    "KMeansTrainer",
+    "DBSCANTrainer",
+    # Anomaly Detection
+    "IsolationForestTrainer",
+    "OneClassSVMTrainer",
+    # Utility functions
     "register_all_models",
     "get_trainer_class",
 ]
