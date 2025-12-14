@@ -117,7 +117,7 @@ const trainers = [
 
 export default function TrainersPage() {
   const categories = ['Traditional ML', 'Gradient Boosting', 'Clustering', 'Anomaly Detection', 'Deep Learning'];
-  
+
   return (
     <div>
       <h1>Trainers</h1>
