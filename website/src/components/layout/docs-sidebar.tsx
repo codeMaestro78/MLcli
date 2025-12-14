@@ -28,6 +28,7 @@ const docsNavigation: SidebarItem[] = [
     items: [
       { title: 'Introduction', href: '/docs' },
       { title: 'Quickstart', href: '/docs/quickstart' },
+      { title: 'Examples', href: '/docs/examples' },
     ],
   },
   {
