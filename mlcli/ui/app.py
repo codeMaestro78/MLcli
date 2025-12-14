@@ -161,7 +161,9 @@ class TrainScreen(Screen):
                 Button("← Back", id="btn-back", variant="default"),
                 id="action-buttons",
             ),
-            Static("[dim]Select a config above, then click Start Training[/dim]", id="status-message"),
+            Static(
+                "[dim]Select a config above, then click Start Training[/dim]", id="status-message"
+            ),
             id="train-container",
         )
         yield Footer()
@@ -181,7 +183,9 @@ class TrainScreen(Screen):
                 configs = sorted(config_dir.glob(f"*{ext}"))
                 if configs:
                     self.selected_config = configs[0]
-                    self._update_status(f"✓ Auto-selected: [green]{configs[0].name}[/green] | Use ↑↓ to change, then Start Training")
+                    self._update_status(
+                        f"✓ Auto-selected: [green]{configs[0].name}[/green] | Use ↑↓ to change, then Start Training"
+                    )
                     break
 
     def _load_configs(self) -> None:
@@ -241,7 +245,9 @@ class TrainScreen(Screen):
                 config_path = config_dir / f"{config_name}{ext}"
                 if config_path.exists():
                     self.selected_config = config_path
-                    self._update_status(f"✓ Config: [green]{config_path.name}[/green] | Press 'Start Training' or Enter")
+                    self._update_status(
+                        f"✓ Config: [green]{config_path.name}[/green] | Press 'Start Training' or Enter"
+                    )
                     break
 
         elif item_id.startswith("model-"):
@@ -279,7 +285,9 @@ class TrainScreen(Screen):
                         break
 
         if not self.selected_config:
-            self._update_status("[red]❌ No config selected! Use ↑↓ to navigate and highlight a config file.[/red]")
+            self._update_status(
+                "[red]❌ No config selected! Use ↑↓ to navigate and highlight a config file.[/red]"
+            )
             return
 
         # Check if config file exists
@@ -294,7 +302,9 @@ class TrainScreen(Screen):
         name_input = self.query_one("#input-name", Input)
 
         # Build command
-        self._update_status(f"[yellow]🚀 Starting training with {self.selected_config.name}...[/yellow]")
+        self._update_status(
+            f"[yellow]🚀 Starting training with {self.selected_config.name}...[/yellow]"
+        )
 
         # Push to training progress screen
         self.app.push_screen(
@@ -463,7 +473,9 @@ class TrainingProgressScreen(Screen):
             self._add_log("Initializing trainer...")
             self.refresh()
 
-            trainer_instance = registry.get_trainer(model_type, config=config_loader.config.get("model", {}))
+            trainer_instance = registry.get_trainer(
+                model_type, config=config_loader.config.get("model", {})
+            )
             self._add_log("✓ Trainer initialized")
             self._add_log("Starting training...")
             self.refresh()
@@ -507,7 +519,7 @@ class TrainingProgressScreen(Screen):
             # Display results
             self._set_status("[green]✅ Training Complete![/green]")
             self._add_log(f"✓ Run completed in {run_data.get('duration_seconds', 0):.1f}s")
-            
+
             # Show results in table
             results_table = self.query_one("#results-table", DataTable)
             results_table.add_columns("Metric", "Value")
@@ -518,10 +530,10 @@ class TrainingProgressScreen(Screen):
                     results_table.add_row(metric, str(value))
             results_table.add_row("Run ID", run_id)
             results_table.add_row("Duration", f"{run_data.get('duration_seconds', 0):.1f}s")
-            
+
             self.results = {"run_id": run_id, "metrics": test_metrics}
             self.training_complete = True
-            
+
             # Enable view experiments button
             view_btn = self.query_one("#btn-view-exp", Button)
             view_btn.disabled = False
