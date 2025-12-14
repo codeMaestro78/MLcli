@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-12-14
+
+### Added
+- **Gradient Boosting Algorithms**
+  - LightGBM trainer with classification/regression support
+  - CatBoost trainer with automatic categorical feature handling
+  - Early stopping, feature importance, and native model exports
+
+- **Clustering Algorithms**
+  - K-Means trainer with silhouette, calinski-harabasz, davies-bouldin metrics
+  - DBSCAN trainer with automatic noise detection
+  - Optimal cluster number finder (elbow method) for K-Means
+  - Optimal eps finder for DBSCAN
+
+- **Anomaly Detection Algorithms**
+  - Isolation Forest trainer for efficient outlier detection
+  - One-Class SVM trainer with RBF kernel support
+  - Anomaly scoring and threshold tuning capabilities
+  - Support for supervised evaluation with ground truth labels
+
+- **Example Configurations**
+  - Added lightgbm.json and catboost.json configs
+  - Added clustering/kmeans.json and clustering/dbscan.json
+  - Added anomaly/isolation_forest.json and anomaly/one_class_svm.json
+
+### Changed
+- Updated trainer registry with 6 new algorithm types
+- Extended model type support: classification, regression, clustering, anomaly_detection
+
+---
+
 ## [0.2.0] - 2025-12-07
 
 ### Added
