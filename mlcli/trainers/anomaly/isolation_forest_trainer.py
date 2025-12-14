@@ -143,8 +143,7 @@ class IsolationForestTrainer(BaseTrainer):
         self.is_trained = True
 
         logger.info(
-            f"Training complete. Detected {n_anomalies} anomalies "
-            f"({anomaly_ratio:.2%} of data)"
+            f"Training complete. Detected {n_anomalies} anomalies " f"({anomaly_ratio:.2%} of data)"
         )
 
         return self.training_history
@@ -189,9 +188,7 @@ class IsolationForestTrainer(BaseTrainer):
 
         return metrics
 
-    def evaluate(
-        self, X_test: np.ndarray, y_test: np.ndarray = None
-    ) -> Dict[str, float]:
+    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray = None) -> Dict[str, float]:
         """
         Evaluate anomaly detection on test data.
 

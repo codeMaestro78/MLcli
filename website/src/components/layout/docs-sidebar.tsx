@@ -44,6 +44,9 @@ const docsNavigation: SidebarItem[] = [
     icon: Code,
     items: [
       { title: 'Overview', href: '/docs/trainers' },
+      { title: 'Gradient Boosting', href: '/docs/trainers#gradient-boosting' },
+      { title: 'Clustering', href: '/docs/trainers#clustering' },
+      { title: 'Anomaly Detection', href: '/docs/trainers#anomaly-detection' },
     ],
   },
   {
@@ -88,7 +91,7 @@ const docsNavigation: SidebarItem[] = [
   },
 ];
 
-const versions = ['v0.2.0', 'v0.1.1', 'latest'];
+const versions = ['v0.3.0', 'v0.2.0', 'v0.1.1', 'latest'];
 
 interface DocsSidebarProps {
   className?: string;

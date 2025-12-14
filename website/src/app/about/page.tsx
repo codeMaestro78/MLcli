@@ -19,7 +19,7 @@ const values = [
     icon: Target,
     title: 'Accurate Results',
     description:
-      'Built on proven ML libraries like scikit-learn, XGBoost, LightGBM, and TensorFlow.',
+      'Built on proven ML libraries like scikit-learn, XGBoost, LightGBM, CatBoost, and TensorFlow.',
   },
   {
     icon: Users,

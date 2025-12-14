@@ -57,9 +57,7 @@ class KMeansTrainer(BaseTrainer):
         default_params = self.get_default_params()
         self.model_params = {**default_params, **params}
 
-        logger.info(
-            f"Initialized KMeansTrainer with n_clusters={self.model_params['n_clusters']}"
-        )
+        logger.info(f"Initialized KMeansTrainer with n_clusters={self.model_params['n_clusters']}")
 
     def train(
         self,
@@ -121,9 +119,7 @@ class KMeansTrainer(BaseTrainer):
 
         return self.training_history
 
-    def _compute_clustering_metrics(
-        self, X: np.ndarray, labels: np.ndarray
-    ) -> Dict[str, float]:
+    def _compute_clustering_metrics(self, X: np.ndarray, labels: np.ndarray) -> Dict[str, float]:
         """
         Compute clustering evaluation metrics.
 
@@ -227,9 +223,7 @@ class KMeansTrainer(BaseTrainer):
 
         return self.model.cluster_centers_
 
-    def find_optimal_k(
-        self, X: np.ndarray, k_range: range = range(2, 11)
-    ) -> Dict[str, Any]:
+    def find_optimal_k(self, X: np.ndarray, k_range: range = range(2, 11)) -> Dict[str, Any]:
         """
         Find optimal number of clusters using elbow method and silhouette analysis.
 

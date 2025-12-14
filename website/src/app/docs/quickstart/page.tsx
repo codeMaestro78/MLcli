@@ -27,7 +27,7 @@ export default function QuickstartPage() {
       <p>Verify the installation:</p>
       <CodeBlock
         code={`mlcli --version
-# mlcli v0.2.0`}
+# mlcli v0.3.0`}
         language="bash"
       />
 

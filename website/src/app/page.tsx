@@ -36,7 +36,7 @@ const features = [
     icon: Layers,
     title: 'Multiple Algorithms',
     description:
-      'Support for Random Forest, XGBoost, SVM, Logistic Regression, and deep learning models.',
+      'Support for Random Forest, XGBoost, LightGBM, CatBoost, SVM, and deep learning models.',
     color: 'from-purple-500 to-pink-500',
   },
   {
@@ -181,7 +181,7 @@ export default async function HomePage() {
               <div className="flex items-center justify-center mb-2">
                 <Code2 className="h-6 w-6 text-primary mr-2" />
               </div>
-              <p className="text-3xl font-bold stat-number">7+</p>
+              <p className="text-3xl font-bold stat-number">15+</p>
               <p className="text-sm text-muted-foreground">ML Models</p>
             </div>
             <div className="text-center">

@@ -120,9 +120,7 @@ class DBSCANTrainer(BaseTrainer):
 
         self.is_trained = True
 
-        logger.info(
-            f"Training complete. Found {n_clusters} clusters and {n_noise} noise points"
-        )
+        logger.info(f"Training complete. Found {n_clusters} clusters and {n_noise} noise points")
         if train_metrics.get("silhouette") is not None:
             logger.info(f"Silhouette score: {train_metrics['silhouette']:.4f}")
 
@@ -139,14 +137,9 @@ class DBSCANTrainer(BaseTrainer):
             Dictionary mapping cluster id to size
         """
         unique, counts = np.unique(labels, return_counts=True)
-        return {
-            f"cluster_{int(k)}" if k != -1 else "noise": int(v)
-            for k, v in zip(unique, counts)
-        }
+        return {f"cluster_{int(k)}" if k != -1 else "noise": int(v) for k, v in zip(unique, counts)}
 
-    def _compute_clustering_metrics(
-        self, X: np.ndarray, labels: np.ndarray
-    ) -> Dict[str, float]:
+    def _compute_clustering_metrics(self, X: np.ndarray, labels: np.ndarray) -> Dict[str, float]:
         """
         Compute clustering evaluation metrics.
 
@@ -171,9 +164,7 @@ class DBSCANTrainer(BaseTrainer):
             metrics["calinski_harabasz"] = float(
                 calinski_harabasz_score(X_filtered, labels_filtered)
             )
-            metrics["davies_bouldin"] = float(
-                davies_bouldin_score(X_filtered, labels_filtered)
-            )
+            metrics["davies_bouldin"] = float(davies_bouldin_score(X_filtered, labels_filtered))
         else:
             metrics["silhouette"] = None
             metrics["calinski_harabasz"] = None
@@ -272,9 +263,7 @@ class DBSCANTrainer(BaseTrainer):
         self.train(X)
         return self._labels
 
-    def find_optimal_eps(
-        self, X: np.ndarray, k: int = None, plot: bool = False
-    ) -> float:
+    def find_optimal_eps(self, X: np.ndarray, k: int = None, plot: bool = False) -> float:
         """
         Find optimal eps using k-distance graph method.
 

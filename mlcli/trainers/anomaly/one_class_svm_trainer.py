@@ -190,9 +190,7 @@ class OneClassSVMTrainer(BaseTrainer):
 
         return metrics
 
-    def evaluate(
-        self, X_test: np.ndarray, y_test: np.ndarray = None
-    ) -> Dict[str, float]:
+    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray = None) -> Dict[str, float]:
         """
         Evaluate anomaly detection on test data.
 

@@ -227,9 +227,7 @@ class CatBoostTrainer(BaseTrainer):
             "prediction_values_change": self.model.get_feature_importance(
                 type="PredictionValuesChange"
             ),
-            "loss_function_change": self.model.get_feature_importance(
-                type="LossFunctionChange"
-            ),
+            "loss_function_change": self.model.get_feature_importance(type="LossFunctionChange"),
         }
 
     def save(self, save_dir: Path, formats: List[str]) -> Dict[str, Path]:

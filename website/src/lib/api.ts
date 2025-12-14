@@ -167,23 +167,28 @@ export async function fetchRepoStats(): Promise<{
 function getFallbackReleases(): GitHubRelease[] {
   return [
     {
-      id: 1,
-      tag_name: 'v0.2.0',
-      name: 'mlcli-toolkit v0.2.0',
-      body: `## 🚀 Release v0.2.0 - Production Ready!
+      id: 2,
+      tag_name: 'v0.3.0',
+      name: 'mlcli-toolkit v0.3.0',
+      body: `## 🚀 Release v0.3.0 - New ML Algorithms!
 
 ### What's New
-- **Documentation**: Comprehensive docs/, examples/, and tests/ folders
-- **Contributing**: CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md
-- **Testing**: pytest framework with trainer and tuner tests
-- **Examples**: Sample configs for all models and tuning strategies
-- **Improved**: GridSearchTuner parameter handling
-- **Cleaned**: Production-ready structure
+
+#### Gradient Boosting
+- **LightGBM**: Fast gradient boosting with leaf-wise tree growth, early stopping, and feature importance (split/gain)
+- **CatBoost**: Gradient boosting with excellent categorical feature handling and Pool objects
+
+#### Clustering Algorithms
+- **K-Means**: Partition-based clustering with silhouette/Calinski-Harabasz/Davies-Bouldin metrics and automatic optimal K detection
+- **DBSCAN**: Density-based clustering with automatic noise detection and optimal eps finder using k-distance graph
+
+#### Anomaly Detection
+- **Isolation Forest**: Tree-based anomaly detection using isolation principle with contamination control
+- **One-Class SVM**: Novelty detection using support vector methods with RBF/linear/poly kernels
 
 ### Features
 - **CLI Training**: Train ML models from the command line
-- **Multiple Algorithms**: Random Forest, XGBoost, SVM, Logistic Regression
-- **Deep Learning**: TensorFlow DNN, CNN, RNN trainers
+- **15+ Algorithms**: Random Forest, XGBoost, LightGBM, CatBoost, SVM, Logistic Regression, K-Means, DBSCAN, Isolation Forest, One-Class SVM, and Deep Learning models
 - **Experiment Tracking**: Track and compare experiment runs
 - **Hyperparameter Tuning**: Grid, Random, and Bayesian optimization
 - **Model Explainability**: SHAP and LIME explanations
@@ -196,30 +201,36 @@ pip install mlcli-toolkit
 
 ### Quick Start
 \`\`\`bash
-mlcli train --config configs/rf_config.json
-mlcli ui  # Interactive terminal UI
+# Train LightGBM
+mlcli train -d data.csv -m lightgbm --target label
+
+# Clustering with K-Means
+mlcli train -d data.csv -m kmeans
+
+# Anomaly detection
+mlcli train -d data.csv -m isolation_forest
 \`\`\`
 `,
       draft: false,
       prerelease: false,
-      created_at: '2025-12-07T10:00:00Z',
-      published_at: '2025-12-07T10:00:00Z',
-      html_url: `https://github.com/${GITHUB_REPO}/releases/tag/v0.2.0`,
+      created_at: '2025-12-14T10:00:00Z',
+      published_at: '2025-12-14T10:00:00Z',
+      html_url: `https://github.com/${GITHUB_REPO}/releases/tag/v0.3.0`,
       assets: [
         {
-          id: 1,
-          name: 'mlcli_toolkit-0.2.0-py3-none-any.whl',
-          size: 160000,
+          id: 3,
+          name: 'mlcli_toolkit-0.3.0-py3-none-any.whl',
+          size: 182200,
           download_count: 0,
-          browser_download_url: `https://github.com/${GITHUB_REPO}/releases/download/v0.2.0/mlcli_toolkit-0.2.0-py3-none-any.whl`,
+          browser_download_url: `https://github.com/${GITHUB_REPO}/releases/download/v0.3.0/mlcli_toolkit-0.3.0-py3-none-any.whl`,
           content_type: 'application/zip',
         },
         {
-          id: 2,
-          name: 'mlcli_toolkit-0.2.0.tar.gz',
-          size: 148000,
+          id: 4,
+          name: 'mlcli_toolkit-0.3.0.tar.gz',
+          size: 154300,
           download_count: 0,
-          browser_download_url: `https://github.com/${GITHUB_REPO}/releases/download/v0.2.0/mlcli_toolkit-0.2.0.tar.gz`,
+          browser_download_url: `https://github.com/${GITHUB_REPO}/releases/download/v0.3.0/mlcli_toolkit-0.3.0.tar.gz`,
           content_type: 'application/gzip',
         },
       ],
