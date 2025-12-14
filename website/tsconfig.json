@@ -40,7 +40,6 @@
         "./src/types/*"
       ]
     },
-    "baseUrl": ".",
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
