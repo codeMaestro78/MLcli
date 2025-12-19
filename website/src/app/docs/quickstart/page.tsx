@@ -1,6 +1,6 @@
 import { CodeBlock } from '@/components/code';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle, Rocket } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata = {
@@ -11,11 +11,18 @@ export const metadata = {
 export default function QuickstartPage() {
   return (
     <div>
-      <h1>Quickstart</h1>
-      <p className="lead">
-        Get started with mlcli in under 5 minutes. This guide will walk you through
-        installation and your first training run.
-      </p>
+      {/* Hero Section */}
+      <div className="not-prose mb-10">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-sm font-medium mb-4">
+          <Rocket className="h-3.5 w-3.5" />
+          5 minute setup
+        </div>
+        <h1 className="text-4xl font-bold tracking-tight mb-4">Quickstart</h1>
+        <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
+          Get started with mlcli in under 5 minutes. This guide will walk you through
+          installation and your first training run.
+        </p>
+      </div>
 
       <h2 id="installation">Installation</h2>
       <p>Install mlcli using pip:</p>
@@ -45,28 +52,24 @@ export default function QuickstartPage() {
       />
 
       <p>This command will:</p>
-      <ul>
-        <li>
-          <CheckCircle className="mr-2 inline h-4 w-4 text-green-500" />
-          Load and preprocess your data
-        </li>
-        <li>
-          <CheckCircle className="mr-2 inline h-4 w-4 text-green-500" />
-          Train a Random Forest classifier
-        </li>
-        <li>
-          <CheckCircle className="mr-2 inline h-4 w-4 text-green-500" />
-          Evaluate on a validation split
-        </li>
-        <li>
-          <CheckCircle className="mr-2 inline h-4 w-4 text-green-500" />
-          Save the trained model
-        </li>
-        <li>
-          <CheckCircle className="mr-2 inline h-4 w-4 text-green-500" />
-          Log the experiment
-        </li>
-      </ul>
+      <div className="not-prose my-6 grid gap-3">
+        {[
+          'Load and preprocess your data',
+          'Train a Random Forest classifier',
+          'Evaluate on a validation split',
+          'Save the trained model',
+          'Log the experiment',
+        ].map((item, index) => (
+          <div
+            key={item}
+            className="flex items-center gap-3 p-3 rounded-lg bg-green-500/5 border border-green-500/20 animate-fade-in-up"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
+            <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
+            <span className="text-sm font-medium">{item}</span>
+          </div>
+        ))}
+      </div>
 
       <h2 id="using-config">Using Config Files</h2>
       <p>
@@ -109,14 +112,14 @@ export default function QuickstartPage() {
       <CodeBlock code="mlcli show-run --run-id run_abc123" language="bash" />
 
       <h2 id="next-steps">Next Steps</h2>
-      <div className="not-prose mt-6 flex gap-4">
-        <Button asChild>
+      <div className="not-prose mt-8 flex flex-wrap gap-4">
+        <Button asChild size="lg" className="group">
           <Link href="/docs/trainers">
             Explore Trainers
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </Button>
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" size="lg">
           <Link href="/docs/config">Configuration Guide</Link>
         </Button>
       </div>

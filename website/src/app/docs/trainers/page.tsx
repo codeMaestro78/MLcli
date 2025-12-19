@@ -1,6 +1,6 @@
 import { CodeBlock } from '@/components/code';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 
 export const metadata = {
@@ -118,13 +118,27 @@ const trainers = [
 export default function TrainersPage() {
   const categories = ['Traditional ML', 'Gradient Boosting', 'Clustering', 'Anomaly Detection', 'Deep Learning'];
 
+  const categoryColors: Record<string, string> = {
+    'Traditional ML': 'from-blue-500/20 to-cyan-500/20',
+    'Gradient Boosting': 'from-orange-500/20 to-red-500/20',
+    'Clustering': 'from-purple-500/20 to-pink-500/20',
+    'Anomaly Detection': 'from-yellow-500/20 to-amber-500/20',
+    'Deep Learning': 'from-green-500/20 to-emerald-500/20',
+  };
+
   return (
     <div>
-      <h1>Trainers</h1>
-      <p className="lead">
-        mlcli supports 15+ machine learning algorithms out of the box including classification,
-        regression, clustering, and anomaly detection. This page lists all available trainers.
-      </p>
+      {/* Hero Section */}
+      <div className="not-prose mb-10">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 text-sm font-medium mb-4">
+          15+ Algorithms
+        </div>
+        <h1 className="text-4xl font-bold tracking-tight mb-4">Trainers</h1>
+        <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
+          mlcli supports 15+ machine learning algorithms out of the box including classification,
+          regression, clustering, and anomaly detection.
+        </p>
+      </div>
 
       <h2 id="available-trainers">Available Trainers</h2>
       <p>
@@ -132,29 +146,45 @@ export default function TrainersPage() {
       </p>
       <CodeBlock code="mlcli list-trainers" language="bash" />
 
-      {categories.map((category) => {
+      {categories.map((category, catIndex) => {
         const categoryTrainers = trainers.filter((t) => t.category === category);
         const categoryId = category.toLowerCase().replace(/\s+/g, '-');
         return (
-          <div key={category} className="mt-8">
-            <h3 id={categoryId} className="text-xl font-semibold mb-4">{category}</h3>
-            <div className="not-prose grid gap-4">
-              {categoryTrainers.map((trainer) => (
-                <Card key={trainer.command}>
-                  <CardHeader>
+          <div key={category} className="mt-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className={`h-8 w-1 rounded-full bg-gradient-to-b ${categoryColors[category]}`} />
+              <h3 id={categoryId} className="text-xl font-semibold">{category}</h3>
+              <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                {categoryTrainers.length} trainers
+              </span>
+            </div>
+            <div className="not-prose grid gap-4 stagger-children">
+              {categoryTrainers.map((trainer, index) => (
+                <Card
+                  key={trainer.command}
+                  className="docs-card group"
+                  style={{ animationDelay: `${(catIndex * 100) + (index * 50)}ms` }}
+                >
+                  <CardHeader className="pb-3">
                     <div className="flex items-center justify-between flex-wrap gap-2">
-                      <CardTitle className="text-lg">{trainer.name}</CardTitle>
+                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                        {trainer.name}
+                      </CardTitle>
                       <div className="flex gap-2 flex-wrap">
-                        <Badge variant="outline">{trainer.framework}</Badge>
-                        <Badge variant="secondary">{trainer.type}</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {trainer.framework}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          {trainer.type}
+                        </Badge>
                       </div>
                     </div>
-                    <CardDescription className="font-mono text-sm">
+                    <code className="text-xs font-mono text-primary/80 bg-primary/5 px-2 py-1 rounded-md w-fit">
                       mlcli train -m {trainer.command}
-                    </CardDescription>
+                    </code>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground">{trainer.description}</p>
+                    <p className="text-sm text-muted-foreground">{trainer.description}</p>
                   </CardContent>
                 </Card>
               ))}

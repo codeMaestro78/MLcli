@@ -315,3 +315,172 @@
   backdrop-filter: blur(12px);
   border: 1px solid hsl(var(--border) / 0.5);
 }
+
+/* Documentation specific styles */
+.docs-content {
+  /* Better typography */
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+.docs-content h1 {
+  @apply text-4xl font-bold tracking-tight mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text;
+  animation: fadeSlideIn 0.5s ease-out;
+}
+
+.docs-content h2 {
+  @apply text-2xl font-semibold tracking-tight mt-12 mb-4 pb-2 border-b border-border/50;
+  animation: fadeSlideIn 0.4s ease-out;
+}
+
+.docs-content h3 {
+  @apply text-xl font-semibold tracking-tight mt-8 mb-3;
+  animation: fadeSlideIn 0.3s ease-out;
+}
+
+.docs-content .lead {
+  @apply text-xl text-muted-foreground leading-relaxed mb-8;
+}
+
+.docs-content p {
+  @apply leading-7 mb-4;
+}
+
+.docs-content ul, .docs-content ol {
+  @apply my-4 ml-6;
+}
+
+.docs-content li {
+  @apply mb-2;
+}
+
+.docs-content table {
+  @apply w-full my-6 border-collapse;
+}
+
+.docs-content table th {
+  @apply bg-muted/50 text-left font-semibold p-3 border-b border-border;
+}
+
+.docs-content table td {
+  @apply p-3 border-b border-border/50;
+}
+
+.docs-content table tr:hover td {
+  @apply bg-muted/30 transition-colors duration-200;
+}
+
+/* Animated cards for docs */
+.docs-card {
+  @apply relative overflow-hidden rounded-xl border bg-card transition-all duration-300;
+}
+
+.docs-card:hover {
+  @apply border-primary/50 shadow-lg shadow-primary/5;
+  transform: translateY(-2px);
+}
+
+.docs-card::before {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.05), transparent);
+}
+
+.docs-card:hover::before {
+  @apply opacity-100;
+}
+
+/* Fade in up animation */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeSlideIn 0.4s ease-out forwards;
+}
+
+/* Stagger children animation */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeSlideIn 0.4s ease-out forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
+
+/* Code block enhancements */
+.docs-content pre {
+  @apply relative my-6 overflow-hidden rounded-xl border-0 bg-zinc-950 dark:bg-zinc-900;
+}
+
+.docs-content pre::before {
+  content: '';
+  @apply absolute inset-x-0 top-0 h-px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.5), transparent);
+}
+
+/* Smooth link transitions */
+.docs-content a {
+  @apply text-primary font-medium transition-all duration-200;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+}
+
+.docs-content a:hover {
+  text-decoration-color: currentColor;
+}
+
+/* Badge/tag styles for docs */
+.docs-tag {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  @apply bg-primary/10 text-primary border border-primary/20;
+  @apply transition-all duration-200 hover:bg-primary/20;
+}
+
+/* Info/tip/warning callouts */
+.docs-callout {
+  @apply my-6 rounded-lg border p-4;
+}
+
+.docs-callout-info {
+  @apply bg-blue-500/5 border-blue-500/20;
+}
+
+.docs-callout-tip {
+  @apply bg-green-500/5 border-green-500/20;
+}
+
+.docs-callout-warning {
+  @apply bg-yellow-500/5 border-yellow-500/20;
+}
+
+/* Section divider */
+.docs-divider {
+  @apply my-12 h-px w-full;
+  background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent);
+}
+
+/* Breadcrumb styling */
+.docs-breadcrumb {
+  @apply flex items-center gap-2 text-sm text-muted-foreground mb-6;
+}
+
+.docs-breadcrumb a {
+  @apply hover:text-foreground transition-colors;
+}
+
+.docs-breadcrumb span {
+  @apply text-border;
+}
