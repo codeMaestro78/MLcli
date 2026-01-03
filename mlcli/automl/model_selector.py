@@ -50,8 +50,8 @@ COMPLEX_MODELS: Set[str] = {"catboost", "lightgbm"}
 # Fast models for quick experiments
 FAST_MODELS: List[str] = ["logistic_regression", "random_forest"]
 
-# Model priority rankings (lower = (try first)))
-MODEL_PRIORITY = Dict[str, int] = {
+# Model priority rankings (lower = try first)
+MODEL_PRIORITY: Dict[str, int] = {
     "lightgbm": 1,
     "xgboost": 2,
     "random_forest": 3,
@@ -167,7 +167,7 @@ class ModelSelector:
             # time budget filter
             if time_budget_minutes is not None and time_budget_minutes < 10:
                 if MODEL_TIME_ESTIMATE.get(model_name, 5) > 4:
-                    logger.debug(f"Skipping {model_name}: insufficient time bydget")
+                    logger.debug(f"Skipping {model_name}: insufficient time budget")
                     continue
 
             # create candidate
@@ -181,17 +181,27 @@ class ModelSelector:
             )
             candidates.append(candidate)
 
-            # sort by priority
-            candidates.sort(key=lambda x: x.priority)
+        # sort by priority
+        candidates.sort(key=lambda x: x.priority)
 
-            # limit number of models
-            if max_models is not None and len(candidates) > max_models:
-                candidates = candidates[:max_models]
+        # limit number of models
+        if max_models is not None and len(candidates) > max_models:
+            candidates = candidates[:max_models]
 
-            logger.info(
-                f"Selected {len(candidates)} candidates models: {[c.name for c in candidates]}"
-            )
+        logger.info(f"Selected {len(candidates)} candidate models: {[c.name for c in candidates]}")
         return candidates
+
+    def _get_framework(self, model_name: str) -> str:
+        # Get framework name for a model.
+        framework_map = {
+            "logistic_regression": "sklearn",
+            "svm": "sklearn",
+            "random_forest": "sklearn",
+            "xgboost": "xgboost",
+            "lightgbm": "lightgbm",
+            "catboost": "catboost",
+        }
+        return framework_map.get(model_name, "unknown")
 
     def _get_description(self, model_name: str) -> str:
         # get description for a model
@@ -257,15 +267,15 @@ class ModelSelector:
         total_seconds = 0.0
         for candidate in candidates:
             model_factor = candidate.estimated_time
-            trial_time = base_time_per_trial * n_trials_per_model * model_factor * size_factor
-            total_seconds += trial_time
+            trials_time = base_time_per_trial * n_trials_per_model * model_factor * size_factor
+            total_seconds += trials_time
 
         return total_seconds / 60.0
 
     def allocate_time_budget(
         self,
         candidates: List[ModelCandidate],
-        total_budget_minutes=float,
+        total_budget_minutes: float,
     ) -> Dict[str, float]:
         """
         Allocate time budget across models.
