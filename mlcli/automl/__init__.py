@@ -20,6 +20,6 @@ __all__ = [
     "ModelSelector",
     "SearchSpaceGenerator",
     "DataAnalyzer",
-    "PreProcessingSelector",
+    "PreprocessingSelector",
     "AutoMLReporter",
 ]
