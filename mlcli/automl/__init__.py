@@ -14,12 +14,12 @@ from mlcli.automl.data_analyzer import DataAnalyzer
 from mlcli.automl.preprocessing_selector import PreprocessingSelector
 from mlcli.automl.reporter import AutoMLReporter
 
-__all__=[
+__all__ = [
     "BaseAutoML",
     "AutoMLClassifier",
     "ModelSelector",
     "SearchSpaceGenerator",
     "DataAnalyzer",
     "PreProcessingSelector",
-    "AutoMLReporter"
+    "AutoMLReporter",
 ]
