@@ -50,7 +50,7 @@ COMPLEX_MODELS: Set[str] = {"catboost", "lightgbm"}
 # Fast models for quick experiments
 FAST_MODELS: List[str] = ["logistic_regression", "random_forest"]
 
-# Model priority rankings (lower = (try first)))
+# Model priority rankings (lower = try first)
 MODEL_PRIORITY = Dict[str, int] = {
     "lightgbm": 1,
     "xgboost": 2,
