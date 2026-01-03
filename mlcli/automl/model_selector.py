@@ -51,7 +51,10 @@ COMPLEX_MODELS: Set[str] = {"catboost", "lightgbm"}
 FAST_MODELS: List[str] = ["logistic_regression", "random_forest"]
 
 # Model priority rankings (lower = try first)
+<<<<<<< HEAD
 MODEL_PRIORITY: Dict[str, int] = {
+=======
+>>>>>>> 114fa86613efabc9cb478cbdde6c8f748eb0d914
     "lightgbm": 1,
     "xgboost": 2,
     "random_forest": 3,
@@ -222,7 +225,7 @@ class ModelSelector:
         n_features: Optional[int] = None,
         time_budget_minutes: Optional[int] = None,
         max_models: Optional[int] = None,
-    ) -> List[str]:
+        ) -> List[str]:
         """
         Get list of selected model names.
 
