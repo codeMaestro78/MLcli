@@ -4,7 +4,7 @@
     "params": {}
   },
   "dataset": {
-    "path": "data/hotel_bookings_processed.csv",
+    "path": "data/sample_data.csv",
     "type": "csv",
     "target_column": "is_canceled"
   },
