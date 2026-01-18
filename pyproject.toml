@@ -76,6 +76,10 @@ dependencies = [
     "catboost>=1.2.0",
     "statsmodels>=0.14.0",
     "prophet>=1.1.0",
+    # PyTorch dependencies
+    "torch>=2.1",
+    "torchvision>=0.16",
+    "torchaudio>=2.1",
 ]
 
 [project.optional-dependencies]
