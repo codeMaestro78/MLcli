@@ -85,18 +85,18 @@ class TFDNNTrainer(BaseTrainer):
 
         # Hidden layers
         for i, units in enumerate(self.layers_config):
-            model.add(layers.Dense(units, activation=None, name=f"dense_{i+1}"))
+            model.add(layers.Dense(units, activation=None, name=f"dense_{i + 1}"))
 
             # Batch normalization
             if self.use_batch_norm:
-                model.add(layers.BatchNormalization(name=f"batch_norm_{i+1}"))
+                model.add(layers.BatchNormalization(name=f"batch_norm_{i + 1}"))
 
             # Activation
-            model.add(layers.Activation(self.activation, name=f"activation_{i+1}"))
+            model.add(layers.Activation(self.activation, name=f"activation_{i + 1}"))
 
             # Dropout
             if self.dropout > 0:
-                model.add(layers.Dropout(self.dropout, name=f"dropout_{i+1}"))
+                model.add(layers.Dropout(self.dropout, name=f"dropout_{i + 1}"))
 
         # Output layer
         if n_classes == 2:

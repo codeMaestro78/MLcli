@@ -1039,7 +1039,7 @@ def explain_instance(
 
         if instance_idx >= len(X):
             console.print(
-                f"[red]Error:[/red] Instance {instance_idx} out of range (max: {len(X)-1})"
+                f"[red]Error:[/red] Instance {instance_idx} out of range (max: {len(X) - 1})"
             )
             raise typer.Exit(1)
 

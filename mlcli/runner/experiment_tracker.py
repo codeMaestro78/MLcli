@@ -369,9 +369,9 @@ class ExperimentTracker:
             return f"Run {run_id} not found."
 
         lines = [
-            f"{'='*60}",
+            f"{'=' * 60}",
             f"Run: {run['run_name']} ({run['run_id']})",
-            f"{'='*60}",
+            f"{'=' * 60}",
             f"Timestamp:  {run['timestamp']}",
             f"Model:      {run['model_type']}",
             f"Framework:  {run['framework']}",
@@ -398,7 +398,7 @@ class ExperimentTracker:
             for fmt, path in run["model_paths"].items():
                 lines.append(f"  {fmt}: {path}")
 
-        lines.append(f"{'='*60}")
+        lines.append(f"{'=' * 60}")
 
         return "\n".join(lines)
 

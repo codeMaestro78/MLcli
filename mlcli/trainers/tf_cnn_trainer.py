@@ -98,33 +98,33 @@ class TFCNNTrainer(BaseTrainer):
                     kernel_size=self.kernel_size,
                     padding="same",
                     activation=None,
-                    name=f"conv_{i+1}",
+                    name=f"conv_{i + 1}",
                 )
             )
 
             # Batch normalization
             if self.use_batch_norm:
-                model.add(layers.BatchNormalization(name=f"batch_norm_{i+1}"))
+                model.add(layers.BatchNormalization(name=f"batch_norm_{i + 1}"))
 
             # Activation
-            model.add(layers.Activation("relu", name=f"relu_{i+1}"))
+            model.add(layers.Activation("relu", name=f"relu_{i + 1}"))
 
             # Max pooling
-            model.add(layers.MaxPooling2D(pool_size=self.pool_size, name=f"pool_{i+1}"))
+            model.add(layers.MaxPooling2D(pool_size=self.pool_size, name=f"pool_{i + 1}"))
 
             # Dropout
             if self.dropout > 0:
-                model.add(layers.Dropout(self.dropout, name=f"dropout_{i+1}"))
+                model.add(layers.Dropout(self.dropout, name=f"dropout_{i + 1}"))
 
         # Flatten
         model.add(layers.Flatten(name="flatten"))
 
         # Dense layers
         for i, units in enumerate(self.dense_layers):
-            model.add(layers.Dense(units, activation="relu", name=f"dense_{i+1}"))
+            model.add(layers.Dense(units, activation="relu", name=f"dense_{i + 1}"))
 
             if self.dropout > 0:
-                model.add(layers.Dropout(self.dropout, name=f"dense_dropout_{i+1}"))
+                model.add(layers.Dropout(self.dropout, name=f"dense_dropout_{i + 1}"))
 
         # Output layer
         if n_classes == 2:

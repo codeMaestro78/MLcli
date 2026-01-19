@@ -153,10 +153,10 @@ class TFRNNTrainer(BaseTrainer):
 
         # Dense layers
         for i, units in enumerate(self.dense_layers):
-            model.add(layers.Dense(units, activation="relu", name=f"dense_{i+1}"))
+            model.add(layers.Dense(units, activation="relu", name=f"dense_{i + 1}"))
 
             if self.dropout > 0:
-                model.add(layers.Dropout(self.dropout, name=f"dropout_{i+1}"))
+                model.add(layers.Dropout(self.dropout, name=f"dropout_{i + 1}"))
 
         # Output layer
         if n_classes == 2:

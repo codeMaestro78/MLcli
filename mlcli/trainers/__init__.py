@@ -119,10 +119,10 @@ _MODEL_METADATA = {
         "framework": "tensorflow",
         "model_type": "classification",
     },
-    "tf_rnn": {
-        "class": "TFRNNTrainer",
-        "module": "mlcli.trainers.tf_rnn_trainer",
-        "description": "TensorFlow RNN/LSTM/GRU for sequence classification",
+    "tf_dnn": {
+        "class": "TFDNNTrainer",
+        "module": "mlcli.trainers.tf_dnn_trainer",
+        "description": "TensorFlow Deep Neural Network for classification",
         "framework": "tensorflow",
         "model_type": "classification",
     },
