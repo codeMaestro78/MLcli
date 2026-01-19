@@ -73,6 +73,17 @@ class SVMTrainer(BaseTrainer):
             Training history
         """
 
+        # Input validation
+        if not isinstance(X_train, np.ndarray):
+            X_train = np.asarray(X_train)
+        if X_train.ndim != 2:
+            raise ValueError(f"X_train must be 2D array, got shape {X_train.shape}")
+        y_train = np.asarray(y_train).ravel()
+        if len(X_train) < 2:
+            raise ValueError("Too few samples to train SVM")
+        if self.model_params.get("probability", False) and len(X_train) > 20_000:
+            logger.warning("probability=True with large dataset may be slow and memory-intensive")
+
         logger.info(f"Training SVM on {X_train.shape[0]} samples")
 
         # Scale features
@@ -127,13 +138,20 @@ class SVMTrainer(BaseTrainer):
         if self.model is None:
             raise RuntimeError("Model not trained. Call train() first.")
 
+        # Input validation
+        if not isinstance(X_test, np.ndarray):
+            X_test = np.asarray(X_test)
+        if X_test.ndim != 2:
+            raise ValueError(f"X_test must be 2D array, got shape {X_test.shape}")
+        y_test = np.asarray(y_test).ravel()
+
         if self.scale_features and self.scaler is not None:
             X_test = self.scaler.transform(X_test)
 
         y_pred = self.model.predict(X_test)
         y_proba = None
 
-        if hasattr(self.model, "predict_proba"):
+        if self.model_params.get("probability", False) and hasattr(self.model, "predict_proba"):
             y_proba = self.model.predict_proba(X_test)
 
         metrics = compute_metrics(y_test, y_pred, y_proba, task="classification")
@@ -153,7 +171,13 @@ class SVMTrainer(BaseTrainer):
             Predicted labels
         """
         if self.model is None:
-            raise RuntimeError("Model not trained, Call train() first.")
+            raise RuntimeError("Model not trained. Call train() first.")
+
+        # Input validation
+        if not isinstance(X, np.ndarray):
+            X = np.asarray(X)
+        if X.ndim != 2:
+            raise ValueError(f"X must be 2D array, got shape {X.shape}")
 
         if self.scale_features and self.scaler is not None:
             X = self.scaler.transform(X)
@@ -173,9 +197,15 @@ class SVMTrainer(BaseTrainer):
         if self.model is None:
             raise RuntimeError("Model not trained. Call train() first.")
 
-        if not hasattr(self.model, "predict_proba"):
+        if not self.model_params.get("probability", False):
             logger.warning("SVM was not trained with probability=True")
             return None
+
+        # Input validation
+        if not isinstance(X, np.ndarray):
+            X = np.asarray(X)
+        if X.ndim != 2:
+            raise ValueError(f"X must be 2D array, got shape {X.shape}")
 
         if self.scale_features and self.scaler is not None:
             X = self.scaler.transform(X)
@@ -207,7 +237,13 @@ class SVMTrainer(BaseTrainer):
                 path = save_dir / "svm_model.pkl"
                 with open(path, "wb") as f:
                     pickle.dump(
-                        {"model": self.model, "scaler": self.scaler, "config": self.config}, f
+                        {
+                            "model": self.model,
+                            "scaler": self.scaler,
+                            "config": self.config,
+                            "scale_features": self.scale_features,
+                        },
+                        f,
                     )
 
                 saved_paths["pickle"] = path
@@ -216,7 +252,13 @@ class SVMTrainer(BaseTrainer):
             elif fmt == "joblib":
                 path = save_dir / "svm_model.joblib"
                 joblib.dump(
-                    {"model": self.model, "scaler": self.scaler, "config": self.config}, path
+                    {
+                        "model": self.model,
+                        "scaler": self.scaler,
+                        "config": self.config,
+                        "scale_features": self.scale_features,
+                    },
+                    path,
                 )
                 saved_paths["joblib"] = path
                 logger.info(f"Saved joblib model to {path}")
@@ -227,7 +269,10 @@ class SVMTrainer(BaseTrainer):
                     from skl2onnx import convert_sklearn
                     from skl2onnx.common.data_types import FloatTensorType
 
-                    n_features = self.training_history.get("n_features", 1)
+                    if hasattr(self.model, "n_features_in_"):
+                        n_features = self.model.n_features_in_
+                    else:
+                        n_features = self.training_history.get("n_features", 1)
                     initial_type = [("float_input", FloatTensorType([None, n_features]))]
 
                     onx = convert_sklearn(self.model, initial_types=initial_type)
@@ -259,21 +304,24 @@ class SVMTrainer(BaseTrainer):
         if not model_path.exists():
             raise FileNotFoundError(f"Model not found: {model_path}")
 
-        if model_format == "pickle":
-            with open(model_path, "rb") as f:
-                data = pickle.load(f)
-                self.model = data["model"]
-                self.scaler = data.get("scaler")
-                self.config = data.get("config", {})
-
-        elif model_format == "joblib":
-            data = joblib.load(model_path)
+        if model_format in ("pickle", "joblib"):
+            if model_format == "pickle":
+                with open(model_path, "rb") as f:
+                    data = pickle.load(f)
+            else:
+                data = joblib.load(model_path)
             self.model = data["model"]
             self.scaler = data.get("scaler")
             self.config = data.get("config", {})
+            self.scale_features = data.get(
+                "scale_features", self.config.get("scale_features", True)
+            )
+            self.model_params = self.config.get("params", {})
 
         elif model_format == "onnx":
-            logger.warning("ONNX model loaded. predict() and evaluate() are not supported.")
+            logger.warning(
+                "ONNX model loaded. predict() and evaluate() are not directly supported without additional runtime setup."
+            )
             import onnxruntime as ort
 
             self.model = ort.InferenceSession(str(model_path))
@@ -284,8 +332,8 @@ class SVMTrainer(BaseTrainer):
         self.is_trained = True
         logger.info(f"Loaded {model_format} model from {model_path}")
 
-    @classmethod
-    def get_default_params(cls) -> Dict[str, Any]:
+    @staticmethod
+    def get_default_params() -> Dict[str, Any]:
         """
         Get default hyperparameters.
 
@@ -296,6 +344,7 @@ class SVMTrainer(BaseTrainer):
             "kernel": "rbf",
             "C": 1.0,
             "gamma": "scale",
-            "probability": True,
+            "probability": False,
             "random_state": 42,
+            "class_weight": "balanced",
         }
