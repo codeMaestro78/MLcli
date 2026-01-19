@@ -16,6 +16,11 @@ _LAZY_IMPORTS = {
     "TFDNNTrainer": "mlcli.trainers.tf_dnn_trainer",
     "TFCNNTrainer": "mlcli.trainers.tf_cnn_trainer",
     "TFRNNTrainer": "mlcli.trainers.tf_rnn_trainer",
+    # Deep Learning - PyTorch
+    "PyTorchMLPTrainer": "mlcli.trainers.pytorch_mlp_trainer",
+    "PyTorchCNNTrainer": "mlcli.trainers.pytorch_cnn_trainer",
+    "PyTorchRNNTrainer": "mlcli.trainers.pytorch_rnn_trainer",
+    "PyTorchTransformerTrainer": "mlcli.trainers.pytorch_transformer_trainer",
     # Clustering
     "KMeansTrainer": "mlcli.trainers.clustering.kmeans_trainer",
     "DBSCANTrainer": "mlcli.trainers.clustering.dbscan_trainer",
@@ -71,11 +76,40 @@ _MODEL_METADATA = {
         "model_type": "classification",
     },
     # Deep Learning - TensorFlow
-    "tf_dnn": {
-        "class": "TFDNNTrainer",
-        "module": "mlcli.trainers.tf_dnn_trainer",
-        "description": "Tensorflow Dense Feedforward Neural Network",
+    "tf_rnn": {
+        "class": "TFRNNTrainer",
+        "module": "mlcli.trainers.tf_rnn_trainer",
+        "description": "TensorFlow RNN/LSTM/GRU for sequence classification",
         "framework": "tensorflow",
+        "model_type": "classification",
+    },
+    # Deep Learning - PyTorch
+    "pytorch_mlp": {
+        "class": "PyTorchMLPTrainer",
+        "module": "mlcli.trainers.pytorch_mlp_trainer",
+        "description": "PyTorch Multi-Layer Perceptron with configurable architecture",
+        "framework": "pytorch",
+        "model_type": "classification",
+    },
+    "pytorch_cnn": {
+        "class": "PyTorchCNNTrainer",
+        "module": "mlcli.trainers.pytorch_cnn_trainer",
+        "description": "PyTorch Convolutional Neural Network for image classification",
+        "framework": "pytorch",
+        "model_type": "classification",
+    },
+    "pytorch_rnn": {
+        "class": "PyTorchRNNTrainer",
+        "module": "mlcli.trainers.pytorch_rnn_trainer",
+        "description": "PyTorch RNN/LSTM/GRU for sequence classification",
+        "framework": "pytorch",
+        "model_type": "classification",
+    },
+    "pytorch_transformer": {
+        "class": "PyTorchTransformerTrainer",
+        "module": "mlcli.trainers.pytorch_transformer_trainer",
+        "description": "PyTorch Transformer encoder for sequence classification",
+        "framework": "pytorch",
         "model_type": "classification",
     },
     "tf_cnn": {
