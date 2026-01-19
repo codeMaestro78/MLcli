@@ -273,6 +273,7 @@ class SVMTrainer(BaseTrainer):
             self.config = data.get("config", {})
 
         elif model_format == "onnx":
+            logger.warning("ONNX model loaded. predict() and evaluate() are not supported.")
             import onnxruntime as ort
 
             self.model = ort.InferenceSession(str(model_path))
