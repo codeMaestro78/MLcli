@@ -207,7 +207,7 @@ class SVMTrainer(BaseTrainer):
                 path = save_dir / "svm_model.pkl"
                 with open(path, "wb") as f:
                     pickle.dump(
-                        {"model": self.model, "scaler": self.scaler, "config": "self.config"}
+                        {"model": self.model, "scaler": self.scaler, "config": self.config}, f
                     )
 
                 saved_paths["pickle"] = path
