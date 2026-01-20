@@ -105,7 +105,7 @@ class DataAnalyzer:
         if not isinstance(X, np.ndarray):
             try:
                 X = np.asarray(X)
-            except Exception as e:
+            except (TypeError, ValueError) as e:
                 raise ValueError(f"X must be convertible to a numpy array. Error: {e}")
 
         if X.ndim != 2:
@@ -319,7 +319,8 @@ class DataAnalyzer:
         if np.issubdtype(data.dtype, np.number):
             # Numeric columns with very few unique values might be categorical
             # Use a very restrictive threshold to avoid misclassifying rating scales
-            if n_unique <= 5:
+            # Only consider categorical if ≤ 3 unique values (very clear categories)
+            if n_unique <= 3:
                 return "categorical"
             return "numeric"
 
@@ -387,8 +388,8 @@ class DataAnalyzer:
             - Numeric types: regression
             - Non-numeric with high cardinality: classification (with warning if >100 classes)
 
-            Warnings are issued for potentially problematic targets like high-cardinality
-            non-numeric variables that may indicate ID columns used as targets.
+            class_distribution (only present for classification tasks) is a list of dicts
+            with keys: "label" (class value), "count" (number of samples), "ratio" (proportion)
         """
         # Get valid values
         mask = self._get_valid_mask(y)
@@ -420,7 +421,6 @@ class DataAnalyzer:
         class_distribution = []
 
         if inferred_task == "classification":
-            logger.warning("")
             total = len(valid_y)
             for val, count in zip(unique_values, counts):
                 ratio = count / total
