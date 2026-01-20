@@ -19,13 +19,14 @@ logger = logging.getLogger(__name__)
 
 # Thresholds for type inference
 CATEGORICAL_THRESHOLD = 20  # Max unique values to consider categorical
-IMBALANCE_THRESHOLD = 0.1   # Min ratio for minority class (below = imbalanced)
-TEXT_AVG_LENGTH = 50        # Avg string length to consider as text vs categorical
+IMBALANCE_THRESHOLD = 0.1  # Min ratio for minority class (below = imbalanced)
+TEXT_AVG_LENGTH = 50  # Avg string length to consider as text vs categorical
 
 
 @dataclass
 class ColumnInfo:
     """Information about a single column."""
+
     name: str
     dtype: str
     inferred_type: str  # 'numeric', 'categorical', 'datetime', 'text', 'binary'
@@ -38,6 +39,7 @@ class ColumnInfo:
 @dataclass
 class DataAnalysisReport:
     """Complete data analysis report."""
+
     n_samples: int
     n_features: int
     columns: List[ColumnInfo]
@@ -212,12 +214,7 @@ class DataAnalyzer:
             sample_values=sample_values,
         )
 
-    def _infer_column_type(
-        self,
-        data: np.ndarray,
-        n_unique: int,
-        dtype: str
-    ) -> str:
+    def _infer_column_type(self, data: np.ndarray, n_unique: int, dtype: str) -> str:
         # Infer the semantic type of a column.
         if len(data) == 0:
             return "numeric"
@@ -259,10 +256,7 @@ class DataAnalyzer:
 
         return "numeric"
 
-    def _analyze_target(
-        self,
-        y: np.ndarray
-    ) -> Tuple[Dict[str, Any], str, bool]:
+    def _analyze_target(self, y: np.ndarray) -> Tuple[Dict[str, Any], str, bool]:
         """
         Analyze target variable.
 
