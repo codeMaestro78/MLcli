@@ -328,7 +328,7 @@ class DataAnalyzer:
             return "datetime"
 
         # Object/string types
-        if data.dtype == object or data.dtype.kind == 'U':
+        if data.dtype == object or data.dtype.kind == "U":
             # Check if it's text (long strings) vs categorical (short strings)
             try:
                 # Use random sampling across the entire dataset for better accuracy
@@ -424,11 +424,13 @@ class DataAnalyzer:
             total = len(valid_y)
             for val, count in zip(unique_values, counts):
                 ratio = count / total
-                class_distribution.append({
-                    "label": val,
-                    "count": int(count),
-                    "ratio": round(ratio, 4),
-                })
+                class_distribution.append(
+                    {
+                        "label": val,
+                        "count": int(count),
+                        "ratio": round(ratio, 4),
+                    }
+                )
                 if ratio < self.imbalance_threshold:
                     is_imbalanced = True
 
