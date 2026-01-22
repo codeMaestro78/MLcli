@@ -5,6 +5,8 @@ Sklearn-based trainer for Random Forest classification.
 """
 
 import numpy as np
+from pydantic import BaseModel,Field,ValidationError
+import json
 import pickle
 import joblib
 from pathlib import Path
@@ -17,6 +19,19 @@ from mlcli.utils.registry import register_model
 from mlcli.utils.metrics import compute_metrics
 
 logger = logging.getLogger(__name__)
+class RFConfig(BaseModel):
+    n_estimators:int = Field(100,ge=1)
+    max_depth:Optional[int]= Field(None,ge=1)
+    min_samples_split:int =Field(2,ge=2)
+    min_samples_leaf:int=Field(1,ge=1)
+    max_features:str='sqrt'
+    bootstrap:bool=True
+    oob_score:bool=False
+    class_weight: Optional[str]=None
+    random_state:int=42
+    n_jobs:int=-1
+    warm_start:bool=False
+
 
 
 @register_model(
@@ -24,6 +39,9 @@ logger = logging.getLogger(__name__)
     description="Random Forest ensemble classifier",
     framework="sklearn",
     model_type="classification"
+    supports_multiclass= True,
+    supports_onnx = True,
+    supports_probabilities=True,
 )
 class RFTrainer(BaseTrainer):
     """
@@ -42,13 +60,29 @@ class RFTrainer(BaseTrainer):
         """
         super().__init__(config)
 
-        params = self.config.get('params', {})
-        default_params = self.get_default_params()
-        self.model_params = {**default_params, **params}
+        try:
+            params = self.config.get('params', {})
+            self.model_params= RFConfig(**params).dict()
+        except ValidationError as e:
+            raise ValueError(f"Invalid RandomForest config: {e}")
+
+        self.model:Optional[RandomForestClassifier]=None
+        self.backend:str='sklearn'
 
         logger.info(
-            f"Initialized RFTrainer with n_estimators={self.model_params['n_estimators']}"
+            "Initialized RFTrainer",
+            extra ={"params":json.dump(self.model_params,sort_keys=True)}
         )
+
+    def _validate_inputs(self,X:np.ndarray,y:Optional[np.ndarray]=None):
+        if X.dim!=2:
+            raise ValueError("X must be a 2D array")
+        if y is not None and len(x)!=len(y):
+            raise ValueError("x and y length mismatch")
+
+    def _check_is_trained(self):
+        if not self.is_trained or self.model is None:
+            raise RuntimeError("Model not found")
 
     def train(
         self,
@@ -69,7 +103,14 @@ class RFTrainer(BaseTrainer):
         Returns:
             Training history
         """
-        logger.info(f"Training Random Forest on {X_train.shape[0]} samples")
+        self._validate_inputs(X_train,y_train)
+        logger.info(
+            "Starting Random Forest training",
+            extra={
+                "samples": X_train.shape[0],
+                "features": X_train.shape[1],
+            },
+        )
 
         # Train model
         self.model = RandomForestClassifier(**self.model_params)
@@ -84,24 +125,34 @@ class RFTrainer(BaseTrainer):
             task="classification"
         )
 
-        # Feature importance
-        feature_importance = self.model.feature_importances_.tolist()
+        # OOB score safety
+
+        oob_score= None
+        if self.model_params["oob_score"] and self.model_params["bootstrap"]:
+            oob_score= getattr(self.model,"oob_score_",None)
 
         self.training_history = {
             "train_metrics": train_metrics,
-            "feature_importance": feature_importance,
+            "n_samples": X_train.shape[0],
             "n_features": X_train.shape[1],
             "n_classes": len(np.unique(y_train)),
-            "oob_score": self.model.oob_score_ if self.model_params.get('oob_score') else None
+            "feature_importance": self.model.feature_importances_.tolist(),
+            "oob_score": oob_score,
+            "sklearn_version": sklearn.__version__,
+            "numpy_version": np.__version__,
         }
 
         # Validation metrics
         if X_val is not None and y_val is not None:
-            val_metrics = self.evaluate(X_val, y_val)
-            self.training_history["val_metrics"] = val_metrics
+            self._validate_inputs(X_val,y_val)
+            self.training_history["val_metrics"]=self.evaluate(X_val,y_val)
+
 
         self.is_trained = True
-        logger.info(f"Training complete. Accuracy: {train_metrics['accuracy']:.4f}")
+        logger.info(
+            "Training completed",
+            extra={"accuracy": train_metrics.get("accuracy")},
+        )
 
         return self.training_history
 
@@ -120,18 +171,23 @@ class RFTrainer(BaseTrainer):
         Returns:
             Evaluation metrics
         """
-        if self.model is None:
-            raise RuntimeError("Model not trained. Call train() first.")
+        self._check_is_trained()
+        self._validate_inputs(X_test,y_test)
+
 
         y_pred = self.model.predict(X_test)
         y_proba = self.model.predict_proba(X_test)
+
 
         metrics = compute_metrics(
             y_test, y_pred, y_proba,
             task="classification"
         )
 
-        logger.info(f"Evaluation complete. Accuracy: {metrics['accuracy']:.4f}")
+        logger.info(
+            "Evaluation completed",
+            extra={"accuracy": metrics.get("accuracy")},
+        )
 
         return metrics
 
@@ -145,10 +201,14 @@ class RFTrainer(BaseTrainer):
         Returns:
             Predicted labels
         """
-        if self.model is None:
-            raise RuntimeError("Model not trained. Call train() first.")
+        self._check_is_trained()
+        self._validate_inputs(X)
 
-        return self.model.predict(X)
+        if self.backend == "sklearn":
+            return self.model.predict_proba(X)
+
+
+        raise RuntimeError("Predict_proba not supported for this backend")
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         """
