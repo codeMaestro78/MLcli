@@ -4,43 +4,49 @@ Random Forest Trainer
 Sklearn-based trainer for Random Forest classification.
 """
 
-import numpy as np
-from pydantic import BaseModel,Field,ValidationError
+from __future__ import annotations
+
 import json
 import pickle
 import joblib
+import logging
 from pathlib import Path
 from typing import Dict, Any, Optional, List
+
+import numpy as np
+from pydantic import BaseModel, Field, ValidationError
 from sklearn.ensemble import RandomForestClassifier
-import logging
+from sklearn.inspection import permutation_importance
+import sklearn
 
 from mlcli.trainers.base_trainer import BaseTrainer
 from mlcli.utils.registry import register_model
 from mlcli.utils.metrics import compute_metrics
 
 logger = logging.getLogger(__name__)
-class RFConfig(BaseModel):
-    n_estimators:int = Field(100,ge=1)
-    max_depth:Optional[int]= Field(None,ge=1)
-    min_samples_split:int =Field(2,ge=2)
-    min_samples_leaf:int=Field(1,ge=1)
-    max_features:str='sqrt'
-    bootstrap:bool=True
-    oob_score:bool=False
-    class_weight: Optional[str]=None
-    random_state:int=42
-    n_jobs:int=-1
-    warm_start:bool=False
 
+
+class RFConfig(BaseModel):
+    n_estimators: int = Field(100, ge=1)
+    max_depth: Optional[int] = Field(None, ge=1)
+    min_samples_split: int = Field(2, ge=2)
+    min_samples_leaf: int = Field(1, ge=1)
+    max_features: str = "sqrt"
+    bootstrap: bool = True
+    oob_score: bool = False
+    class_weight: Optional[str] = None
+    random_state: int = 42
+    n_jobs: int = -1
+    warm_start: bool = False
 
 
 @register_model(
     name="random_forest",
     description="Random Forest ensemble classifier",
     framework="sklearn",
-    model_type="classification"
-    supports_multiclass= True,
-    supports_onnx = True,
+    model_type="classification",
+    supports_multiclass=True,
+    supports_onnx=True,
     supports_probabilities=True,
 )
 class RFTrainer(BaseTrainer):
@@ -61,24 +67,26 @@ class RFTrainer(BaseTrainer):
         super().__init__(config)
 
         try:
-            params = self.config.get('params', {})
-            self.model_params= RFConfig(**params).dict()
+            params = self.config.get("params", {})
+            self.model_params = RFConfig(**params).dict()
         except ValidationError as e:
             raise ValueError(f"Invalid RandomForest config: {e}")
 
-        self.model:Optional[RandomForestClassifier]=None
-        self.backend:str='sklearn'
+        if self.model_params["oob_score"] and not self.model_params["bootstrap"]:
+            raise ValueError("oob_score=True requires bootstrap=True")
+
+        self.model: Optional[RandomForestClassifier] = None
+        self.backend: str = "sklearn"
 
         logger.info(
-            "Initialized RFTrainer",
-            extra ={"params":json.dump(self.model_params,sort_keys=True)}
+            "Initialized RFTrainer", extra={"params": json.dumps(self.model_params, sort_keys=True)}
         )
 
-    def _validate_inputs(self,X:np.ndarray,y:Optional[np.ndarray]=None):
-        if X.dim!=2:
+    def _validate_inputs(self, X: np.ndarray, y: Optional[np.ndarray] = None):
+        if X.ndim != 2:
             raise ValueError("X must be a 2D array")
-        if y is not None and len(x)!=len(y):
-            raise ValueError("x and y length mismatch")
+        if y is not None and len(X) != len(y):
+            raise ValueError("X and y length mismatch")
 
     def _check_is_trained(self):
         if not self.is_trained or self.model is None:
@@ -89,7 +97,7 @@ class RFTrainer(BaseTrainer):
         X_train: np.ndarray,
         y_train: np.ndarray,
         X_val: Optional[np.ndarray] = None,
-        y_val: Optional[np.ndarray] = None
+        y_val: Optional[np.ndarray] = None,
     ) -> Dict[str, Any]:
         """
         Train Random Forest model.
@@ -103,7 +111,7 @@ class RFTrainer(BaseTrainer):
         Returns:
             Training history
         """
-        self._validate_inputs(X_train,y_train)
+        self._validate_inputs(X_train, y_train)
         logger.info(
             "Starting Random Forest training",
             extra={
@@ -120,16 +128,12 @@ class RFTrainer(BaseTrainer):
         y_train_pred = self.model.predict(X_train)
         y_train_proba = self.model.predict_proba(X_train)
 
-        train_metrics = compute_metrics(
-            y_train, y_train_pred, y_train_proba,
-            task="classification"
-        )
+        train_metrics = compute_metrics(y_train, y_train_pred, y_train_proba, task="classification")
 
         # OOB score safety
-
-        oob_score= None
-        if self.model_params["oob_score"] and self.model_params["bootstrap"]:
-            oob_score= getattr(self.model,"oob_score_",None)
+        oob_score = (
+            getattr(self.model, "oob_score_", None) if self.model_params["oob_score"] else None
+        )
 
         self.training_history = {
             "train_metrics": train_metrics,
@@ -142,13 +146,13 @@ class RFTrainer(BaseTrainer):
             "numpy_version": np.__version__,
         }
 
+        self.is_trained = True
+
         # Validation metrics
         if X_val is not None and y_val is not None:
-            self._validate_inputs(X_val,y_val)
-            self.training_history["val_metrics"]=self.evaluate(X_val,y_val)
+            self._validate_inputs(X_val, y_val)
+            self.training_history["val_metrics"] = self.evaluate(X_val, y_val)
 
-
-        self.is_trained = True
         logger.info(
             "Training completed",
             extra={"accuracy": train_metrics.get("accuracy")},
@@ -156,11 +160,7 @@ class RFTrainer(BaseTrainer):
 
         return self.training_history
 
-    def evaluate(
-        self,
-        X_test: np.ndarray,
-        y_test: np.ndarray
-    ) -> Dict[str, float]:
+    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> Dict[str, float]:
         """
         Evaluate Random Forest model.
 
@@ -172,17 +172,12 @@ class RFTrainer(BaseTrainer):
             Evaluation metrics
         """
         self._check_is_trained()
-        self._validate_inputs(X_test,y_test)
-
+        self._validate_inputs(X_test, y_test)
 
         y_pred = self.model.predict(X_test)
         y_proba = self.model.predict_proba(X_test)
 
-
-        metrics = compute_metrics(
-            y_test, y_pred, y_proba,
-            task="classification"
-        )
+        metrics = compute_metrics(y_test, y_pred, y_proba, task="classification")
 
         logger.info(
             "Evaluation completed",
@@ -205,8 +200,7 @@ class RFTrainer(BaseTrainer):
         self._validate_inputs(X)
 
         if self.backend == "sklearn":
-            return self.model.predict_proba(X)
-
+            return self.model.predict(X)
 
         raise RuntimeError("Predict_proba not supported for this backend")
 
@@ -220,10 +214,13 @@ class RFTrainer(BaseTrainer):
         Returns:
             Predicted probabilities
         """
-        if self.model is None:
-            raise RuntimeError("Model not trained. Call train() first.")
+        self._check_is_trained()
+        self._validate_inputs(X)
 
-        return self.model.predict_proba(X)
+        if self.backend == "sklearn":
+            return self.model.predict_proba(X)
+
+        raise RuntimeError("Predict_proba not supported for this backend")
 
     def get_feature_importance(self) -> np.ndarray:
         """
@@ -232,10 +229,13 @@ class RFTrainer(BaseTrainer):
         Returns:
             Array of feature importance values
         """
-        if self.model is None:
-            raise RuntimeError("Model not trained. Call train() first.")
+        self._check_is_trained()
 
         return self.model.feature_importances_
+
+    def get_permutation_importance(self, X: np.ndarray, y: np.ndarray, n_repeats: int = 5):
+        self._check_is_trained()
+        return permutation_importance(self.model, X, y, n_repeats=n_repeats, n_jobs=-1)
 
     def save(self, save_dir: Path, formats: List[str]) -> Dict[str, Path]:
         """
@@ -248,8 +248,7 @@ class RFTrainer(BaseTrainer):
         Returns:
             Dictionary of saved paths
         """
-        if self.model is None:
-            raise RuntimeError("No model to save. Train model first.")
+        self._check_is_trained()
 
         save_dir = Path(save_dir)
         save_dir.mkdir(parents=True, exist_ok=True)
@@ -259,21 +258,15 @@ class RFTrainer(BaseTrainer):
         for fmt in formats:
             if fmt == "pickle":
                 path = save_dir / "rf_model.pkl"
-                with open(path, 'wb') as f:
-                    pickle.dump({
-                        'model': self.model,
-                        'config': self.config
-                    }, f)
-                saved_paths['pickle'] = path
+                with open(path, "wb") as f:
+                    pickle.dump({"model": self.model, "config": self.config}, f)
+                saved_paths["pickle"] = path
                 logger.info(f"Saved pickle model to {path}")
 
             elif fmt == "joblib":
                 path = save_dir / "rf_model.joblib"
-                joblib.dump({
-                    'model': self.model,
-                    'config': self.config
-                }, path)
-                saved_paths['joblib'] = path
+                joblib.dump({"model": self.model, "config": self.config}, path)
+                saved_paths["joblib"] = path
                 logger.info(f"Saved joblib model to {path}")
 
             elif fmt == "onnx":
@@ -282,15 +275,15 @@ class RFTrainer(BaseTrainer):
                     from skl2onnx import convert_sklearn
                     from skl2onnx.common.data_types import FloatTensorType
 
-                    n_features = self.training_history.get('n_features', 1)
-                    initial_type = [('float_input', FloatTensorType([None, n_features]))]
+                    n_features = self.training_history.get("n_features", 1)
+                    initial_type = [("float_input", FloatTensorType([None, n_features]))]
 
                     onx = convert_sklearn(self.model, initial_types=initial_type)
 
-                    with open(path, 'wb') as f:
+                    with open(path, "wb") as f:
                         f.write(onx.SerializeToString())
 
-                    saved_paths['onnx'] = path
+                    saved_paths["onnx"] = path
                     logger.info(f"Saved ONNX model to {path}")
 
                 except Exception as e:
@@ -315,22 +308,20 @@ class RFTrainer(BaseTrainer):
             raise FileNotFoundError(f"Model file not found: {model_path}")
 
         if model_format == "pickle":
-            with open(model_path, 'rb') as f:
+            with open(model_path, "rb") as f:
                 data = pickle.load(f)
-                self.model = data['model']
-                self.config = data.get('config', {})
+                self.model = data["model"]
+                self.config = data.get("config", {})
+            self.backend = "sklearn"
 
         elif model_format == "joblib":
             data = joblib.load(model_path)
-            self.model = data['model']
-            self.config = data.get('config', {})
-
-        elif model_format == "onnx":
-            import onnxruntime as ort
-            self.model = ort.InferenceSession(str(model_path))
+            self.model = data["model"]
+            self.config = data.get("config", {})
+            self.backend = "sklearn"
 
         else:
-            raise ValueError(f"Unsupported format: {model_format}")
+            raise ValueError(f"Unsupported format : {model_format}")
 
         self.is_trained = True
         logger.info(f"Loaded {model_format} model from {model_path}")
@@ -343,13 +334,4 @@ class RFTrainer(BaseTrainer):
         Returns:
             Default parameters
         """
-        return {
-            "n_estimators": 100,
-            "max_depth": None,
-            "min_samples_split": 2,
-            "min_samples_leaf": 1,
-            "max_features": "sqrt",
-            "bootstrap": True,
-            "random_state": 42,
-            "n_jobs": -1
-        }
+        return RFConfig().dict()
