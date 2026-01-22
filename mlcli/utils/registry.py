@@ -144,6 +144,7 @@ class ModelRegistry:
             return self._resolve_lazy(name)
 
         return None
+
     def get_trainer(self, name: str, **kwargs) -> Any:
         """
         Instantiate a trainer by name.
