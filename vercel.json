@@ -1,5 +1,28 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
   "buildCommand": "if [ \"$VERCEL_GIT_COMMIT_REF\" != \"master\" ]; then echo \"Skipping build for branch: $VERCEL_GIT_COMMIT_REF\" && exit 0; fi && npm run build",
+  "devCommand": "npm run dev",
   "installCommand": "if [ \"$VERCEL_GIT_COMMIT_REF\" != \"master\" ]; then echo \"Skipping install for branch: $VERCEL_GIT_COMMIT_REF\" && exit 0; fi && npm install",
-  "framework": null
+  "outputDirectory": ".next",
+  "git": {
+    "deploymentEnabled": true
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/documentation",
+      "destination": "/docs",
+      "permanent": true
+    }
+  ]
 }
