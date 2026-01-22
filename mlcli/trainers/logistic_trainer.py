@@ -8,7 +8,7 @@ import numpy as np
 import pickle
 import joblib
 from pathlib import Path
-from typing import Dict,Any,Optional,List,Tuple
+from typing import Dict, Any, Optional, List
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 import logging
@@ -19,13 +19,13 @@ from mlcli.utils.metrics import compute_metrics
 
 logger = logging.getLogger(__name__)
 
+
 @register_model(
     name="logistic_regression",
     description="Logistic Regression classifier with L2 regularization",
     framework="sklearn",
-    model_type="classification"
+    model_type="classification",
 )
-
 class LogisticRegressionTrainer(BaseTrainer):
     """
     Trainer for Logistic Regression models.
@@ -34,7 +34,7 @@ class LogisticRegressionTrainer(BaseTrainer):
     regularization strategies.
     """
 
-    def __init__(self,config:Optional[Dict[str,Any]]=None):
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
         Initialize Logistic Regression trainer.
 
@@ -45,21 +45,25 @@ class LogisticRegressionTrainer(BaseTrainer):
         super().__init__(config)
 
         # Extract parameters from config
-        params= self.config.get('params',{})
+        params = self.config.get("params", {})
 
         # Merge with defaults
-        default_params=self.get_default_params()
-        self.model_params={**default_params,**params}
+        default_params = self.get_default_params()
+        self.model_params = {**default_params, **params}
 
         # Feature scaling option
-        self.scale_features=self.config.get('scale_features',True)
-        self.scaler =StandardScaler() if self.scale_features else None
+        self.scale_features = self.config.get("scale_features", True)
+        self.scaler = StandardScaler() if self.scale_features else None
 
         logger.info(f"Initialized LogisticRegressionTrainer with params: {self.model_params}")
 
-    def train(self,X_train:np.ndarray,y_train:np.ndarray,X_val:Optional[np.ndarray]=None,
-              y_val:Optional[np.ndarray]=None)-> Dict[str,Any]:
-
+    def train(
+        self,
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        X_val: Optional[np.ndarray] = None,
+        y_val: Optional[np.ndarray] = None,
+    ) -> Dict[str, Any]:
         """
         Train logistic regression model.
 
@@ -76,37 +80,37 @@ class LogisticRegressionTrainer(BaseTrainer):
 
         # Scale features if enabled
         if self.scale_features:
-            X_train=self.scaler.fit_transform(X_train)
+            X_train = self.scaler.fit_transform(X_train)
             logger.debug("Applied feature scaling")
 
         # Create and train model
-        self.model= LogisticRegression(**self.model_params)
-        self.model.fit(X_train,y_train)
+        self.model = LogisticRegression(**self.model_params)
+        self.model.fit(X_train, y_train)
 
         # Compute training metrics
-        y_train_pred= self.model.predict(X_train)
-        y_train_proba=self.model.predict_proba(X_train)
+        y_train_pred = self.model.predict(X_train)
+        y_train_proba = self.model.predict_proba(X_train)
 
-        train_metrics=compute_metrics(y_train,y_train_pred,y_train_proba,task="classification")
+        train_metrics = compute_metrics(y_train, y_train_pred, y_train_proba, task="classification")
 
-        self.training_history={
-            "train_metrics":train_metrics,
-            "n_iterations":self.model.n_iter_[0] if hasattr(self.model ,'n_iter_') else None,
+        self.training_history = {
+            "train_metrics": train_metrics,
+            "n_iterations": self.model.n_iter_[0] if hasattr(self.model, "n_iter_") else None,
             "n_features": X_train.shape[1],
-            "n_classes": len(np.unique(y_train))
+            "n_classes": len(np.unique(y_train)),
         }
 
         # Validation metircs if provided
         if X_val is not None and y_val is not None:
-            test_metics=self.evaluate(X_val,y_val)
-            self.training_history["test_metrics"]=test_metics
+            test_metics = self.evaluate(X_val, y_val)
+            self.training_history["test_metrics"] = test_metics
 
-        self.is_trained=True
+        self.is_trained = True
         logger.info(f"Training complete. Accuracy: {train_metrics['accuracy']:.4f}")
 
         return self.training_history
 
-    def evaluate(self,X_test:np.ndarray,y_test:np.ndarray)->Dict[str,float]:
+    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> Dict[str, float]:
         """
         Evaluate model on test data.
 
@@ -119,24 +123,24 @@ class LogisticRegressionTrainer(BaseTrainer):
         """
 
         if self.model is None:
-            raise RuntimeError(f"Model not trained. Call train() first.")
+            raise RuntimeError("Model not trained. Call train() first.")
 
         # Scale features if enabled
         if self.scale_features and self.scaler is not None:
-            X_test=self.scaler.transform(X_test)
+            X_test = self.scaler.transform(X_test)
 
         # Make predictions
-        y_pred=self.model.predict(X_test)
-        y_proba=self.model.predict_proba(X_test)
+        y_pred = self.model.predict(X_test)
+        y_proba = self.model.predict_proba(X_test)
 
         # Compute metrics
-        metrics=compute_metrics(y_test,y_pred,y_proba,task="classification")
+        metrics = compute_metrics(y_test, y_pred, y_proba, task="classification")
 
         logger.info(f"Evaluation complete. Accuracy :{metrics['accuracy']:.4f}")
 
         return metrics
 
-    def predict(self,X:np.ndarray)->np.ndarray:
+    def predict(self, X: np.ndarray) -> np.ndarray:
         """
         Predict class labels.
 
@@ -155,7 +159,7 @@ class LogisticRegressionTrainer(BaseTrainer):
 
         return self.model.predict(X)
 
-    def predict_proba(self,X:np.ndarray)-> np.ndarray:
+    def predict_proba(self, X: np.ndarray) -> np.ndarray:
         """
         Predict class probabilities.
 
@@ -170,11 +174,11 @@ class LogisticRegressionTrainer(BaseTrainer):
             raise RuntimeError("Model not trained. Call train() first.")
 
         if self.scale_features and self.scaler is not None:
-            X=self.scaler.transform(X)
+            X = self.scaler.transform(X)
 
         return self.model.predict_proba(X)
 
-    def save(self,save_dir:Path,formats: List[str])->Dict[str,Path]:
+    def save(self, save_dir: Path, formats: List[str]) -> Dict[str, Path]:
         """
         Save model in specified formats.
 
@@ -189,50 +193,45 @@ class LogisticRegressionTrainer(BaseTrainer):
         if self.model is None:
             raise RuntimeError("No model to save. Train model first.")
 
-        save_dir=Path(save_dir)
-        save_dir.mkdir(parents=True,exist_ok=True)
+        save_dir = Path(save_dir)
+        save_dir.mkdir(parents=True, exist_ok=True)
 
-        saved_paths={}
+        saved_paths = {}
 
         for fmt in formats:
             if fmt == "pickle":
-                path =save_dir/ "logistic_model.pkl"
-                with open(path,'wb') as f:
-                    pickle.dump({
-                        'model':self.model,
-                        'scaler':self.scaler,
-                        'config':self.config
-                    },f)
-                saved_paths['pickle']= path
+                path = save_dir / "logistic_model.pkl"
+                with open(path, "wb") as f:
+                    pickle.dump(
+                        {"model": self.model, "scaler": self.scaler, "config": self.config}, f
+                    )
+                saved_paths["pickle"] = path
                 logger.info(f"Saved pickle model to {path}")
 
             elif fmt == "joblib":
-                path = save_dir/ "logistic_model.joblib"
-                joblib.dump({
-                    'model': self.model,
-                    'scaler': self.scaler,
-                    'config': self.config
-                },path)
-                saved_paths['joblib'] = path
+                path = save_dir / "logistic_model.joblib"
+                joblib.dump(
+                    {"model": self.model, "scaler": self.scaler, "config": self.config}, path
+                )
+                saved_paths["joblib"] = path
                 logger.info(f"Saved joblib model to {path}")
 
-            elif fmt=="onnx":
-                path = save_dir/ "logistic_model.onnx"
+            elif fmt == "onnx":
+                path = save_dir / "logistic_model.onnx"
                 try:
                     from skl2onnx import convert_sklearn
                     from skl2onnx.common.data_types import FloatTensorType
 
                     # Determine input shape
-                    n_features=self.training_history.get('n_features',1)
-                    initial_type= [('float_input',FloatTensorType([None,n_features]))]
+                    n_features = self.training_history.get("n_features", 1)
+                    initial_type = [("float_input", FloatTensorType([None, n_features]))]
 
-                    onx  = convert_sklearn(self.model,initial_types=initial_type)
+                    onx = convert_sklearn(self.model, initial_types=initial_type)
 
-                    with open(path ,'wb') as f:
+                    with open(path, "wb") as f:
                         f.write(onx.SerializeToString())
 
-
-                    saved_paths['onnx'] = path
+                    saved_paths["onnx"] = path
                     logger.info(f"Saved ONNX model to {path}")
 
                 except Exception as e:
@@ -243,7 +242,7 @@ class LogisticRegressionTrainer(BaseTrainer):
 
         return saved_paths
 
-    def load(self,model_path:Path,model_format:str)->None:
+    def load(self, model_path: Path, model_format: str) -> None:
         """
         Load model from disk.
 
@@ -252,38 +251,38 @@ class LogisticRegressionTrainer(BaseTrainer):
             model_format: Format ('pickle', 'joblib', 'onnx')
         """
 
-        model_path=Path(model_path)
+        model_path = Path(model_path)
 
         if not model_path.exists():
             raise FileNotFoundError(f"Model file not found: {model_path}")
 
         if model_format == "pickle":
-            with open(model_path,'rb') as f:
-                data=pickle.load(f)
-                self.model = data['model']
-                self.scaler= data.get('scaler')
-                self.config=data.get('config',{})
+            with open(model_path, "rb") as f:
+                data = pickle.load(f)
+                self.model = data["model"]
+                self.scaler = data.get("scaler")
+                self.config = data.get("config", {})
 
         elif model_format == "joblib":
-            data=joblib.load(model_path)
-            self.model=data['model']
-            self.scaler = data.get('scaler')
-            self.config = data.get('config', {})
+            data = joblib.load(model_path)
+            self.model = data["model"]
+            self.scaler = data.get("scaler")
+            self.config = data.get("config", {})
 
         elif model_format == "onnx":
             import onnxruntime as ort
+
             self.model = ort.InferenceSession(str(model_path))
             logger.warning("ONNX models have limited functionality")
 
-        else :
+        else:
             raise ValueError(f"Unsupported format: {model_format}")
 
-        self.is_trained= True
+        self.is_trained = True
         logger.info(f"Loaded {model_format} model from {model_path}")
 
-
     @classmethod
-    def get_default_params(cls)->Dict[str,Any]:
+    def get_default_params(cls) -> Dict[str, Any]:
         """
         Get default hyperparameters.
 
@@ -296,5 +295,5 @@ class LogisticRegressionTrainer(BaseTrainer):
             "solver": "lbfgs",
             "max_iter": 1000,
             "random_state": 42,
-            "n_jobs": -1
+            "n_jobs": -1,
         }

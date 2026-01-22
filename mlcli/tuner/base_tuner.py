@@ -5,7 +5,7 @@ Defines the interface for all hyperparameter tuning strategies.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Callable, Tuple
+from typing import Any, Dict, List, Optional
 import numpy as np
 from pathlib import Path
 import logging
@@ -29,7 +29,7 @@ class BaseTuner(ABC):
         cv: int = 5,
         n_jobs: int = -1,
         verbose: int = 1,
-        random_state: Optional[int] = 42
+        random_state: Optional[int] = 42,
     ):
         """
         Initialize base tuner.
@@ -67,7 +67,7 @@ class BaseTuner(ABC):
         trainer_class: type,
         X: np.ndarray,
         y: np.ndarray,
-        trainer_config: Optional[Dict[str, Any]] = None
+        trainer_config: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Perform hyperparameter tuning.
@@ -81,7 +81,6 @@ class BaseTuner(ABC):
         Returns:
             Dictionary containing best parameters and results
         """
-        pass
 
     @abstractmethod
     def get_best_params(self) -> Dict[str, Any]:
@@ -91,7 +90,6 @@ class BaseTuner(ABC):
         Returns:
             Dictionary of best parameters
         """
-        pass
 
     @abstractmethod
     def get_results(self) -> Dict[str, Any]:
@@ -101,7 +99,6 @@ class BaseTuner(ABC):
         Returns:
             Dictionary with all trial results
         """
-        pass
 
     def get_best_score(self) -> float:
         """
@@ -144,10 +141,10 @@ class BaseTuner(ABC):
             "best_score": self.best_score_,
             "tuning_history": self.tuning_history_,
             "duration_seconds": self.get_tuning_duration(),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(results, f, indent=2, default=str)
 
         logger.info(f"Saved tuning results to {filepath}")
@@ -162,7 +159,7 @@ class BaseTuner(ABC):
         Returns:
             Loaded results dictionary
         """
-        with open(filepath, 'r') as f:
+        with open(filepath, "r") as f:
             results = json.load(f)
 
         self.best_params_ = results.get("best_params")
@@ -180,18 +177,14 @@ class BaseTuner(ABC):
         """
         serialized = {}
         for param, value in self.param_space.items():
-            if hasattr(value, '__iter__') and not isinstance(value, str):
+            if hasattr(value, "__iter__") and not isinstance(value, str):
                 serialized[param] = list(value)
             else:
                 serialized[param] = str(value)
         return serialized
 
     def _log_trial(
-        self,
-        trial_num: int,
-        params: Dict[str, Any],
-        score: float,
-        duration: float
+        self, trial_num: int, params: Dict[str, Any], score: float, duration: float
     ) -> None:
         """
         Log a trial result.
@@ -207,7 +200,7 @@ class BaseTuner(ABC):
             "params": params,
             "score": score,
             "duration_seconds": duration,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
         self.tuning_history_.append(trial_result)
 
@@ -227,11 +220,7 @@ class BaseTuner(ABC):
         if not self.tuning_history_:
             return []
 
-        sorted_history = sorted(
-            self.tuning_history_,
-            key=lambda x: x["score"],
-            reverse=True
-        )
+        sorted_history = sorted(self.tuning_history_, key=lambda x: x["score"], reverse=True)
 
         return sorted_history[:n]
 

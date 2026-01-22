@@ -4,7 +4,7 @@ Feature Selection Preprocessors
 SelectKBest, RFE, and VarianceThreshold for feature selection.
 """
 
-from typing import Optional, List, Dict, Any, Callable
+from typing import Optional, List, Dict, Any
 import numpy as np
 from sklearn.feature_selection import (
     SelectKBest,
@@ -14,7 +14,7 @@ from sklearn.feature_selection import (
     f_regression,
     mutual_info_classif,
     mutual_info_regression,
-    chi2
+    chi2,
 )
 from sklearn.linear_model import LogisticRegression, LinearRegression
 import logging
@@ -29,7 +29,7 @@ SCORE_FUNCTIONS = {
     "f_regression": f_regression,
     "mutual_info_classif": mutual_info_classif,
     "mutual_info_regression": mutual_info_regression,
-    "chi2": chi2
+    "chi2": chi2,
 }
 
 
@@ -40,12 +40,7 @@ class SelectKBestProcessor(BasePreprocessor):
     Uses statistical tests to select features.
     """
 
-    def __init__(
-        self,
-        k: int = 10,
-        score_func: str = "f_classif",
-        **kwargs
-    ):
+    def __init__(self, k: int = 10, score_func: str = "f_classif", **kwargs):
         """
         Initialize SelectKBest.
 
@@ -65,10 +60,7 @@ class SelectKBestProcessor(BasePreprocessor):
                 f"Available: {list(SCORE_FUNCTIONS.keys())}"
             )
 
-        self._preprocessor = SelectKBest(
-            score_func=SCORE_FUNCTIONS[score_func],
-            k=k
-        )
+        self._preprocessor = SelectKBest(score_func=SCORE_FUNCTIONS[score_func], k=k)
         self._scores: Optional[np.ndarray] = None
         self._selected_features: Optional[List[int]] = None
 
@@ -96,9 +88,7 @@ class SelectKBestProcessor(BasePreprocessor):
         if self._feature_names_in is None:
             self._feature_names_in = [f"feature_{i}" for i in range(X.shape[1])]
 
-        self._feature_names_out = [
-            self._feature_names_in[i] for i in self._selected_features
-        ]
+        self._feature_names_out = [self._feature_names_in[i] for i in self._selected_features]
 
         logger.info(f"SelectKBest fitted. Selected {len(self._selected_features)} features")
         return self
@@ -168,7 +158,7 @@ class RFEProcessor(BasePreprocessor):
         n_features_to_select: int = 10,
         step: int = 1,
         estimator_type: str = "logistic",
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize RFE.
@@ -193,9 +183,7 @@ class RFEProcessor(BasePreprocessor):
             raise ValueError(f"Unknown estimator type: {estimator_type}")
 
         self._preprocessor = RFE(
-            estimator=estimator,
-            n_features_to_select=n_features_to_select,
-            step=step
+            estimator=estimator, n_features_to_select=n_features_to_select, step=step
         )
         self._ranking: Optional[np.ndarray] = None
         self._selected_features: Optional[List[int]] = None
@@ -224,9 +212,7 @@ class RFEProcessor(BasePreprocessor):
         if self._feature_names_in is None:
             self._feature_names_in = [f"feature_{i}" for i in range(X.shape[1])]
 
-        self._feature_names_out = [
-            self._feature_names_in[i] for i in self._selected_features
-        ]
+        self._feature_names_out = [self._feature_names_in[i] for i in self._selected_features]
 
         logger.info(f"RFE fitted. Selected {len(self._selected_features)} features")
         return self
@@ -311,9 +297,7 @@ class VarianceThresholdProcessor(BasePreprocessor):
         if self._feature_names_in is None:
             self._feature_names_in = [f"feature_{i}" for i in range(X.shape[1])]
 
-        self._feature_names_out = [
-            self._feature_names_in[i] for i in self._selected_features
-        ]
+        self._feature_names_out = [self._feature_names_in[i] for i in self._selected_features]
 
         removed = X.shape[1] - len(self._selected_features)
         logger.info(f"VarianceThreshold fitted. Removed {removed} features")
@@ -352,5 +336,7 @@ class VarianceThresholdProcessor(BasePreprocessor):
         if self._fitted:
             params["selected_features"] = self._selected_features
             params["variances"] = self._variances.tolist()
-            params["n_features_removed"] = len(self._feature_names_in) - len(self._selected_features)
+            params["n_features_removed"] = len(self._feature_names_in) - len(
+                self._selected_features
+            )
         return params

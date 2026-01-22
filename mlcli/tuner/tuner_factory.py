@@ -4,7 +4,7 @@ Tuner Factory
 Factory pattern for creating tuner instances based on method name.
 """
 
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Type
 import logging
 
 from mlcli.tuner.base_tuner import BaseTuner
@@ -33,12 +33,7 @@ class TunerFactory:
     }
 
     @classmethod
-    def create(
-        cls,
-        method: str,
-        param_space: Dict[str, Any],
-        **kwargs
-    ) -> BaseTuner:
+    def create(cls, method: str, param_space: Dict[str, Any], **kwargs) -> BaseTuner:
         """
         Create a tuner instance.
 
@@ -58,8 +53,7 @@ class TunerFactory:
         if method_lower not in cls._tuners:
             available = ", ".join(sorted(set(cls._tuners.keys())))
             raise ValueError(
-                f"Unknown tuning method '{method}'. "
-                f"Available methods: {available}"
+                f"Unknown tuning method '{method}'. " f"Available methods: {available}"
             )
 
         tuner_class = cls._tuners[method_lower]
@@ -69,6 +63,9 @@ class TunerFactory:
             # Map n_trials to n_iter for random search
             if "n_trials" in kwargs and "n_iter" not in kwargs:
                 kwargs["n_iter"] = kwargs.pop("n_trials")
+        elif method_lower in ["grid", "grid_search"]:
+            # Grid search doesn't use n_trials - it tests all combinations
+            kwargs.pop("n_trials", None)
 
         logger.info(f"Creating {tuner_class.__name__} tuner")
 
@@ -101,20 +98,20 @@ class TunerFactory:
                 "name": "Grid Search",
                 "description": "Exhaustive search over all parameter combinations",
                 "best_for": "Small parameter spaces with discrete values",
-                "complexity": "O(n^k) where n=values per param, k=num params"
+                "complexity": "O(n^k) where n=values per param, k=num params",
             },
             "random": {
                 "name": "Random Search",
                 "description": "Random sampling from parameter distributions",
                 "best_for": "Large parameter spaces, continuous parameters",
-                "complexity": "O(n) where n=number of iterations"
+                "complexity": "O(n) where n=number of iterations",
             },
             "bayesian": {
                 "name": "Bayesian Optimization (Optuna)",
                 "description": "Intelligent search using TPE algorithm",
                 "best_for": "Expensive evaluations, complex parameter spaces",
-                "complexity": "O(n) with smarter sampling"
-            }
+                "complexity": "O(n) with smarter sampling",
+            },
         }
 
         method_lower = method.lower().replace("-", "_").replace(" ", "_")
@@ -124,7 +121,7 @@ class TunerFactory:
             "grid_search": "grid",
             "random_search": "random",
             "optuna": "bayesian",
-            "tpe": "bayesian"
+            "tpe": "bayesian",
         }
 
         method_key = alias_map.get(method_lower, method_lower)
@@ -132,11 +129,7 @@ class TunerFactory:
         return info.get(method_key, {"name": method, "description": "Unknown method"})
 
 
-def get_tuner(
-    method: str,
-    param_space: Dict[str, Any],
-    **kwargs
-) -> BaseTuner:
+def get_tuner(method: str, param_space: Dict[str, Any], **kwargs) -> BaseTuner:
     """
     Convenience function to create a tuner.
 

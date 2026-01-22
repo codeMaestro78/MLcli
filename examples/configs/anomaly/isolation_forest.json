@@ -1,0 +1,23 @@
+{
+  "model_type": "isolation_forest",
+  "data": {
+    "train_path": "data/train.csv",
+    "feature_columns": null
+  },
+  "preprocessing": {
+    "scaler": "standard",
+    "handle_missing": "mean"
+  },
+  "params": {
+    "n_estimators": 100,
+    "max_samples": "auto",
+    "contamination": "auto",
+    "max_features": 1.0,
+    "bootstrap": false
+  },
+  "output": {
+    "model_dir": "models/",
+    "run_dir": "runs/",
+    "formats": ["pickle", "joblib"]
+  }
+}

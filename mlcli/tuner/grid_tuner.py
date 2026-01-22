@@ -9,8 +9,7 @@ from typing import Any, Dict, List, Optional
 from itertools import product
 from datetime import datetime
 import logging
-from sklearn.model_selection import StratifiedKFold, cross_val_score
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from sklearn.model_selection import StratifiedKFold
 import warnings
 
 from mlcli.tuner.base_tuner import BaseTuner
@@ -33,7 +32,7 @@ class GridSearchTuner(BaseTuner):
         cv: int = 5,
         n_jobs: int = -1,
         verbose: int = 1,
-        random_state: Optional[int] = 42
+        random_state: Optional[int] = 42,
     ):
         """
         Initialize Grid Search tuner.
@@ -69,7 +68,7 @@ class GridSearchTuner(BaseTuner):
         trainer_class: type,
         X: np.ndarray,
         y: np.ndarray,
-        trainer_config: Optional[Dict[str, Any]] = None
+        trainer_config: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Perform grid search hyperparameter tuning.
@@ -101,9 +100,7 @@ class GridSearchTuner(BaseTuner):
 
         # Cross-validation splitter
         cv_splitter = StratifiedKFold(
-            n_splits=self.cv,
-            shuffle=True,
-            random_state=self.random_state
+            n_splits=self.cv, shuffle=True, random_state=self.random_state
         )
 
         # Iterate through all combinations
@@ -122,9 +119,7 @@ class GridSearchTuner(BaseTuner):
                 config = {**trainer_config, "params": params}
 
                 # Perform cross-validation
-                cv_scores = self._cross_validate(
-                    trainer_class, config, X, y, cv_splitter
-                )
+                cv_scores = self._cross_validate(trainer_class, config, X, y, cv_splitter)
 
                 mean_score = np.mean(cv_scores)
                 std_score = np.std(cv_scores)
@@ -140,7 +135,7 @@ class GridSearchTuner(BaseTuner):
                     "mean_score": mean_score,
                     "std_score": std_score,
                     "cv_scores": cv_scores.tolist(),
-                    "trial": trial_num
+                    "trial": trial_num,
                 }
                 all_results.append(result)
 
@@ -164,12 +159,12 @@ class GridSearchTuner(BaseTuner):
         self.cv_results_ = {
             "all_results": all_results,
             "n_trials": len(all_results),
-            "n_failed": self.n_combinations - len(all_results)
+            "n_failed": self.n_combinations - len(all_results),
         }
 
         if self.verbose >= 1:
             duration = self.get_tuning_duration()
-            logger.info(f"\nGrid Search Complete!")
+            logger.info("\nGrid Search Complete!")
             logger.info(f"Best Score: {best_score:.4f}")
             logger.info(f"Best Params: {best_params}")
             logger.info(f"Total Duration: {duration:.1f}s")
@@ -178,16 +173,11 @@ class GridSearchTuner(BaseTuner):
             "best_params": self.best_params_,
             "best_score": self.best_score_,
             "cv_results": self.cv_results_,
-            "duration": self.get_tuning_duration()
+            "duration": self.get_tuning_duration(),
         }
 
     def _cross_validate(
-        self,
-        trainer_class: type,
-        config: Dict[str, Any],
-        X: np.ndarray,
-        y: np.ndarray,
-        cv_splitter
+        self, trainer_class: type, config: Dict[str, Any], X: np.ndarray, y: np.ndarray, cv_splitter
     ) -> np.ndarray:
         """
         Perform cross-validation for a single parameter set.
@@ -241,7 +231,7 @@ class GridSearchTuner(BaseTuner):
             "roc_auc": "roc_auc",
             "auc": "roc_auc",
             "precision": "precision",
-            "recall": "recall"
+            "recall": "recall",
         }
 
         metric_key = scoring_map.get(self.scoring, self.scoring)
@@ -255,7 +245,7 @@ class GridSearchTuner(BaseTuner):
             for key, value in metrics.items():
                 if isinstance(value, (int, float)):
                     return value
-            raise ValueError(f"Could not find score for metric '{self.scoring}'")
+            raise ValueError("Could not find score for metric '" + self.scoring + "'")
 
     def get_best_params(self) -> Dict[str, Any]:
         """Get best parameters."""
@@ -272,7 +262,7 @@ class GridSearchTuner(BaseTuner):
             "best_score": self.best_score_,
             "cv_results": self.cv_results_,
             "tuning_history": self.tuning_history_,
-            "duration": self.get_tuning_duration()
+            "duration": self.get_tuning_duration(),
         }
 
     def get_param_scores_df(self):

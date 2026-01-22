@@ -23,7 +23,7 @@ class BaseExplainer(ABC):
         self,
         model: Any,
         feature_names: Optional[List[str]] = None,
-        class_names: Optional[List[str]] = None
+        class_names: Optional[List[str]] = None,
     ):
         """
         Initialize explainer.
@@ -39,11 +39,7 @@ class BaseExplainer(ABC):
         self.explanations = None
 
     @abstractmethod
-    def explain(
-        self,
-        X: Union[np.ndarray, pd.DataFrame],
-        **kwargs
-    ) -> Dict[str, Any]:
+    def explain(self, X: Union[np.ndarray, pd.DataFrame], **kwargs) -> Dict[str, Any]:
         """
         Generate explanations for predictions.
 
@@ -54,14 +50,9 @@ class BaseExplainer(ABC):
         Returns:
             Dictionary containing explanation results
         """
-        pass
 
     @abstractmethod
-    def explain_instance(
-        self,
-        instance: Union[np.ndarray, pd.Series],
-        **kwargs
-    ) -> Dict[str, Any]:
+    def explain_instance(self, instance: Union[np.ndarray, pd.Series], **kwargs) -> Dict[str, Any]:
         """
         Generate explanation for a single instance.
 
@@ -72,7 +63,6 @@ class BaseExplainer(ABC):
         Returns:
             Dictionary containing explanation results
         """
-        pass
 
     @abstractmethod
     def get_feature_importance(self) -> Dict[str, float]:
@@ -82,14 +72,10 @@ class BaseExplainer(ABC):
         Returns:
             Dictionary mapping feature names to importance scores
         """
-        pass
 
     @abstractmethod
     def plot(
-        self,
-        plot_type: str = "summary",
-        output_path: Optional[Path] = None,
-        **kwargs
+        self, plot_type: str = "summary", output_path: Optional[Path] = None, **kwargs
     ) -> None:
         """
         Generate explanation plots.
@@ -99,12 +85,8 @@ class BaseExplainer(ABC):
             output_path: Path to save the plot
             **kwargs: Additional plot arguments
         """
-        pass
 
-    def _validate_input(
-        self,
-        X: Union[np.ndarray, pd.DataFrame]
-    ) -> np.ndarray:
+    def _validate_input(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
         """
         Validate and convert input data.
 
@@ -128,18 +110,16 @@ class BaseExplainer(ABC):
             Callable prediction function
         """
         # Check if model has predict_proba (classification)
-        if hasattr(self.model, 'predict_proba'):
+        if hasattr(self.model, "predict_proba"):
             return self.model.predict_proba
         # Check for predict method
-        elif hasattr(self.model, 'predict'):
+        elif hasattr(self.model, "predict"):
             return self.model.predict
         # Model itself might be a function
         elif callable(self.model):
             return self.model
         else:
-            raise ValueError(
-                "Model must have predict/predict_proba method or be callable"
-            )
+            raise ValueError("Model must have predict/predict_proba method or be callable")
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -152,11 +132,7 @@ class BaseExplainer(ABC):
             return {}
         return self.explanations
 
-    def save_explanation(
-        self,
-        output_path: Path,
-        format: str = "json"
-    ) -> None:
+    def save_explanation(self, output_path: Path, format: str = "json") -> None:
         """
         Save explanation results to file.
 
@@ -172,7 +148,7 @@ class BaseExplainer(ABC):
         if format == "json":
             # Convert numpy arrays to lists for JSON serialization
             export_data = self._serialize_for_json(self.explanations)
-            with open(output_path, 'w') as f:
+            with open(output_path, "w") as f:
                 json.dump(export_data, f, indent=2)
         elif format == "csv":
             importance = self.get_feature_importance()

@@ -5,12 +5,11 @@ Random sampling from parameter distributions for efficient hyperparameter search
 """
 
 import numpy as np
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from datetime import datetime
 import logging
 from sklearn.model_selection import StratifiedKFold
 import warnings
-from scipy import stats
 
 from mlcli.tuner.base_tuner import BaseTuner
 
@@ -33,7 +32,7 @@ class RandomSearchTuner(BaseTuner):
         cv: int = 5,
         n_jobs: int = -1,
         verbose: int = 1,
-        random_state: Optional[int] = 42
+        random_state: Optional[int] = 42,
     ):
         """
         Initialize Random Search tuner.
@@ -64,7 +63,7 @@ class RandomSearchTuner(BaseTuner):
         trainer_class: type,
         X: np.ndarray,
         y: np.ndarray,
-        trainer_config: Optional[Dict[str, Any]] = None
+        trainer_config: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Perform random search hyperparameter tuning.
@@ -91,9 +90,7 @@ class RandomSearchTuner(BaseTuner):
 
         # Cross-validation splitter
         cv_splitter = StratifiedKFold(
-            n_splits=self.cv,
-            shuffle=True,
-            random_state=self.random_state
+            n_splits=self.cv, shuffle=True, random_state=self.random_state
         )
 
         # Random search iterations
@@ -112,9 +109,7 @@ class RandomSearchTuner(BaseTuner):
                 config = {**trainer_config, "params": params}
 
                 # Perform cross-validation
-                cv_scores = self._cross_validate(
-                    trainer_class, config, X, y, cv_splitter
-                )
+                cv_scores = self._cross_validate(trainer_class, config, X, y, cv_splitter)
 
                 mean_score = np.mean(cv_scores)
                 std_score = np.std(cv_scores)
@@ -130,7 +125,7 @@ class RandomSearchTuner(BaseTuner):
                     "mean_score": mean_score,
                     "std_score": std_score,
                     "cv_scores": cv_scores.tolist(),
-                    "trial": trial_num
+                    "trial": trial_num,
                 }
                 all_results.append(result)
 
@@ -154,12 +149,12 @@ class RandomSearchTuner(BaseTuner):
         self.cv_results_ = {
             "all_results": all_results,
             "n_trials": len(all_results),
-            "n_failed": self.n_iter - len(all_results)
+            "n_failed": self.n_iter - len(all_results),
         }
 
         if self.verbose >= 1:
             duration = self.get_tuning_duration()
-            logger.info(f"\nRandom Search Complete!")
+            logger.info("\nRandom Search Complete!")
             logger.info(f"Best Score: {best_score:.4f}")
             logger.info(f"Best Params: {best_params}")
             logger.info(f"Total Duration: {duration:.1f}s")
@@ -168,7 +163,7 @@ class RandomSearchTuner(BaseTuner):
             "best_params": self.best_params_,
             "best_score": self.best_score_,
             "cv_results": self.cv_results_,
-            "duration": self.get_tuning_duration()
+            "duration": self.get_tuning_duration(),
         }
 
     def _sample_params(self) -> Dict[str, Any]:
@@ -234,12 +229,7 @@ class RandomSearchTuner(BaseTuner):
         return param_config
 
     def _cross_validate(
-        self,
-        trainer_class: type,
-        config: Dict[str, Any],
-        X: np.ndarray,
-        y: np.ndarray,
-        cv_splitter
+        self, trainer_class: type, config: Dict[str, Any], X: np.ndarray, y: np.ndarray, cv_splitter
     ) -> np.ndarray:
         """
         Perform cross-validation for a single parameter set.
@@ -271,7 +261,7 @@ class RandomSearchTuner(BaseTuner):
             "roc_auc": "roc_auc",
             "auc": "roc_auc",
             "precision": "precision",
-            "recall": "recall"
+            "recall": "recall",
         }
 
         metric_key = scoring_map.get(self.scoring, self.scoring)
@@ -284,7 +274,7 @@ class RandomSearchTuner(BaseTuner):
             for key, value in metrics.items():
                 if isinstance(value, (int, float)):
                     return value
-            raise ValueError(f"Could not find score for metric '{self.scoring}'")
+            raise ValueError("Could not find score for metric '" + self.scoring + "'")
 
     def get_best_params(self) -> Dict[str, Any]:
         """Get best parameters."""
@@ -301,7 +291,7 @@ class RandomSearchTuner(BaseTuner):
             "best_score": self.best_score_,
             "cv_results": self.cv_results_,
             "tuning_history": self.tuning_history_,
-            "duration": self.get_tuning_duration()
+            "duration": self.get_tuning_duration(),
         }
 
     def get_convergence_plot_data(self) -> Dict[str, List]:
@@ -325,8 +315,4 @@ class RandomSearchTuner(BaseTuner):
             current_best = max(current_best, trial["score"])
             best_so_far.append(current_best)
 
-        return {
-            "trials": trials,
-            "scores": scores,
-            "best_so_far": best_so_far
-        }
+        return {"trials": trials, "scores": scores, "best_so_far": best_so_far}

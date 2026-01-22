@@ -3,14 +3,26 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mlcli"
-version = "0.1.0"
-description = "mlcli that trains, evaluates, saves, and tracks Machine Learning and Deep Learning models using a unified configuration-driven pipeline, and also provides an interactive UI layer on top of the CLI for common workflows (e.g., selecting configs, choosing model types, launching training/evaluation, and browsing experiment runs)"
+name = "mlcli-toolkit"
+version = "0.3.1"
+description = "A production-ready CLI toolkit for training, evaluating, and tracking Machine Learning and Deep Learning models with experiment tracking, hyperparameter tuning, model explainability, and an interactive TUI"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [
     { name = "Devarshi Lalani", email = "devarshilalani.devflow@gmail.com" },
+]
+keywords = [
+    "machine-learning",
+    "deep-learning",
+    "cli",
+    "mlops",
+    "experiment-tracking",
+    "hyperparameter-tuning",
+    "model-training",
+    "scikit-learn",
+    "tensorflow",
+    "xgboost",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -28,19 +40,14 @@ classifiers = [
 
     # Python versions
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 
     # Topics
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Scientific/Engineering :: Mathematics",
-    "Topic :: Scientific/Engineering :: Machine Learning",
-    "Topic :: Software Development :: Libraries",
-    "Topic :: Software Development :: Libraries :: Python Modules",
 
     # CLI
     "Environment :: Console",
@@ -55,16 +62,24 @@ dependencies = [
     "numpy>=1.24,<2.0",
     "onnx>=1.14",
     "onnxruntime>=1.15",
-    "pandas>=2.1",
+    "pandas>=2.0",
     "plotext>=5.0",
     "pyyaml>=6.0",
     "rich-click>=1.6.0",
     "scikit-learn>=1.0",
     "skl2onnx>=1.14",
     "tensorflow>=2.10",
-    "textual>=6.1",
+    "textual>=0.40.0",
     "typer[all]>=0.7.0",
-    "xgboost>=3.0",
+    "xgboost>=1.7",
+    "lightgbm>=4.0.0",
+    "catboost>=1.2.0",
+    "statsmodels>=0.14.0",
+    "prophet>=1.1.0",
+    # PyTorch dependencies
+    "torch>=2.1",
+    "torchvision>=0.16",
+    "torchaudio>=2.1",
 ]
 
 [project.optional-dependencies]
@@ -80,9 +95,10 @@ dev = [
 mlcli = "mlcli.cli:app"
 
 [project.urls]
-Homepag = "https://github.com/codeMaestro78"
-Documentation = "https://github.com/codeMaestro78/readme"
-Repository = "https://github.com/codeMaestro78/mlcli"
+Homepage = "https://github.com/codeMaestro78/MLcli"
+Documentation = "https://github.com/codeMaestro78/MLcli#readme"
+Repository = "https://github.com/codeMaestro78/MLcli"
+Issues = "https://github.com/codeMaestro78/MLcli/issues"
 
 
 [tool.setuptools.packages.find]

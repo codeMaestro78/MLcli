@@ -8,16 +8,22 @@ training, evaluation, and experiment management.
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical, ScrollableContainer
 from textual.widgets import (
-    Header, Footer, Button, Static, Label,
-    DataTable, Input, Select, ListView, ListItem,
-    TabbedContent, TabPane, Rule, Markdown
+    Header,
+    Footer,
+    Button,
+    Static,
+    Label,
+    DataTable,
+    Input,
+    Select,
+    ListView,
+    ListItem,
+    Rule,
 )
 from textual.screen import Screen
 from textual.binding import Binding
-from textual import events
 from pathlib import Path
-from typing import Optional, List, Dict, Any
-import json
+from typing import Optional, Dict, Any
 
 
 class WelcomeScreen(Screen):
@@ -50,7 +56,7 @@ class WelcomeScreen(Screen):
 ╚══════════════════════════════════════════════════════════════════╝
                 """,
                 id="banner",
-                classes="banner"
+                classes="banner",
             ),
             Horizontal(
                 Button("🎯 Train Model", id="btn-train", variant="primary"),
@@ -58,14 +64,13 @@ class WelcomeScreen(Screen):
                 Button("📈 View Experiments", id="btn-experiments", variant="warning"),
                 Button("🔧 List Models", id="btn-models", variant="default"),
                 id="menu-buttons",
-                classes="menu-buttons"
+                classes="menu-buttons",
             ),
             Static(
-                "\n[dim]Press number keys (1-4) for quick access, or 'q' to quit[/dim]",
-                id="hint"
+                "\n[dim]Press number keys (1-4) for quick access, or 'q' to quit[/dim]", id="hint"
             ),
             id="welcome-container",
-            classes="welcome-container"
+            classes="welcome-container",
         )
         yield Footer()
 
@@ -114,57 +119,52 @@ class TrainScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
-        yield Container(
+        yield ScrollableContainer(
             Static("🎯 [bold]Train a Model[/bold]", classes="screen-title"),
             Rule(),
-            Horizontal(
-                Vertical(
-                    Static("[bold cyan]1. Select Configuration[/bold cyan]"),
-                    ListView(id="config-list"),
-                    id="config-section",
-                    classes="section"
-                ),
-                Vertical(
-                    Static("[bold cyan]2. Select Model Type[/bold cyan]"),
-                    ListView(id="model-list"),
-                    id="model-section",
-                    classes="section"
-                ),
-                id="selection-row"
-            ),
+            Static("[bold cyan]1. Select Configuration[/bold cyan]"),
+            ListView(id="config-list"),
+            Rule(),
+            Static("[bold cyan]2. Select Model Type (optional)[/bold cyan]"),
+            ListView(id="model-list"),
             Rule(),
             Static("[bold cyan]3. Override Parameters (optional)[/bold cyan]"),
             Horizontal(
                 Vertical(
                     Label("Epochs:"),
-                    Input(placeholder="Leave empty to use config", id="input-epochs"),
-                    classes="param-input"
+                    Input(placeholder="Leave empty", id="input-epochs"),
+                    classes="param-input",
                 ),
                 Vertical(
                     Label("Batch Size:"),
-                    Input(placeholder="Leave empty to use config", id="input-batch"),
-                    classes="param-input"
+                    Input(placeholder="Leave empty", id="input-batch"),
+                    classes="param-input",
                 ),
+                id="params-row",
+            ),
+            Horizontal(
                 Vertical(
                     Label("Learning Rate:"),
-                    Input(placeholder="Leave empty to use config", id="input-lr"),
-                    classes="param-input"
+                    Input(placeholder="Leave empty", id="input-lr"),
+                    classes="param-input",
                 ),
                 Vertical(
                     Label("Run Name:"),
-                    Input(placeholder="Optional run name", id="input-name"),
-                    classes="param-input"
+                    Input(placeholder="Optional", id="input-name"),
+                    classes="param-input",
                 ),
-                id="params-row"
+                id="params-row2",
             ),
             Rule(),
             Horizontal(
                 Button("▶ Start Training", id="btn-start", variant="success"),
                 Button("← Back", id="btn-back", variant="default"),
-                id="action-buttons"
+                id="action-buttons",
             ),
-            Static("", id="status-message"),
-            id="train-container"
+            Static(
+                "[dim]Select a config above, then click Start Training[/dim]", id="status-message"
+            ),
+            id="train-container",
         )
         yield Footer()
 
@@ -172,6 +172,21 @@ class TrainScreen(Screen):
         """Load configs and models on mount."""
         self._load_configs()
         self._load_models()
+        # Auto-select first config for convenience
+        self._auto_select_first_config()
+
+    def _auto_select_first_config(self) -> None:
+        """Auto-select the first available config."""
+        config_dir = Path("configs")
+        if config_dir.exists():
+            for ext in [".json", ".yaml", ".yml"]:
+                configs = sorted(config_dir.glob(f"*{ext}"))
+                if configs:
+                    self.selected_config = configs[0]
+                    self._update_status(
+                        f"✓ Auto-selected: [green]{configs[0].name}[/green] | Use ↑↓ to change, then Start Training"
+                    )
+                    break
 
     def _load_configs(self) -> None:
         """Load available config files."""
@@ -197,7 +212,7 @@ class TrainScreen(Screen):
 
         try:
             from mlcli import registry
-            from mlcli import trainers  # Trigger registration
+            from mlcli import trainers  # noqa: F401
 
             for model_name in registry.list_models():
                 metadata = registry.get_metadata(model_name)
@@ -208,10 +223,20 @@ class TrainScreen(Screen):
         except Exception as e:
             model_list.append(ListItem(Label(f"[red]Error loading models: {e}[/red]")))
 
-    def on_list_view_selected(self, event: ListView.Selected) -> None:
-        """Handle list selection."""
+    def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
+        """Handle list highlight (cursor movement) - auto-select on highlight."""
+        if event.item is None:
+            return
         item_id = event.item.id or ""
+        self._handle_item_selection(item_id)
 
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Handle list selection (Enter key)."""
+        item_id = event.item.id or ""
+        self._handle_item_selection(item_id)
+
+    def _handle_item_selection(self, item_id: str) -> None:
+        """Process item selection from either highlight or select event."""
         if item_id.startswith("cfg-"):
             config_name = item_id[4:]
             config_dir = Path("configs")
@@ -220,12 +245,14 @@ class TrainScreen(Screen):
                 config_path = config_dir / f"{config_name}{ext}"
                 if config_path.exists():
                     self.selected_config = config_path
-                    self._update_status(f"Selected config: {config_path.name}")
+                    self._update_status(
+                        f"✓ Config: [green]{config_path.name}[/green] | Press 'Start Training' or Enter"
+                    )
                     break
 
         elif item_id.startswith("model-"):
             self.selected_model = item_id[6:]
-            self._update_status(f"Selected model: {self.selected_model}")
+            self._update_status(f"✓ Model: [green]{self.selected_model}[/green]")
 
     def _update_status(self, message: str) -> None:
         """Update status message."""
@@ -247,8 +274,25 @@ class TrainScreen(Screen):
 
     def _start_training(self) -> None:
         """Start the training process."""
+        # If no config selected, try to auto-select first available
         if not self.selected_config:
-            self._update_status("[red]Please select a configuration file[/red]")
+            config_dir = Path("configs")
+            if config_dir.exists():
+                for ext in [".json", ".yaml", ".yml"]:
+                    configs = list(config_dir.glob(f"*{ext}"))
+                    if configs:
+                        self.selected_config = configs[0]
+                        break
+
+        if not self.selected_config:
+            self._update_status(
+                "[red]❌ No config selected! Use ↑↓ to navigate and highlight a config file.[/red]"
+            )
+            return
+
+        # Check if config file exists
+        if not self.selected_config.exists():
+            self._update_status(f"[red]❌ Config file not found: {self.selected_config}[/red]")
             return
 
         # Get parameter overrides
@@ -258,7 +302,9 @@ class TrainScreen(Screen):
         name_input = self.query_one("#input-name", Input)
 
         # Build command
-        self._update_status("[yellow]Starting training...[/yellow]")
+        self._update_status(
+            f"[yellow]🚀 Starting training with {self.selected_config.name}...[/yellow]"
+        )
 
         # Push to training progress screen
         self.app.push_screen(
@@ -267,7 +313,7 @@ class TrainScreen(Screen):
                 epochs=epochs_input.value if epochs_input.value else None,
                 batch_size=batch_input.value if batch_input.value else None,
                 learning_rate=lr_input.value if lr_input.value else None,
-                run_name=name_input.value if name_input.value else None
+                run_name=name_input.value if name_input.value else None,
             )
         )
 
@@ -285,7 +331,7 @@ class TrainingProgressScreen(Screen):
         epochs: Optional[str] = None,
         batch_size: Optional[str] = None,
         learning_rate: Optional[str] = None,
-        run_name: Optional[str] = None
+        run_name: Optional[str] = None,
     ):
         super().__init__()
         self.config_path = config_path
@@ -305,78 +351,85 @@ class TrainingProgressScreen(Screen):
             Static("", id="progress-status"),
             Rule(),
             Static("[bold cyan]Training Output:[/bold cyan]"),
-            ScrollableContainer(
-                Static("", id="training-log"),
-                id="log-container"
-            ),
+            ScrollableContainer(Static("", id="training-log"), id="log-container"),
             Rule(),
             Static("[bold cyan]Results:[/bold cyan]"),
             DataTable(id="results-table"),
             Horizontal(
                 Button("← Back to Menu", id="btn-back", variant="default"),
-                Button("📈 View in Experiments", id="btn-view-exp", variant="primary", disabled=True),
-                id="result-buttons"
+                Button(
+                    "📈 View in Experiments", id="btn-view-exp", variant="primary", disabled=True
+                ),
+                id="result-buttons",
             ),
-            id="progress-container"
+            id="progress-container",
         )
         yield Footer()
 
     def on_mount(self) -> None:
         """Start training when screen mounts."""
-        self.run_training()
+        # Initialize log
+        self._log_lines: list = []
+        # Start training after a short delay to let UI render
+        self.set_timer(0.5, self._run_training)
 
-    def run_training(self) -> None:
-        """Execute the training pipeline."""
-        import asyncio
-        asyncio.create_task(self._async_train())
-
-    async def _async_train(self) -> None:
-        """Async training execution."""
-        log_widget = self.query_one("#training-log", Static)
-        status_widget = self.query_one("#progress-status", Static)
-        results_table = self.query_one("#results-table", DataTable)
-
-        log_lines = []
-
-        def add_log(msg: str):
-            log_lines.append(msg)
-            log_widget.update("\n".join(log_lines[-50:]))  # Keep last 50 lines
-
+    def _add_log(self, msg: str) -> None:
+        """Add a message to the log."""
+        self._log_lines.append(msg)
         try:
-            status_widget.update("[yellow]⏳ Initializing...[/yellow]")
-            add_log("Loading configuration...")
+            log_widget = self.query_one("#training-log", Static)
+            log_widget.update("\n".join(self._log_lines[-30:]))
+        except Exception:
+            pass
+
+    def _set_status(self, msg: str) -> None:
+        """Set status message."""
+        try:
+            status_widget = self.query_one("#progress-status", Static)
+            status_widget.update(msg)
+        except Exception:
+            pass
+
+    def _run_training(self) -> None:
+        """Run training synchronously (called by timer)."""
+        tracker = None
+        try:
+            self._set_status("[yellow]⏳ Initializing...[/yellow]")
+            self._add_log("Loading configuration...")
+            self.refresh()
 
             from mlcli.config.loader import ConfigLoader
             from mlcli.utils.io import load_data
             from mlcli import registry
-            from mlcli import trainers
+            from mlcli import trainers  # noqa: F401
             from mlcli.runner.experiment_tracker import ExperimentTracker
             from sklearn.model_selection import train_test_split
-            import numpy as np
 
             # Load config
             config_loader = ConfigLoader(self.config_path)
-            add_log(f"✓ Loaded config: {self.config_path.name}")
+            self._add_log(f"✓ Loaded config: {self.config_path.name}")
+            self.refresh()
 
             # Apply overrides
             if self.epochs:
                 config_loader.set("model.params.epochs", int(self.epochs))
-                add_log(f"  Override: epochs = {self.epochs}")
+                self._add_log(f"  Override: epochs = {self.epochs}")
 
             if self.batch_size:
                 config_loader.set("model.params.batch_size", int(self.batch_size))
-                add_log(f"  Override: batch_size = {self.batch_size}")
+                self._add_log(f"  Override: batch_size = {self.batch_size}")
 
             if self.learning_rate:
                 config_loader.set("model.params.learning_rate", float(self.learning_rate))
-                add_log(f"  Override: learning_rate = {self.learning_rate}")
+                self._add_log(f"  Override: learning_rate = {self.learning_rate}")
 
             # Get model info
             model_type = config_loader.get_model_type()
             metadata = registry.get_metadata(model_type)
             framework = metadata["framework"] if metadata else "unknown"
 
-            add_log(f"✓ Model: {model_type} ({framework})")
+            self._add_log(f"✓ Model: {model_type} ({framework})")
+            self.refresh()
 
             # Start tracking
             tracker = ExperimentTracker()
@@ -384,55 +437,59 @@ class TrainingProgressScreen(Screen):
                 model_type=model_type,
                 framework=framework,
                 config=config_loader.to_dict(),
-                run_name=self.run_name
+                run_name=self.run_name,
             )
-            add_log(f"✓ Started run: {run_id}")
+            self._add_log(f"✓ Started run: {run_id}")
+            self.refresh()
 
             # Load data
-            status_widget.update("[yellow]⏳ Loading data...[/yellow]")
+            self._set_status("[yellow]⏳ Loading data...[/yellow]")
             dataset_config = config_loader.get_dataset_config()
-            add_log(f"Loading data from: {dataset_config['path']}")
+            self._add_log(f"Loading data from: {dataset_config['path']}")
+            self.refresh()
 
             X, y = load_data(
                 data_path=dataset_config["path"],
                 data_type=dataset_config.get("type", "csv"),
                 target_column=dataset_config.get("target_column"),
-                features=dataset_config.get("features")
+                features=dataset_config.get("features"),
             )
-            add_log(f"✓ Data loaded: X={X.shape}, y={y.shape}")
+            self._add_log(f"✓ Data loaded: X={X.shape}, y={y.shape}")
+            self.refresh()
 
             # Split data
             training_config = config_loader.get_training_config()
             X_train, X_test, y_train, y_test = train_test_split(
-                X, y,
+                X,
+                y,
                 test_size=training_config.get("test_size", 0.2),
-                random_state=training_config.get("random_state", 42)
+                random_state=training_config.get("random_state", 42),
             )
-            add_log(f"✓ Split: train={len(X_train)}, test={len(X_test)}")
+            self._add_log(f"✓ Split: train={len(X_train)}, test={len(X_test)}")
+            self.refresh()
 
             # Create trainer
-            status_widget.update("[yellow]⏳ Training model...[/yellow]")
-            add_log("Initializing trainer...")
+            self._set_status("[yellow]⏳ Training model...[/yellow]")
+            self._add_log("Initializing trainer...")
+            self.refresh()
 
-            trainer = registry.get_trainer(
-                model_type,
-                config=config_loader.config.get("model", {})
+            trainer_instance = registry.get_trainer(
+                model_type, config=config_loader.config.get("model", {})
             )
-            add_log("✓ Trainer initialized")
-            add_log("Starting training...")
+            self._add_log("✓ Trainer initialized")
+            self._add_log("Starting training...")
+            self.refresh()
 
             # Train
-            training_history = trainer.train(
-                X_train, y_train,
-                X_val=X_test,
-                y_val=y_test
-            )
-            add_log("✓ Training complete!")
+            training_history = trainer_instance.train(X_train, y_train, X_val=X_test, y_val=y_test)
+            self._add_log("✓ Training complete!")
+            self.refresh()
 
             # Evaluate
-            status_widget.update("[yellow]⏳ Evaluating...[/yellow]")
-            test_metrics = trainer.evaluate(X_test, y_test)
-            add_log("✓ Evaluation complete")
+            self._set_status("[yellow]⏳ Evaluating...[/yellow]")
+            test_metrics = trainer_instance.evaluate(X_test, y_test)
+            self._add_log("✓ Evaluation complete")
+            self.refresh()
 
             # Log metrics
             tracker.log_metrics(training_history.get("train_metrics", {}), prefix="train_")
@@ -440,7 +497,7 @@ class TrainingProgressScreen(Screen):
             tracker.log_training_history(training_history)
 
             # Save model
-            status_widget.update("[yellow]⏳ Saving model...[/yellow]")
+            self._set_status("[yellow]⏳ Saving model...[/yellow]")
             output_config = config_loader.get_output_config()
             model_dir = Path(output_config.get("model_dir", "mlcli/models"))
 
@@ -449,25 +506,28 @@ class TrainingProgressScreen(Screen):
             else:
                 save_formats = ["pickle"]
 
-            saved_paths = trainer.save(model_dir, save_formats)
+            saved_paths = trainer_instance.save(model_dir, save_formats)
 
             for fmt, path in saved_paths.items():
                 tracker.log_model_path(fmt, path)
-                add_log(f"✓ Saved {fmt}: {path}")
+                self._add_log(f"✓ Saved {fmt}: {path}")
+            self.refresh()
 
             # End run
             run_data = tracker.end_run(status="completed")
 
             # Display results
-            status_widget.update("[green]✅ Training Complete![/green]")
+            self._set_status("[green]✅ Training Complete![/green]")
+            self._add_log(f"✓ Run completed in {run_data.get('duration_seconds', 0):.1f}s")
 
+            # Show results in table
+            results_table = self.query_one("#results-table", DataTable)
             results_table.add_columns("Metric", "Value")
             for metric, value in test_metrics.items():
                 if isinstance(value, float):
                     results_table.add_row(metric, f"{value:.4f}")
                 else:
                     results_table.add_row(metric, str(value))
-
             results_table.add_row("Run ID", run_id)
             results_table.add_row("Duration", f"{run_data.get('duration_seconds', 0):.1f}s")
 
@@ -477,15 +537,19 @@ class TrainingProgressScreen(Screen):
             # Enable view experiments button
             view_btn = self.query_one("#btn-view-exp", Button)
             view_btn.disabled = False
+            self.refresh()
 
         except Exception as e:
-            status_widget.update(f"[red]❌ Error: {str(e)}[/red]")
-            add_log(f"[red]ERROR: {str(e)}[/red]")
+            error_msg = str(e)
+            self._set_status(f"[red]❌ Error: {error_msg}[/red]")
+            self._add_log(f"[red]ERROR: {error_msg}[/red]")
+            self.refresh()
 
-            try:
-                tracker.end_run(status="failed", error=str(e))
-            except:
-                pass
+            if tracker:
+                try:
+                    tracker.end_run(status="failed", error=error_msg)
+                except Exception:
+                    pass
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""
@@ -511,62 +575,43 @@ class EvaluateScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
-        yield Container(
+        yield ScrollableContainer(
             Static("📊 [bold]Evaluate a Model[/bold]", classes="screen-title"),
             Rule(),
-            Vertical(
-                Label("Model Path:"),
-                Input(placeholder="Path to saved model (e.g., mlcli/models/model.pkl)", id="input-model-path"),
-                classes="input-group"
+            Label("Model Path:"),
+            Input(
+                placeholder="e.g., mlcli/models/rf_model.pkl",
+                id="input-model-path",
             ),
-            Vertical(
-                Label("Data Path:"),
-                Input(placeholder="Path to evaluation data (CSV)", id="input-data-path"),
-                classes="input-group"
-            ),
-            Horizontal(
-                Vertical(
-                    Label("Model Type:"),
-                    Select(
-                        options=[],
-                        id="select-model-type",
-                        prompt="Select model type"
-                    ),
-                    classes="select-group"
-                ),
-                Vertical(
-                    Label("Model Format:"),
-                    Select(
-                        options=[
-                            ("pickle", "pickle"),
-                            ("joblib", "joblib"),
-                            ("h5", "h5"),
-                            ("savedmodel", "savedmodel"),
-                            ("onnx", "onnx"),
-                        ],
-                        id="select-format",
-                        prompt="Select format"
-                    ),
-                    classes="select-group"
-                ),
-                id="selects-row"
-            ),
-            Vertical(
-                Label("Target Column:"),
-                Input(placeholder="Name of target column in data", id="input-target"),
-                classes="input-group"
+            Label("Data Path:"),
+            Input(placeholder="e.g., data/sample_data.csv", id="input-data-path"),
+            Label("Target Column:"),
+            Input(placeholder="e.g., target", id="input-target"),
+            Label("Model Type:"),
+            Select(options=[], id="select-model-type", prompt="Select model type"),
+            Label("Model Format:"),
+            Select(
+                options=[
+                    ("pickle", "pickle"),
+                    ("joblib", "joblib"),
+                    ("h5", "h5"),
+                    ("savedmodel", "savedmodel"),
+                    ("onnx", "onnx"),
+                ],
+                id="select-format",
+                prompt="Select format",
             ),
             Rule(),
             Horizontal(
                 Button("▶ Evaluate", id="btn-evaluate", variant="success"),
                 Button("← Back", id="btn-back", variant="default"),
-                id="action-buttons"
+                id="action-buttons",
             ),
             Static("", id="eval-status"),
             Rule(),
             Static("[bold cyan]Results:[/bold cyan]"),
             DataTable(id="eval-results"),
-            id="eval-container"
+            id="eval-container",
         )
         yield Footer()
 
@@ -576,7 +621,7 @@ class EvaluateScreen(Screen):
 
         try:
             from mlcli import registry
-            from mlcli import trainers
+            from mlcli import trainers  # noqa: F401
 
             options = [(name, name) for name in registry.list_models()]
             select.set_options(options)
@@ -624,7 +669,7 @@ class EvaluateScreen(Screen):
             status.update("[yellow]⏳ Loading model and data...[/yellow]")
 
             from mlcli import registry
-            from mlcli import trainers
+            from mlcli import trainers  # noqa: F401
             from mlcli.utils.io import load_data
             from pathlib import Path
 
@@ -632,7 +677,7 @@ class EvaluateScreen(Screen):
             X, y = load_data(
                 data_path=data_path,
                 data_type="csv",
-                target_column=target_col if target_col else None
+                target_column=target_col if target_col else None,
             )
 
             if y is None:
@@ -684,17 +729,16 @@ class ExperimentsScreen(Screen):
             Rule(),
             Static("[bold cyan]Run Details:[/bold cyan]"),
             ScrollableContainer(
-                Static("Select a run to view details", id="run-details"),
-                id="details-container"
+                Static("Select a run to view details", id="run-details"), id="details-container"
             ),
             Horizontal(
                 Button("🔄 Refresh", id="btn-refresh", variant="default"),
                 Button("🗑️ Delete Selected", id="btn-delete", variant="error"),
                 Button("📥 Export CSV", id="btn-export", variant="primary"),
                 Button("← Back", id="btn-back", variant="default"),
-                id="action-buttons"
+                id="action-buttons",
             ),
-            id="experiments-container"
+            id="experiments-container",
         )
         yield Footer()
 
@@ -707,21 +751,18 @@ class ExperimentsScreen(Screen):
         table = self.query_one("#experiments-table", DataTable)
         table.clear(columns=True)
 
-        table.add_columns(
-            "Run ID", "Name", "Model", "Framework",
-            "Accuracy", "Status", "Timestamp"
-        )
+        table.add_columns("Run ID", "Name", "Model", "Framework", "Accuracy", "Status", "Timestamp")
 
         try:
             from mlcli.runner.experiment_tracker import ExperimentTracker
+
             tracker = ExperimentTracker()
 
             runs = tracker.get_recent_runs(50)
 
             for run in runs:
                 accuracy = run.get("metrics", {}).get(
-                    "test_accuracy",
-                    run.get("metrics", {}).get("accuracy", "N/A")
+                    "test_accuracy", run.get("metrics", {}).get("accuracy", "N/A")
                 )
 
                 if isinstance(accuracy, float):
@@ -734,7 +775,7 @@ class ExperimentsScreen(Screen):
                     run["framework"],
                     str(accuracy),
                     run["status"],
-                    run["timestamp"][:19]
+                    run["timestamp"][:19],
                 )
         except Exception as e:
             table.add_row("Error", str(e), "", "", "", "", "")
@@ -756,6 +797,7 @@ class ExperimentsScreen(Screen):
 
         try:
             from mlcli.runner.experiment_tracker import ExperimentTracker
+
             tracker = ExperimentTracker()
 
             summary = tracker.get_run_summary(run_id)
@@ -790,6 +832,7 @@ class ExperimentsScreen(Screen):
 
         try:
             from mlcli.runner.experiment_tracker import ExperimentTracker
+
             tracker = ExperimentTracker()
             tracker.delete_run(self.selected_run_id)
             self._load_experiments()
@@ -805,6 +848,7 @@ class ExperimentsScreen(Screen):
         """Export experiments to CSV."""
         try:
             from mlcli.runner.experiment_tracker import ExperimentTracker
+
             tracker = ExperimentTracker()
             tracker.export_to_csv("experiments_export.csv")
 
@@ -831,14 +875,10 @@ class ModelsScreen(Screen):
             Rule(),
             Static("[bold cyan]Model Details:[/bold cyan]"),
             ScrollableContainer(
-                Static("Select a model to view details", id="model-details"),
-                id="details-container"
+                Static("Select a model to view details", id="model-details"), id="details-container"
             ),
-            Horizontal(
-                Button("← Back", id="btn-back", variant="default"),
-                id="action-buttons"
-            ),
-            id="models-container"
+            Horizontal(Button("← Back", id="btn-back", variant="default"), id="action-buttons"),
+            id="models-container",
         )
         yield Footer()
 
@@ -855,7 +895,7 @@ class ModelsScreen(Screen):
 
         try:
             from mlcli import registry
-            from mlcli import trainers
+            from mlcli import trainers  # noqa: F401
 
             for model_name in registry.list_models():
                 metadata = registry.get_metadata(model_name)
@@ -864,7 +904,7 @@ class ModelsScreen(Screen):
                         model_name,
                         metadata.get("framework", "unknown"),
                         metadata.get("model_type", "unknown"),
-                        metadata.get("description", "")[:50]
+                        metadata.get("description", "")[:50],
                     )
         except Exception as e:
             table.add_row("Error", str(e), "", "")
@@ -886,7 +926,7 @@ class ModelsScreen(Screen):
 
         try:
             from mlcli import registry
-            from mlcli import trainers
+            from mlcli import trainers  # noqa: F401
 
             metadata = registry.get_metadata(model_name)
             trainer_class = registry.get(model_name)
@@ -902,9 +942,9 @@ class ModelsScreen(Screen):
                     f"Class: {metadata.get('class_name', 'unknown')}",
                     "",
                     "[bold]Description:[/bold]",
-                    metadata.get('description', 'No description'),
+                    metadata.get("description", "No description"),
                     "",
-                    "[bold]Default Parameters:[/bold]"
+                    "[bold]Default Parameters:[/bold]",
                 ]
 
                 for param, value in default_params.items():
@@ -933,6 +973,10 @@ class MLCLIApp(App):
     SUB_TITLE = "Interactive Terminal UI"
 
     CSS = """
+    Screen {
+        overflow: auto;
+    }
+
     .banner {
         text-align: center;
         color: $primary;
@@ -941,18 +985,20 @@ class MLCLIApp(App):
 
     .welcome-container {
         align: center middle;
-        padding: 2;
+        padding: 1;
+        height: auto;
     }
 
     .menu-buttons {
         align: center middle;
-        padding: 2;
+        padding: 1;
         width: 100%;
+        height: auto;
     }
 
     .menu-buttons Button {
         margin: 1 2;
-        min-width: 20;
+        min-width: 16;
     }
 
     .screen-title {
@@ -962,15 +1008,16 @@ class MLCLIApp(App):
     }
 
     .section {
-        width: 50%;
-        height: 15;
+        width: 1fr;
+        height: 12;
         border: solid $primary;
         padding: 1;
-        margin: 1;
+        margin: 0 1;
     }
 
     #selection-row {
-        height: 18;
+        height: 14;
+        width: 100%;
     }
 
     #params-row {
@@ -979,7 +1026,7 @@ class MLCLIApp(App):
     }
 
     .param-input {
-        width: 25%;
+        width: 1fr;
         padding: 0 1;
     }
 
@@ -999,26 +1046,49 @@ class MLCLIApp(App):
     #action-buttons {
         align: center middle;
         padding: 1;
+        height: auto;
     }
 
     #action-buttons Button {
         margin: 0 1;
     }
 
+    #train-container {
+        padding: 1;
+    }
+
+    #train-container ListView {
+        height: 8;
+        border: solid $primary;
+        margin: 0 0 1 0;
+    }
+
+    #eval-container {
+        padding: 1;
+    }
+
+    #eval-container Input {
+        margin: 0 0 1 0;
+    }
+
+    #eval-container Select {
+        margin: 0 0 1 0;
+    }
+
     #log-container {
-        height: 15;
+        height: 12;
         border: solid $secondary;
         padding: 1;
     }
 
     #details-container {
-        height: 20;
+        height: 15;
         border: solid $secondary;
         padding: 1;
     }
 
     DataTable {
-        height: 15;
+        height: 10;
     }
     """
 
@@ -1033,9 +1103,11 @@ class MLCLIApp(App):
 
     def action_home(self) -> None:
         """Go to home screen."""
-        # Clear all screens and push welcome
+        # Pop all screens except the base, then push welcome
         while len(self.screen_stack) > 1:
             self.pop_screen()
+        # Push a fresh welcome screen
+        self.push_screen(WelcomeScreen())
 
     def action_quit(self) -> None:
         """Quit the application."""

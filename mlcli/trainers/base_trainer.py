@@ -6,7 +6,7 @@ ensuring consistent behavior across ML and DL frameworks.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, List
+from typing import Any, Optional, Dict, List
 import numpy as np
 from pathlib import Path
 import logging
@@ -42,7 +42,7 @@ class BaseTrainer(ABC):
         X_train: np.ndarray,
         y_train: np.ndarray,
         X_val: Optional[np.ndarray] = None,
-        y_val: Optional[np.ndarray] = None
+        y_val: Optional[np.ndarray] = None,
     ) -> Dict[str, Any]:
         """
         Train the model on provided data.
@@ -56,14 +56,9 @@ class BaseTrainer(ABC):
         Returns:
             Dictionary containing training history/metrics
         """
-        pass
 
     @abstractmethod
-    def evaluate(
-        self,
-        X_test: np.ndarray,
-        y_test: np.ndarray
-    ) -> Dict[str, float]:
+    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> Dict[str, float]:
         """
         Evaluate model on test data.
 
@@ -74,7 +69,6 @@ class BaseTrainer(ABC):
         Returns:
             Dictionary of evaluation metrics
         """
-        pass
 
     @abstractmethod
     def predict(self, X: np.ndarray) -> np.ndarray:
@@ -87,7 +81,6 @@ class BaseTrainer(ABC):
         Returns:
             Predicted labels
         """
-        pass
 
     @abstractmethod
     def predict_proba(self, X: np.ndarray) -> Optional[np.ndarray]:
@@ -100,7 +93,6 @@ class BaseTrainer(ABC):
         Returns:
             Predicted probabilities or None if not supported
         """
-        pass
 
     @abstractmethod
     def save(self, save_dir: Path, formats: List[str]) -> Dict[str, Path]:
@@ -114,7 +106,6 @@ class BaseTrainer(ABC):
         Returns:
             Dictionary mapping format names to file paths
         """
-        pass
 
     @abstractmethod
     def load(self, model_path: Path, model_format: str) -> None:
@@ -125,7 +116,6 @@ class BaseTrainer(ABC):
             model_path: Path to model file
             model_format: Format of the model file
         """
-        pass
 
     @classmethod
     @abstractmethod
@@ -136,7 +126,6 @@ class BaseTrainer(ABC):
         Returns:
             Dictionary of default parameters
         """
-        pass
 
     def get_model(self) -> Any:
         """
@@ -150,8 +139,7 @@ class BaseTrainer(ABC):
         """
         if self.model is None:
             raise RuntimeError(
-                f"{self.__class__.__name__} has no trained model. "
-                "Call train() or load() first."
+                f"{self.__class__.__name__} has no trained model. " "Call train() or load() first."
             )
         return self.model
 

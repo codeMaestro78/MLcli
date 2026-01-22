@@ -12,18 +12,18 @@ from mlcli.preprocessor.base_preprocessor import BasePreprocessor
 from mlcli.preprocessor.scalers import (
     StandardScalerProcessor,
     MinMaxScalerProcessor,
-    RobustScalerProcessor
+    RobustScalerProcessor,
 )
 from mlcli.preprocessor.normalizers import NormalizerProcessor
 from mlcli.preprocessor.encoders import (
     LabelEncoderProcessor,
     OneHotEncoderProcessor,
-    OrdinalEncoderProcessor
+    OrdinalEncoderProcessor,
 )
 from mlcli.preprocessor.feature_selectors import (
     SelectKBestProcessor,
     RFEProcessor,
-    VarianceThresholdProcessor
+    VarianceThresholdProcessor,
 )
 from mlcli.preprocessor.preprocessor_factory import PreprocessorFactory, get_preprocessor
 from mlcli.preprocessor.pipeline import PreprocessingPipeline
@@ -42,5 +42,5 @@ __all__ = [
     "VarianceThresholdProcessor",
     "PreprocessorFactory",
     "get_preprocessor",
-    "PreprocessingPipeline"
+    "PreprocessingPipeline",
 ]

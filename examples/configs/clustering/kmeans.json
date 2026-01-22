@@ -1,0 +1,23 @@
+{
+  "model_type": "kmeans",
+  "data": {
+    "train_path": "data/train.csv",
+    "feature_columns": null
+  },
+  "preprocessing": {
+    "scaler": "standard",
+    "handle_missing": "mean"
+  },
+  "params": {
+    "n_clusters": 5,
+    "init": "k-means++",
+    "n_init": 10,
+    "max_iter": 300,
+    "algorithm": "lloyd"
+  },
+  "output": {
+    "model_dir": "models/",
+    "run_dir": "runs/",
+    "formats": ["pickle", "joblib"]
+  }
+}

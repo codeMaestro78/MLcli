@@ -22,14 +22,14 @@ class ExplainerFactory:
             "name": "SHAP",
             "full_name": "SHapley Additive exPlanations",
             "description": "Game theory approach to explain model predictions",
-            "best_for": "Tree-based models, global explanations"
+            "best_for": "Tree-based models, global explanations",
         },
         "lime": {
             "name": "LIME",
             "full_name": "Local Interpretable Model-agnostic Explanations",
             "description": "Local surrogate model for instance explanations",
-            "best_for": "Any model, local explanations"
-        }
+            "best_for": "Any model, local explanations",
+        },
     }
 
     @classmethod
@@ -39,7 +39,7 @@ class ExplainerFactory:
         model: Any,
         feature_names: Optional[List[str]] = None,
         class_names: Optional[List[str]] = None,
-        **kwargs
+        **kwargs,
     ) -> Any:
         """
         Create an explainer instance.
@@ -57,26 +57,26 @@ class ExplainerFactory:
         method = method.lower()
 
         if method not in cls._methods:
-            raise ValueError(
-                f"Unknown method: {method}. Available: {list(cls._methods.keys())}"
-            )
+            raise ValueError(f"Unknown method: {method}. Available: {list(cls._methods.keys())}")
 
         if method == "shap":
             from mlcli.explainer.shap_explainer import SHAPExplainer
+
             return SHAPExplainer(
                 model=model,
                 feature_names=feature_names,
                 class_names=class_names,
-                explainer_type=kwargs.get("explainer_type", "auto")
+                explainer_type=kwargs.get("explainer_type", "auto"),
             )
 
         elif method == "lime":
             from mlcli.explainer.lime_explainer import LIMEExplainer
+
             return LIMEExplainer(
                 model=model,
                 feature_names=feature_names,
                 class_names=class_names,
-                mode=kwargs.get("mode", "classification")
+                mode=kwargs.get("mode", "classification"),
             )
 
     @classmethod
@@ -111,7 +111,7 @@ def get_explainer(
     model: Any,
     feature_names: Optional[List[str]] = None,
     class_names: Optional[List[str]] = None,
-    **kwargs
+    **kwargs,
 ) -> Any:
     """
     Convenience function to create an explainer.
@@ -127,9 +127,5 @@ def get_explainer(
         Explainer instance
     """
     return ExplainerFactory.create(
-        method=method,
-        model=model,
-        feature_names=feature_names,
-        class_names=class_names,
-        **kwargs
+        method=method, model=model, feature_names=feature_names, class_names=class_names, **kwargs
     )

@@ -7,10 +7,8 @@ Abstract base class for all preprocessors.
 from abc import ABC, abstractmethod
 from typing import Optional, Dict, Any, Union, List
 import numpy as np
-import pandas as pd
 from pathlib import Path
 import pickle
-import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -51,7 +49,6 @@ class BasePreprocessor(ABC):
         Returns:
             Self
         """
-        pass
 
     @abstractmethod
     def transform(self, X: np.ndarray) -> np.ndarray:
@@ -64,7 +61,6 @@ class BasePreprocessor(ABC):
         Returns:
             Transformed data
         """
-        pass
 
     def fit_transform(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> np.ndarray:
         """
@@ -93,17 +89,11 @@ class BasePreprocessor(ABC):
         Raises:
             NotImplementedError: If inverse transform is not supported
         """
-        raise NotImplementedError(
-            f"Inverse transform not supported for {self.name}"
-        )
+        raise NotImplementedError(f"Inverse transform not supported for {self.name}")
 
     def get_params(self) -> Dict[str, Any]:
         """Get preprocessor parameters."""
-        return {
-            "name": self.name,
-            "config": self.config,
-            "is_fitted": self._fitted
-        }
+        return {"name": self.name, "config": self.config, "is_fitted": self._fitted}
 
     def set_feature_names(self, feature_names: List[str]) -> None:
         """
@@ -142,10 +132,10 @@ class BasePreprocessor(ABC):
             "fitted": self._fitted,
             "preprocessor": self._preprocessor,
             "feature_names_in": self._feature_names_in,
-            "feature_names_out": self._feature_names_out
+            "feature_names_out": self._feature_names_out,
         }
 
-        with open(save_path, 'wb') as f:
+        with open(save_path, "wb") as f:
             pickle.dump(preprocessor_data, f)
 
         logger.info(f"Saved preprocessor to: {save_path}")
@@ -167,7 +157,7 @@ class BasePreprocessor(ABC):
         if not load_path.exists():
             raise FileNotFoundError(f"Preprocessor file not found: {load_path}")
 
-        with open(load_path, 'rb') as f:
+        with open(load_path, "rb") as f:
             data = pickle.load(f)
 
         # Create instance
@@ -190,7 +180,7 @@ class BasePreprocessor(ABC):
             "is_fitted": self._fitted,
             "config": self.config,
             "n_features_in": len(self._feature_names_in) if self._feature_names_in else None,
-            "n_features_out": len(self._feature_names_out) if self._feature_names_out else None
+            "n_features_out": len(self._feature_names_out) if self._feature_names_out else None,
         }
 
     def __repr__(self) -> str:

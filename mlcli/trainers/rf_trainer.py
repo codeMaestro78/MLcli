@@ -42,7 +42,7 @@ class RFConfig(BaseModel):
 
 @register_model(
     name="random_forest",
-    description="Random Forest ensemble classifier",
+    description="Random Forest ensemble classifier method",
     framework="sklearn",
     model_type="classification",
     supports_multiclass=True,
@@ -319,6 +319,11 @@ class RFTrainer(BaseTrainer):
             self.model = data["model"]
             self.config = data.get("config", {})
             self.backend = "sklearn"
+
+        elif model_format == "onnx":
+            import onnxruntime as ort
+
+            self.model = ort.InferenceSession(str(model_path))
 
         else:
             raise ValueError(f"Unsupported format : {model_format}")

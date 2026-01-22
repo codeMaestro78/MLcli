@@ -1,0 +1,22 @@
+{
+  "model_type": "dbscan",
+  "data": {
+    "train_path": "data/train.csv",
+    "feature_columns": null
+  },
+  "preprocessing": {
+    "scaler": "standard",
+    "handle_missing": "mean"
+  },
+  "params": {
+    "eps": 0.5,
+    "min_samples": 5,
+    "metric": "euclidean",
+    "algorithm": "auto"
+  },
+  "output": {
+    "model_dir": "models/",
+    "run_dir": "runs/",
+    "formats": ["pickle", "joblib"]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "model_type": "one_class_svm",
+  "data": {
+    "train_path": "data/train.csv",
+    "feature_columns": null
+  },
+  "preprocessing": {
+    "scaler": "standard",
+    "handle_missing": "mean"
+  },
+  "params": {
+    "kernel": "rbf",
+    "gamma": "scale",
+    "nu": 0.1,
+    "tol": 0.001,
+    "shrinking": true
+  },
+  "output": {
+    "model_dir": "models/",
+    "run_dir": "runs/",
+    "formats": ["pickle", "joblib"]
+  }
+}

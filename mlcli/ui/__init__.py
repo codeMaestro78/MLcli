@@ -2,4 +2,4 @@
 
 from mlcli.ui.app import MLCLIApp
 
-__all__=["MLCLIApp"]
+__all__ = ["MLCLIApp"]
