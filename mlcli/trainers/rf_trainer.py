@@ -90,7 +90,7 @@ class RFTrainer(BaseTrainer):
 
     def _check_is_trained(self):
         if not self.is_trained or self.model is None:
-            raise RuntimeError("Model not found")
+            raise RuntimeError("Model not found train() first.")
 
     def train(
         self,
