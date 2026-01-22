@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 @register_model(
     name="random_forest",
-    description="Random Forest ensemble classifier",
+    description="Random Forest ensemble classifier method",
     framework="sklearn",
     model_type="classification",
 )
