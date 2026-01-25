@@ -1,0 +1,30 @@
+{
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "model": {
+    "type": "isolation_forest",
+    "params": {
+      "n_estimators": 100,
+      "max_samples": "auto",
+      "contamination": "auto",
+      "max_features": 1.0,
+      "bootstrap": false,
+      "n_jobs": -1,
+      "random_state": 42,
+      "verbose": 0
+    }
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "shuffle": true
+  },
+  "output": {
+    "model_dir": "mlcli/models",
+    "save_format": ["pickle", "joblib"],
+    "log_dir": "runs"
+  }
+}

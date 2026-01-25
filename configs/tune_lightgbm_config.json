@@ -1,0 +1,33 @@
+{
+  "model": {
+    "type": "lightgbm",
+    "task_type": "classification",
+    "params": {}
+  },
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "tuning": {
+    "param_space": {
+      "n_estimators": {"type": "int", "low": 50, "high": 300},
+      "max_depth": {"type": "int", "low": -1, "high": 12},
+      "learning_rate": {"type": "loguniform", "low": 0.01, "high": 0.2},
+      "num_leaves": {"type": "int", "low": 15, "high": 127},
+      "min_child_samples": {"type": "int", "low": 10, "high": 50},
+      "subsample": {"type": "uniform", "low": 0.6, "high": 1.0},
+      "colsample_bytree": {"type": "uniform", "low": 0.6, "high": 1.0},
+      "reg_alpha": {"type": "uniform", "low": 0.0, "high": 1.0},
+      "reg_lambda": {"type": "uniform", "low": 0.0, "high": 1.0}
+    }
+  },
+  "output": {
+    "model_dir": "artifacts",
+    "save_formats": ["pickle", "joblib"]
+  }
+}

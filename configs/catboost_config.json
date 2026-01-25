@@ -1,0 +1,37 @@
+{
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "model": {
+    "type": "catboost",
+    "task_type": "classification",
+    "cat_features": [],
+    "params": {
+      "iterations": 100,
+      "depth": 6,
+      "learning_rate": 0.1,
+      "l2_leaf_reg": 3.0,
+      "border_count": 254,
+      "random_seed": 42,
+      "thread_count": -1,
+      "verbose": false,
+      "allow_writing_files": false
+    },
+    "early_stopping_rounds": 50
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "shuffle": true
+  },
+  "evaluation": {
+    "metrics": ["accuracy", "precision", "recall", "f1", "auc"]
+  },
+  "output": {
+    "model_dir": "mlcli/models",
+    "save_format": ["pickle", "catboost"],
+    "log_dir": "runs"
+  }
+}

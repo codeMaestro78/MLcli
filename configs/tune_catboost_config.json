@@ -1,0 +1,30 @@
+{
+  "model": {
+    "type": "catboost",
+    "task_type": "classification",
+    "cat_features": [],
+    "params": {}
+  },
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "tuning": {
+    "param_space": {
+      "iterations": {"type": "int", "low": 50, "high": 500},
+      "depth": {"type": "int", "low": 4, "high": 10},
+      "learning_rate": {"type": "loguniform", "low": 0.01, "high": 0.3},
+      "l2_leaf_reg": {"type": "uniform", "low": 1.0, "high": 10.0},
+      "border_count": {"type": "int", "low": 32, "high": 254}
+    }
+  },
+  "output": {
+    "model_dir": "artifacts",
+    "save_formats": ["pickle", "joblib"]
+  }
+}

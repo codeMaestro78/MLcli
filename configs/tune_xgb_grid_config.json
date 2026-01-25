@@ -1,0 +1,30 @@
+{
+  "model": {
+    "type": "xgboost",
+    "params": {}
+  },
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "tuning": {
+    "param_space": {
+      "n_estimators": [100, 200, 300],
+      "max_depth": [3, 5, 7],
+      "learning_rate": [0.01, 0.1, 0.2],
+      "subsample": [0.7, 0.9, 1.0],
+      "colsample_bytree": [0.7, 0.9, 1.0],
+      "min_child_weight": [1, 5],
+      "gamma": [0.0, 0.1, 0.5]
+    }
+  },
+  "output": {
+    "model_dir": "artifacts",
+    "save_formats": ["pickle", "joblib"]
+  }
+}

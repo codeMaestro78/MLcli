@@ -1,0 +1,29 @@
+{
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "model": {
+    "type": "kmeans",
+    "params": {
+      "n_clusters": 8,
+      "init": "k-means++",
+      "n_init": 10,
+      "max_iter": 300,
+      "tol": 0.0001,
+      "random_state": 42,
+      "algorithm": "lloyd"
+    }
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "shuffle": true
+  },
+  "output": {
+    "model_dir": "mlcli/models",
+    "save_format": ["pickle", "joblib"],
+    "log_dir": "runs"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "model": {
+    "type": "one_class_svm",
+    "params": {}
+  },
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "tuning": {
+    "param_space": {
+      "kernel": ["rbf", "linear", "poly", "sigmoid"],
+      "gamma": ["scale", "auto", 0.001, 0.01, 0.1, 1.0],
+      "nu": [0.01, 0.05, 0.1, 0.2, 0.3, 0.5],
+      "degree": [2, 3, 4],
+      "coef0": [0.0, 0.5, 1.0]
+    }
+  },
+  "output": {
+    "model_dir": "artifacts",
+    "save_formats": ["pickle", "joblib"]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "model": {
+    "type": "one_class_svm",
+    "params": {
+      "kernel": "rbf",
+      "gamma": "scale",
+      "nu": 0.1,
+      "tol": 0.001,
+      "shrinking": true,
+      "cache_size": 200,
+      "max_iter": -1
+    }
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "shuffle": true
+  },
+  "output": {
+    "model_dir": "mlcli/models",
+    "save_format": ["pickle", "joblib"],
+    "log_dir": "runs"
+  }
+}

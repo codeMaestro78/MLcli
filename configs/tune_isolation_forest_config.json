@@ -1,0 +1,28 @@
+{
+  "model": {
+    "type": "isolation_forest",
+    "params": {}
+  },
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "tuning": {
+    "param_space": {
+      "n_estimators": [50, 100, 200],
+      "max_samples": ["auto", 0.5, 0.75, 1.0],
+      "contamination": ["auto", 0.01, 0.05, 0.1, 0.2],
+      "max_features": [0.5, 0.75, 1.0],
+      "bootstrap": [true, false]
+    }
+  },
+  "output": {
+    "model_dir": "artifacts",
+    "save_formats": ["pickle", "joblib"]
+  }
+}

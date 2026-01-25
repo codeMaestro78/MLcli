@@ -1,0 +1,27 @@
+{
+  "model": {
+    "type": "svm",
+    "params": {}
+  },
+  "dataset": {
+    "path": "data/sample_data.csv",
+    "type": "csv",
+    "target_column": "target"
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "tuning": {
+    "param_space": {
+      "C": [0.1, 1.0, 10.0],
+      "kernel": ["rbf", "linear", "poly"],
+      "gamma": ["scale", "auto"],
+      "degree": [2, 3]
+    }
+  },
+  "output": {
+    "model_dir": "artifacts",
+    "save_formats": ["pickle", "joblib"]
+  }
+}
