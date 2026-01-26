@@ -44,6 +44,7 @@ class PreprocessingRecommendation:
         reason: Human-readable explanation for this choice
         target_columns: Columns this step should apply to
     """
+
     step_name: str
     method: str
     params: Dict[str, Any] = field(default_factory=dict)
@@ -63,6 +64,7 @@ class PreprocessingPlan:
         missing_strategy: Recommended missing-value handling strategy
         warnings: Human-readable warnings about the dataset
     """
+
     recommendations: List[PreprocessingRecommendation] = field(default_factory=list)
     scaler_method: Optional[str] = None
     has_missing_values: bool = False
@@ -392,5 +394,6 @@ class PreprocessingSelector:
     def __repr__(self) -> str:
         return (
             f"PreprocessingSelector(n_steps={len(self._plan.recommendations)})"
-            if self._plan else "PreprocessingSelector(not configured)"
+            if self._plan
+            else "PreprocessingSelector(not configured)"
         )
