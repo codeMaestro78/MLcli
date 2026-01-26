@@ -111,13 +111,8 @@ datasets/
 .ipynb_checkpoints/
 *.ipynb
 
-# ==================================
-# Website / Next.js
-# ==================================
-website/node_modules/
-website/.next/
-website/out/
-website/.env*.local
+# Website
+website/
 
 # ==================================
 # Misc
