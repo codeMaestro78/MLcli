@@ -167,9 +167,7 @@ class AutoMLReporter:
 
         # Check if fitted
         if hasattr(automl, "is_fitted_") and not automl.is_fitted_:
-            raise RuntimeError(
-                "AutoML is not fitted. Call fit() before creating a report."
-            )
+            raise RuntimeError("AutoML is not fitted. Call fit() before creating a report.")
 
         self.automl = automl
         self.title = title or "AutoML Classification"
@@ -448,7 +446,6 @@ class AutoMLReporter:
                 f"{entry.get('score', 0):.4f} ({entry.get('duration_seconds', 0):.1f}s)"
             )
 
-
     # JSON Export
     def to_json(self, indent: int = 2) -> str:
         """
@@ -481,7 +478,6 @@ class AutoMLReporter:
 
         logger.info(f"Saved JSON report to {filepath}")
         return filepath
-
 
     # HTML Export
 
