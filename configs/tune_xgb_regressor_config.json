@@ -1,0 +1,35 @@
+{
+  "dataset": {
+    "path": "data/hour.csv",
+    "type": "csv",
+    "target_column": "cnt",
+    "features": ["season", "yr", "mnth", "hr", "holiday", "weekday", "workingday", "weathersit", "temp", "atemp", "hum", "windspeed"]
+  },
+  "model": {
+    "type": "xgb_regressor",
+    "task_type": "regression",
+    "params": {}
+  },
+  "tuning": {
+    "method": "random",
+    "n_iter": 20,
+    "cv": 3,
+    "scoring": "neg_mean_squared_error",
+    "param_space": {
+      "n_estimators": [50, 100, 200, 300],
+      "max_depth": [4, 6, 8, 10],
+      "learning_rate": [0.01, 0.05, 0.1, 0.2],
+      "subsample": [0.6, 0.8, 1.0],
+      "colsample_bytree": [0.6, 0.8, 1.0]
+    }
+  },
+  "training": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "output": {
+    "model_dir": "mlcli/models",
+    "save_format": ["pickle"],
+    "log_dir": "runs"
+  }
+}

@@ -215,12 +215,19 @@ def train(
         # End run
         run_data = tracker.end_run(status="completed")
 
-        # Final summary
+        # Final summary - handle both classification and regression
+        if "accuracy" in test_metrics:
+            metric_summary = f"Test Accuracy: {test_metrics['accuracy']:.4f}"
+        elif "r2" in test_metrics:
+            metric_summary = f"Test R²: {test_metrics['r2']:.4f}"
+        else:
+            metric_summary = "Evaluation complete"
+
         console.print(
             Panel.fit(
                 f"[bold green]Training Complete![/bold green]\n\n"
                 f"Run ID: {run_id}\n"
-                f"Test Accuracy: {test_metrics.get('accuracy', 'N/A'):.4f}\n"
+                f"{metric_summary}\n"
                 f"Duration: {run_data.get('duration_seconds', 0):.1f}s",
                 title="Summary",
                 border_style="green",

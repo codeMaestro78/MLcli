@@ -145,7 +145,11 @@ class BaseAutoML(ABC):
 
         Returns:
             List of leaderboard entries
+
+        Raises:
+            RuntimeError: If not fitted.
         """
+        self._check_is_fitted()
 
         return [
             {
@@ -288,6 +292,10 @@ class BaseAutoML(ABC):
             raise TypeError(f"X must be np.ndarray, got {type(X)}")
         if not isinstance(y, np.ndarray):
             raise TypeError(f"y must be np.ndarray, got {type(y)}")
+        if X.ndim != 2:
+            raise ValueError(f"X must be 2D array, got {X.ndim}D")
+        if X.shape[0] == 0 or y.shape[0] == 0:
+            raise ValueError("X and y must not be empty")
         if X.shape[0] != y.shape[0]:
             raise ValueError(f"X and y must have same n_samples: {X.shape[0]} vs {y.shape[0]}")
 

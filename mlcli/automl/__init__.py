@@ -7,19 +7,40 @@ training and optimization.
 """
 
 from mlcli.automl.search_space import SearchSpaceGenerator
-from mlcli.automl.model_selector import ModelSelector
-from mlcli.automl.base_automl import BaseAutoML
+from mlcli.automl.model_selector import ModelSelector, ModelCandidate
+from mlcli.automl.base_automl import BaseAutoML, LeaderboardEntry
+from mlcli.automl.data_analyzer import DataAnalyzer, DataAnalysisReport, ColumnInfo
+from mlcli.automl.preprocessing_selector import (
+    PreprocessingSelector,
+    PreprocessingPlan,
+    PreprocessingRecommendation,
+)
+
+#  Main AutoML classifier implementation
 from mlcli.automl.automl_classifier import AutoMLClassifier
-from mlcli.automl.data_analyzer import DataAnalyzer
-from mlcli.automl.preprocessing_selector import PreprocessingSelector
+
+# Step 8: AutoML reporting
 from mlcli.automl.reporter import AutoMLReporter
 
 __all__ = [
-    "BaseAutoML",
+    # Main AutoML class
     "AutoMLClassifier",
-    "ModelSelector",
-    "SearchSpaceGenerator",
-    "DataAnalyzer",
-    "PreprocessingSelector",
+    # Reporting (Step 8)
     "AutoMLReporter",
+    # Core classes
+    "BaseAutoML",
+    "LeaderboardEntry",
+    # Model selection
+    "ModelSelector",
+    "ModelCandidate",
+    # Search space
+    "SearchSpaceGenerator",
+    # Data analysis
+    "DataAnalyzer",
+    "DataAnalysisReport",
+    "ColumnInfo",
+    # Preprocessing
+    "PreprocessingSelector",
+    "PreprocessingPlan",
+    "PreprocessingRecommendation",
 ]

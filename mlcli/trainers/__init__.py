@@ -8,10 +8,15 @@ _LAZY_IMPORTS = {
     "LogisticRegressionTrainer": "mlcli.trainers.logistic_trainer",
     "SVMTrainer": "mlcli.trainers.svm_trainer",
     "RFTrainer": "mlcli.trainers.rf_trainer",
-    # Gradient Boosting
+    # Regression - sklearn
+    "RFRegressorTrainer": "mlcli.trainers.rf_regressor_trainer",
+    # Gradient Boosting - Classification
     "XGBTrainer": "mlcli.trainers.xgb_trainer",
     "LightGBMTrainer": "mlcli.trainers.lightgbm_trainer",
     "CatBoostTrainer": "mlcli.trainers.catboost_trainer",
+    # Gradient Boosting - Regression
+    "XGBRegressorTrainer": "mlcli.trainers.xgb_regressor_trainer",
+    "LightGBMRegressorTrainer": "mlcli.trainers.lightgbm_regressor_trainer",
     # Deep Learning - TensorFlow
     "TFDNNTrainer": "mlcli.trainers.tf_dnn_trainer",
     "TFCNNTrainer": "mlcli.trainers.tf_cnn_trainer",
@@ -74,6 +79,29 @@ _MODEL_METADATA = {
         "description": "CatBoost gradient boosting with automatic categorical handling",
         "framework": "catboost",
         "model_type": "classification",
+    },
+    # Regression - sklearn
+    "rf_regressor": {
+        "class": "RFRegressorTrainer",
+        "module": "mlcli.trainers.rf_regressor_trainer",
+        "description": "Random Forest ensemble regressor",
+        "framework": "sklearn",
+        "model_type": "regression",
+    },
+    # Regression - Gradient Boosting
+    "xgb_regressor": {
+        "class": "XGBRegressorTrainer",
+        "module": "mlcli.trainers.xgb_regressor_trainer",
+        "description": "XGBoost gradient boosting regressor",
+        "framework": "xgboost",
+        "model_type": "regression",
+    },
+    "lgbm_regressor": {
+        "class": "LightGBMRegressorTrainer",
+        "module": "mlcli.trainers.lightgbm_regressor_trainer",
+        "description": "LightGBM gradient boosting regressor",
+        "framework": "lightgbm",
+        "model_type": "regression",
     },
     # Deep Learning - TensorFlow
     "tf_rnn": {
@@ -204,10 +232,15 @@ __all__ = [
     "LogisticRegressionTrainer",
     "SVMTrainer",
     "RFTrainer",
-    # Gradient Boosting
+    # Regression - sklearn
+    "RFRegressorTrainer",
+    # Gradient Boosting - Classification
     "XGBTrainer",
     "LightGBMTrainer",
     "CatBoostTrainer",
+    # Gradient Boosting - Regression
+    "XGBRegressorTrainer",
+    "LightGBMRegressorTrainer",
     # Deep Learning - TensorFlow
     "TFDNNTrainer",
     "TFCNNTrainer",
