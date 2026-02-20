@@ -34,6 +34,9 @@ class ModelRegistry:
         description: str = "",
         framework: str = "unknown",
         model_type: str = "unknown",
+        supports_multiclass: bool = False,
+        supports_onnx: bool = False,
+        supports_probabilities: bool = False,
     ) -> None:
         """
         Register a trainer class with metadata.
@@ -44,6 +47,9 @@ class ModelRegistry:
             description: Human-readable description of the model
             framework: ML framework (e.g., 'sklearn', 'tensorflow', 'xgboost')
             model_type: Type of model (e.g., 'classification', 'regression')
+            supports_multiclass: Whether the model supports multiclass classification
+            supports_onnx: Whether the model supports ONNX export
+            supports_probabilities: Whether the model supports probability predictions
 
         Raises:
             ValueError: If name is already registered
@@ -57,6 +63,9 @@ class ModelRegistry:
             "description": description,
             "framework": framework,
             "model_type": model_type,
+            "supports_multiclass": supports_multiclass,
+            "supports_onnx": supports_onnx,
+            "supports_probabilities": supports_probabilities,
             "class_name": trainer_class.__name__,
         }
 
@@ -245,7 +254,13 @@ class ModelRegistry:
 
 
 def register_model(
-    name: str, description: str = "", framework: str = "unknown", model_type: str = "classification"
+    name: str,
+    description: str = "",
+    framework: str = "unknown",
+    model_type: str = "classification",
+    supports_multiclass: bool = False,
+    supports_onnx: bool = False,
+    supports_probabilities: bool = False,
 ):
     """
     Decorator for auto-registering trainer classes.
@@ -261,6 +276,9 @@ def register_model(
         description: Human-readable description
         framework: ML framework name
         model_type: Type of model
+        supports_multiclass: Whether the model supports multiclass classification
+        supports_onnx: Whether the model supports ONNX export
+        supports_probabilities: Whether the model supports probability predictions
 
     Returns:
         Decorator function
@@ -275,6 +293,9 @@ def register_model(
             description=description,
             framework=framework,
             model_type=model_type,
+            supports_multiclass=supports_multiclass,
+            supports_onnx=supports_onnx,
+            supports_probabilities=supports_probabilities,
         )
         return trainer_class
 

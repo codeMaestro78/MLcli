@@ -18,3 +18,4 @@ plotext>=5.0
 shap>=0.43.0
 lime>=0.2.0
 matplotlib>=3.7.0
+pydantic>=2.0.0
