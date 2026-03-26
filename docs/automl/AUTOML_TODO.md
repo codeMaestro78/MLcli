@@ -1,7 +1,5 @@
 # AutoML Integration - Complete TODO List
 
-> **⚠️ IMPORTANT**: This document requires approval before any implementation begins.
-> No code will be written until the user confirms this plan.
 
 ---
 
